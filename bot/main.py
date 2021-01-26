@@ -7,7 +7,7 @@ token = os.environ.get('DISCORD_BOT_TOKEN')
 print(token)
 @client.event
 async def on_ready():
-    await client.change_presence(status=discord.Status.idle, activity=discord.Game("Listening to .help"))
+    await client.change_presence(status=activity=discord.Game("J'ouvre des portes !"))
     print("[LOGS] ONLINE")
 @client.command()
 async def ping(ctx):
