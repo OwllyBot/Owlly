@@ -3,12 +3,12 @@ from discord.ext import commands
 import os
 
 client = commands.Bot(command_prefix="!")
-
-
+token = os.environ.get('DISCORD_BOT_TOKEN')
+print(token)
 @client.event
 async def on_ready():
     await client.change_presence(status=discord.Status.idle, activity=discord.Game("Listening to .help"))
-    print("I am online")
+    print("[LOGS] ONLINE")
 
 
 @client.command()
@@ -26,4 +26,4 @@ async def clear(ctx, amount=3):
     await ctx.channel.purge(limit=amount)
 
 
-client.run("ODAzNzE0NzA5MDU5OTI4MDY0.YBBzpg.1_5oR53EX1U_8lcqWOQbUKzB59U")
+client.run(token)
