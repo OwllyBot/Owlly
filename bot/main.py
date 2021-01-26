@@ -3,8 +3,9 @@ from discord.ext import commands
 import os
 import sqlite3
 
-bot = commands.Bot(command_prefix="!")
+bot = commands.Bot(command_prefix=">")
 token = os.environ.get('DISCORD_BOT_TOKEN')
+
 @bot.event
 async def on_ready():
     await bot.change_presence(activity=discord.Game("ouvrir des portes !"))
@@ -18,28 +19,32 @@ async def whoami(ctx):
 @bot.command()
 async def clear(ctx, amount=3):
     await ctx.channel.purge(limit=amount)
-bot.run(token)
 
 @bot.command()
-async def appart(ctx):
-    await ctx.message.delete()
+async def appartement(ctx):
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
     db = sqlite3.connect("database.db")
     c = db.cursor()
+    await ctx.message.delete()
     question = await ctx.send (f"Quel est le titre de l'embed ?")
     titre = await bot.wait_for("message", timeout = 300, check = checkRep)
     titre = titre.content
-    await question.edit (content = f"Quelle est sa description ?")
+    await question.delete()
+    question = await ctx.send (f"Quelle est sa description ?")
     desc = await bot.wait_for("message", timeout=300, check=checkRep)
     desc = desc.content
-    await question.edit ("Quelle couleur voulez vous utiliser ?")
+    await question.delete()
+    question = await ctx.send (f"Quelle couleur voulez vous utiliser ?")
     col = await bot.wait_for("message", timeout=300, check=checkRep)
+    col = col.content
     if (col.find ("#") == -1):
         await ctx.send (f"Erreur ! Vous avez oublié le # !")
         return
     else:
         col = col.replace("#", "0x")
+        col = int(col, 16)
+        question.delete()
     embed = discord.Embed(title=titre, description=desc, color=col)
     react = await ctx.send(embed=embed)
     await react.add_reaction("🏠")
