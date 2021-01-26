@@ -2,12 +2,9 @@ import discord
 from discord.ext import commands
 import os
 import sqlite3
-import psycopg2
 
 bot = commands.Bot(command_prefix=">")
 token = os.environ.get('DISCORD_BOT_TOKEN')
-DATABASE_URL = os.environ['DATABASE_URL']
-conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
 @bot.event
 async def on_ready():
