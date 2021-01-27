@@ -24,17 +24,15 @@ async def clear(ctx, amount=3):
 async def appartement(ctx):
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
-    db = sqlite3.connect("database.db")
+    db = sqlite3.connect("owlly.db")
     c = db.cursor()
-    await ctx.message.delete()
+    data=c.fetchall()
     question = await ctx.send (f"Quel est le titre de l'embed ?")
     titre = await bot.wait_for("message", timeout = 300, check = checkRep)
     titre = titre.content
-    await question.delete()
     question = await ctx.send (f"Quelle est sa description ?")
     desc = await bot.wait_for("message", timeout=300, check=checkRep)
     desc = desc.content
-    await question.delete()
     question = await ctx.send (f"Quelle couleur voulez vous utiliser ?")
     col = await bot.wait_for("message", timeout=300, check=checkRep)
     col = col.content
@@ -44,15 +42,25 @@ async def appartement(ctx):
     else:
         col = col.replace("#", "0x")
         col = int(col, 16)
-        question.delete()
     embed = discord.Embed(title=titre, description=desc, color=col)
     react = await ctx.send(embed=embed)
     await react.add_reaction("🏠")
-    await question.delete()
     sql= ("INSERT INTO config (type, chan, mid) VALUES (?,?,?)")
     mid= react.id
     chan = react.channel.id
     var=(titre, chan, mid)
+    print(var)
     c.execute(sql, var)
-    
+    db.commit()
+    c.close()
+    db.close()
+
+@bot.command()
+async def dbtest(ctx):
+    db = sqlite3.connect("owlly.db")
+    c = db.cursor()
+    c.execute("SELECT * FROM config")
+    data = c.fetchall()
+    for x in data:
+        print(x)
 bot.run(token)
