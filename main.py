@@ -80,6 +80,7 @@ async def serv(ctx):
 async def clear(ctx, amount=3):
     await ctx.channel.purge(limit=amount)
 
+@commands.has_permissions(administrator=True)
 @bot.command()
 async def ticket(ctx):
     limit_content = 0
@@ -272,6 +273,7 @@ async def ticket(ctx):
         await ticket_chan.delete()
         return
 
+@commands.has_permissions(administrator=True)
 @bot.command()
 async def category(ctx):
     def checkValid(reaction, user):
@@ -593,17 +595,17 @@ async def on_guild_channel_delete (channel):
     c = db.cursor()
     delete=channel.id
     sql="SELECT created_by FROM AUTHOR WHERE channel_id=?"
-    c.execute(sql, delete)
+    c.execute(sql, (delete,))
     verif_ticket=c.fetchone()
     sql="SELECT count FROM TICKET WHERE idM = ?"
-    c.execute(sql, verif_ticket)
+    c.execute(sql, (verif_ticket,))
     count=c.fetchone()
     count = int(count)-1
     sql="UPDATE TICKET SET count = ? WHERE idM = ?"
-    var=(count, verif_ticket)
+    var=(count, (verif_ticket,))
     c.execute(sql, var)
     sql="DELETE FROM AUTHOR WHERE channel_id = ?"
-    c.execute(sql, delete)
+    c.execute(sql, (delete,))
     db.commit()
     c.close()
     db.close()
