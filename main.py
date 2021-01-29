@@ -48,8 +48,9 @@ async def on_command_error(ctx, error):
 
 @bot.event
 async def on_message(message):
+    channel=message.channel
     if bot.user.mentioned_in(message) and 'prefix' in message.content:
-        await bot.send_message(message.channel, f'Mon prefix est {bot.command_prefix}')
+        await channel.send_message(message.channel, f'Mon prefix est {bot.command_prefix}')
 
 @bot.event
 async def on_guild_join(guild):
