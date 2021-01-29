@@ -16,6 +16,7 @@ def get_prefix (bot, message):
     prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
     c.execute(prefix, (int(message.guild.id),))
     prefix = c.fetchone()
+    print(prefix)
     if prefix==None :
         prefix = "!"
         sql="INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
