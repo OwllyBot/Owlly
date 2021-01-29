@@ -6,6 +6,7 @@ import os
 import sqlite3
 import sys
 import traceback
+import keep_alive
 
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
@@ -665,3 +666,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 bot.run(token)
+keep_alive.keep_alive()
