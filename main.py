@@ -664,6 +664,6 @@ async def help(ctx):
     embed.add_field(name="Fonction sur les channels", value=f"Vous devez être l'auteur original du channel et utiliser ses commandes sur le channel voulu !\n :white_small_square: Editer la description : `{p}desc description` ou `{p}description`\n :white_small_square: Pin un message : `{p}pins <idmessage>` \n :white_small_square: Changer le nom du channel : `{p}rename nom", inline=False)
     embed.add_field(name="Administration", value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets : `{p}recount nb`", inline=False)
     await ctx.send(embed=embed)
-
-bot.run(token)
 keep_alive.keep_alive()
+
+bot.run(token,bot=True, reconnect=True)
