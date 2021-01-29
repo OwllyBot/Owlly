@@ -614,7 +614,7 @@ async def on_member_remove(member):
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     sql="DELETE FROM AUTHOR WHERE UserID = ?"
-    c.execute(sql, dep)
+    c.execute(sql, (dep,))
     db.commit()
     c.close()
     db.close()
@@ -627,9 +627,9 @@ async def on_guild_remove(guild):
     sql1="DELETE FROM AUTHOR WHERE idS = ?"
     sql2 = "DELETE FROM TICKET WHERE idS = ?"
     sql3 = "DELETE FROM CATEGORY WHERE idS = ?"
-    c.execute(sql1, server)
-    c.execute(sql2, server)
-    c.execute(sql3, server)
+    c.execute(sql1, (server,))
+    c.execute(sql2, (server,))
+    c.execute(sql3, (server,))
     sql="DELETE FROM SERVEUR WHERE idS = ?"
     var = guild.id
     c.execute(sql, var)
@@ -666,4 +666,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 keep_alive.keep_alive()
 
-bot.run(token,bot=True, reconnect=True)
+bot.run(token)
