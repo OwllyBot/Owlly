@@ -610,7 +610,7 @@ async def on_guild_channel_delete (channel):
 
 @bot.event
 async def on_member_remove(member):
-    dep = member.id
+    dep = int(member.id)
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     sql="DELETE FROM AUTHOR WHERE UserID = ?"
