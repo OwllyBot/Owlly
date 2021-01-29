@@ -11,19 +11,19 @@ import keep_alive
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 def get_prefix (bot, message):
-    db = sqlite3.connect("owlly.db", timeout=3000)
-    c = db.cursor()
-    prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-    c.execute(prefix, (int(message.guild.id),))
-    prefix = c.fetchone()
-    if prefix is None :
-        prefix = "!"
-        sql="INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
-        var = ("!", message.guild.id)
-        c.execute(sql, var)
-    c.close()
-    db.close()
-    return prefix
+  db = sqlite3.connect("owlly.db", timeout=3000)
+  c = db.cursor()
+  prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
+  c.execute(prefix, (int(message.guild.id),))
+  prefix = c.fetchone()
+  if prefix is None :
+    prefix = "!"
+    sql="INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
+    var = ("!", message.guild.id)
+    c.execute(sql, var)
+  c.close()
+  db.close()
+  return prefix
 
 
 initial_extensions = ['cogs.clean_db']
