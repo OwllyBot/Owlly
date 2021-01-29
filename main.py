@@ -47,6 +47,11 @@ async def on_command_error(ctx, error):
         await ctx.send("Commande inconnue ! \n Pour avoir la liste des commandes utilisables, utilise `!help` ou `!command`")
 
 @bot.event
+async def on_message(message):
+    if bot.user.mentioned_in(message) and 'prefix' in message.content:
+        await message.send_message(message.channel, f'Mon prefix est {bot.command_prefix}')
+
+@bot.event
 async def on_guild_join(guild):
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
