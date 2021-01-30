@@ -10,25 +10,26 @@ import keep_alive
 
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
-def get_prefix (bot, message):
-  db = sqlite3.connect("owlly.db", timeout=3000)
-  c = db.cursor()
-  prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-  c.execute(prefix, (int(message.guild.id),))
-  prefix = c.fetchone()
-  if prefix is None :
-    prefix = "!"
-    sql="INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
-    var = ("!", message.guild.id)
-    c.execute(sql, var)
-    db.commit()
-    print("done")
-  c.close()
-  db.close()
-  return prefix
-
-
 initial_extensions = ['cogs.clean_db']
+
+def get_prefix (bot, message):
+    print("im here")
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
+    c.execute(prefix, (int(message.guild.id),))
+    prefix = c.fetchone()
+    if prefix is None :
+        prefix = "!"
+        sql="INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
+        var = ("!", message.guild.id)
+        c.execute(sql, var)
+        db.commit()
+        print("done")
+    c.close()
+    db.close()
+    return prefix
+
 bot = commands.Bot(command_prefix=get_prefix, intents=intents,help_command=None)
 token = os.environ.get('DISCORD_BOT_TOKEN')
 if __name__ == '__main__':
@@ -57,7 +58,7 @@ async def on_message(message):
     c.execute(prefix, (int(message.guild.id),))
     prefix = c.fetchone()
     if bot.user.mentioned_in(message) and 'prefix' in message.content:
-        await channel.send(f'Mon prefix est {prefix}')
+        await channel.send(f'Mon prefix est {prefix[0]}')
 
 @bot.event
 async def on_guild_join(guild):
@@ -684,6 +685,5 @@ async def help(ctx):
     embed.add_field(name="Fonction sur les channels", value=f"Vous devez être l'auteur original du channel et utiliser ses commandes sur le channel voulu !\n :white_small_square: Editer la description : `{p}desc description` ou `{p}description`\n :white_small_square: Pin un message : `{p}pins <idmessage>` \n :white_small_square: Changer le nom du channel : `{p}rename nom", inline=False)
     embed.add_field(name="Administration", value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets : `{p}recount nb`", inline=False)
     await ctx.send(embed=embed)
-keep_alive.keep_alive()
 
 bot.run(token)
