@@ -21,6 +21,7 @@ def get_prefix (bot, message):
     sql="INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
     var = ("!", message.guild.id)
     c.execute(sql, var)
+    db.commit()
   c.close()
   db.close()
   return prefix
