@@ -593,23 +593,21 @@ async def rename (ctx, arg):
         await ctx.delete()
     c.close()
     db.close()
-
+@commands.has_permissions(administrator=True)
 @bot.command(aliases=["count", "edit_count"])
 async def recount(ctx, arg, ticket_id):
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
-    if ctx.message.author.server.permissions:
-        arg = int(arg)
-        ticket_id=int(ticket_id)
-        sql="UPDATE TICKET SET num = ? WHERE idM=?"
-        var = (arg, ticket_id)
-        c.execute(sql, var)
-        db.commit()
-        c.close()
-        db.close()
-    else:
-        await ctx.send("Vous n'avez pas les permissions pour faire cette commande.", delete_after=30)
-    await ctx.delet()
+    arg = int(arg)
+    ticket_id=int(ticket_id)
+    sql="UPDATE TICKET SET num = ? WHERE idM=?"
+    var = (arg, (ticket_id))
+    c.execute(sql, var)
+    db.commit()
+    c.close()
+    db.close()
+    await ctx.send(f"Le compte a été fixé à : {arg}", delete_after=30)
+    await ctx.delete()
 
 @bot.event
 async def on_guild_channel_delete (channel):
@@ -619,11 +617,11 @@ async def on_guild_channel_delete (channel):
     sql="SELECT created_by FROM AUTHOR WHERE channel_id=?"
     c.execute(sql, (delete,))
     verif_ticket=c.fetchone()
-    sql="SELECT count FROM TICKET WHERE idM = ?"
+    sql="SELECT num FROM TICKET WHERE idM = ?"
     c.execute(sql, (verif_ticket,))
     count=c.fetchone()
     count = int(count)-1
-    sql="UPDATE TICKET SET count = ? WHERE idM = ?"
+    sql="UPDATE TICKET SET num = ? WHERE idM = ?"
     var=(count, (verif_ticket,))
     c.execute(sql, var)
     sql="DELETE FROM AUTHOR WHERE channel_id = ?"
