@@ -297,6 +297,7 @@ async def ticket(ctx):
 @commands.has_permissions(administrator=True)
 @bot.command()
 async def category(ctx):
+  await ctx.delete()
     def checkValid(reaction, user):
         return ctx.message.author == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
     def checkRep(message):
