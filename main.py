@@ -183,6 +183,9 @@ async def ticket(ctx):
             await question.delete()
             await img.delete()
             return
+        else:
+            await question.delete()
+            await img.delete()
     else:
         await question.delete()
         img_content = "none"
