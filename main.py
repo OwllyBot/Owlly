@@ -16,7 +16,6 @@ def get_prefix (bot, message):
     prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
     c.execute(prefix, (int(message.guild.id),))
     prefix = c.fetchone()
-    print(prefix)
     if prefix is None :
         prefix = "!"
         sql="INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
@@ -434,7 +433,7 @@ async def on_raw_reaction_add(payload):
     user = bot.get_user(payload.user_id)
     def checkRep(msg):
         return msg.author == user and channel == msg.channel
-    if (len (msg.embeds) != 0):
+    if (len (msg.embeds) != 0) and (user.bot is False):
         titre = msg.embeds[0].title
         if (serv_here in serv_ticket) or (serv_here in serv_cat):
             emoji_cat = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
@@ -447,6 +446,7 @@ async def on_raw_reaction_add(payload):
             appart=c.fetchall()
             appartDict={}
             action = str(payload.emoji.name)
+            await msg.remove_reaction(action,user)
             user = bot.get_user(payload.user_id)
             for i in range(0, len(emoji_cat)):
                 if str(emoji_cat[i]) == action :
@@ -454,8 +454,6 @@ async def on_raw_reaction_add(payload):
                     break
             typecreation = "stop"
             chan_create = "stop"
-            if not user.bot :
-                await msg.remove_reaction(action,user)
             for i in range (0, len(appart)):
                 extra={appart[i][0] : appart[i][1]}
                 appartDict.update(extra)
@@ -474,7 +472,6 @@ async def on_raw_reaction_add(payload):
                         typecreation = "True"
             else:
                 for k, v in roomDict.items():
-                    print(v)
                     if k == mid:
                         chan_create=int(v[choice])
                         typecreation = "False"
@@ -503,8 +500,8 @@ async def on_raw_reaction_add(payload):
                 sql = "UPDATE TICKET SET num = ? WHERE (idS = ? AND type = ?)"
                 var = (nb, serv_here, titre)
                 c.execute(sql, var)
-                sql = "INSERT INTO AUTHOR (channel_id, userID, idS) VALUES (?,?,?)"
-                var = (new_chan.id, payload.user_id, serv_here)
+                sql = "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
+                var = (new_chan.id, payload.user_id, serv_here, mid)
                 c.execute(sql, var)
                 db.commit()
                 c.close()
@@ -525,11 +522,34 @@ async def on_raw_reaction_add(payload):
                 category = bot.get_channel(chan_create)
                 new_chan = await category.create_text_channel(chan_name)
                 sql = "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
-                var = (new_chan.id, payload.user_id, serv_here,mid)
+                var = (new_chan.id, payload.user_id,serv_here, payload.message_id)
                 c.execute(sql, var)
                 db.commit()
                 c.close()
                 db.close()
+
+@bot.event
+async def on_raw_message_delete(payload):
+    mid = payload.message_id
+    serv= payload.guild_id
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    sql="SELECT idM FROM TICKET WHERE idS=?"
+    c.execute(sql,(serv,))
+    ticket_list=c.fetchall()
+    ticket_list=list(sum(ticket_list,()))
+    sql="SELECT idM FROM CATEGORY WHERE idS = ?"
+    c.execute(sql, (serv,))
+    cat_list=c.fetchall()
+    cat_list=list(sum(cat_list,()))
+    for i in ticket_list:
+        if i == mid:
+            sql="DELETE FROM TICKET WHERE idS=?"
+            c.execute(sql, (serv,))
+    for i in cat_list:
+        if i == mid:
+            sql="DELETE FROM CATEGORY WHERE idS = ?"
+            c.execute(sql,(serv,))
 
 @bot.command(name="description", aliases=['desc', 'edit_desc'])
 async def description ( ctx, arg):
@@ -573,6 +593,28 @@ async def pins(ctx, id_message):
     c.close()
     db.close()
 
+
+@bot.command()
+async def unpin(ctx, id_message):
+    channel_here = ctx.channel.id
+    channel = bot.get_channel(channel_here)
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
+    var = (ctx.author.id, ctx.guild.id)
+    c.execute(sql, var)
+    list_chan=c.fetchall()
+    list_chan = list(sum(list_chan,()))
+    if channel_here in list_chan:
+        message = await channel.fetch_message(id_message)
+        await message.unpin()
+        await ctx.delete()
+    else:
+        await ctx.send("Vous n'êtes pas l'auteur de ce channel !", delete_after=10)
+        await ctx.delete()
+    c.close()
+    db.close()
+
 @bot.command(aliases=['name'])
 async def rename (ctx, arg):
     channel_here = ctx.channel.id
@@ -593,6 +635,7 @@ async def rename (ctx, arg):
         await ctx.delete()
     c.close()
     db.close()
+
 @commands.has_permissions(administrator=True)
 @bot.command(aliases=["count", "edit_count"])
 async def recount(ctx, arg, ticket_id):
@@ -617,13 +660,12 @@ async def on_guild_channel_delete (channel):
     sql="SELECT created_by FROM AUTHOR WHERE channel_id=?"
     c.execute(sql, (delete,))
     verif_ticket=c.fetchone()
-    print(verif_ticket)
     sql="SELECT num FROM TICKET WHERE idM = ?"
-    c.execute(sql, (verif_ticket,))
+    c.execute(sql, verif_ticket)
     count=c.fetchone()
-    count = int(count)-1
+    count = int(count[0])-1
     sql="UPDATE TICKET SET num = ? WHERE idM = ?"
-    var=(count, (verif_ticket,))
+    var=(count, (int(verif_ticket[0])))
     c.execute(sql, var)
     sql="DELETE FROM AUTHOR WHERE channel_id = ?"
     c.execute(sql, (delete,))
@@ -673,7 +715,6 @@ async def prefix(ctx):
 
 @bot.command(aliases=['command','commands','owlly'])
 async def help(ctx):
-    print("hERE")
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     serv = ctx.guild.id
@@ -681,12 +722,10 @@ async def help(ctx):
     c.execute(sql, (serv,))
     p = c.fetchone()
     p=p[0]
-    print(p)
     embed = discord.Embed(title="Liste des commandes", description="", color=0xaac0cc)
-    embed.add_field(name=f"Configurer les créateurs", value=f":white_small_square: Ticket : `{p}ticket`\n :white_small_square: Catégories : `{p}category`", inline=False)
-    embed.add_field(name="Fonction sur les channels", value=f"Vous devez être l'auteur original du channel et utiliser ses commandes sur le channel voulu !\n :white_small_square: Editer la description : `{p}desc description` ou `{p}description`\n :white_small_square: Pin un message : `{p}pins <idmessage>` \n :white_small_square: Changer le nom du channel : `{p}rename nom", inline=False)
-    embed.add_field(name="Administration", value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets : `{p}recount nb`", inline=False)
+    embed.add_field(name=f"Configurer les créateurs (administrateur)", value=f":white_small_square: Ticket : `{p}ticket`\n :white_small_square: Catégories : `{p}category`", inline=False)
+    embed.add_field(name="Fonction sur les channels", value=f"Vous devez être l'auteur original du channel et utiliser ses commandes sur le channel voulu !\n :white_small_square: Editer la description : `{p}desc description` ou `{p}description`\n :white_small_square: Pin un message : `{p}pins <idmessage>` \n :white_small_square: Unpin un message : `{p}unpin <idmessage>` \n :white_small_square: Changer le nom du channel : `{p}rename nom", inline=False)
+    embed.add_field(name="Administration", value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets (administrateur): `{p}recount nb`", inline=False)
     await ctx.send(embed=embed)
 keep_alive.keep_alive()
-
 bot.run(token)
