@@ -2,3 +2,6 @@
 .vscode/
 database.db-journal
 DB Browser for SQLite
+__pycache__/
+
+owlly.db-journal
