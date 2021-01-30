@@ -617,6 +617,7 @@ async def on_guild_channel_delete (channel):
     sql="SELECT created_by FROM AUTHOR WHERE channel_id=?"
     c.execute(sql, (delete,))
     verif_ticket=c.fetchone()
+    print(verif_ticket)
     sql="SELECT num FROM TICKET WHERE idM = ?"
     c.execute(sql, (verif_ticket,))
     count=c.fetchone()
