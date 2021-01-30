@@ -49,8 +49,13 @@ async def on_command_error(ctx, error):
 @bot.event
 async def on_message(message):
     channel=message.channel
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
+    c.execute(prefix, (int(message.guild.id),))
+    prefix = c.fetchone()
     if bot.user.mentioned_in(message) and 'prefix' in message.content:
-        await channel.send(f'Mon prefix est {bot.command_prefix}')
+        await channel.send(f'Mon prefix est {prefix}')
 
 @bot.event
 async def on_guild_join(guild):
