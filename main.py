@@ -10,27 +10,26 @@ import keep_alive
 
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
-initial_extensions = ['cogs.clean_db']
-
 def get_prefix (bot, message):
-    print("im here")
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
     c.execute(prefix, (int(message.guild.id),))
     prefix = c.fetchone()
+    print(prefix)
     if prefix is None :
         prefix = "!"
         sql="INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
         var = ("!", message.guild.id)
         c.execute(sql, var)
         db.commit()
-        print("done")
     c.close()
     db.close()
     return prefix
 
-bot = commands.Bot(command_prefix=get_prefix, intents=intents,help_command=None)
+
+initial_extensions = ['cogs.clean_db']
+bot = commands.Bot(command_prefix=(get_prefix), intents=intents,help_command=None)
 token = os.environ.get('DISCORD_BOT_TOKEN')
 if __name__ == '__main__':
     for extension in initial_extensions:    
@@ -50,17 +49,6 @@ async def on_command_error(ctx, error):
         await ctx.send("Commande inconnue ! \n Pour avoir la liste des commandes utilisables, utilise `!help` ou `!command`")
 
 @bot.event
-async def on_message(message):
-    channel=message.channel
-    db = sqlite3.connect("owlly.db", timeout=3000)
-    c = db.cursor()
-    prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-    c.execute(prefix, (int(message.guild.id),))
-    prefix = c.fetchone()
-    if bot.user.mentioned_in(message) and 'prefix' in message.content:
-        await channel.send(f'Mon prefix est {prefix[0]}')
-
-@bot.event
 async def on_guild_join(guild):
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
@@ -70,6 +58,18 @@ async def on_guild_join(guild):
     db.commit()
     c.close()
     db.close()
+
+@bot.event
+async def on_message(message):
+    channel=message.channel
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
+    c.execute(prefix, (int(message.guild.id),))
+    prefix = c.fetchone()
+    if bot.user.mentioned_in(message) and 'prefix' in message.content:
+        await channel.send(f'Mon prefix est {prefix[0]}')
+    await bot.process_commands(message)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
