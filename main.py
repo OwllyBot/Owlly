@@ -22,6 +22,7 @@ def get_prefix (bot, message):
     var = ("!", message.guild.id)
     c.execute(sql, var)
     db.commit()
+    print("done")
   c.close()
   db.close()
   return prefix
