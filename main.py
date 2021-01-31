@@ -27,7 +27,7 @@ def get_prefix (bot, message):
 
 initial_extensions = ['cogs.clean_db']
 bot = commands.Bot(command_prefix=get_prefix, intents=intents,help_command=None)
-token = "ODA1MTU4MDY4OTg3NDk0NDEz.YBWz4g.elRd3t0dt3G1kLBfISpLsRQ1LUc"
+token = os.environ.get('DISCORD_BOT_TOKEN_TESTING')
 if __name__ == '__main__':
     for extension in initial_extensions:    
         try:
