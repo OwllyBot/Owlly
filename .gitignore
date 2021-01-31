@@ -5,3 +5,6 @@ DB Browser for SQLite
 __pycache__/
 
 owlly.db-journal
+.gitsecret/keys/random_seed
+!*.secret
+*.db
