@@ -7,6 +7,7 @@ import sqlite3
 import sys
 import traceback
 import keep_alive
+import re
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 def get_prefix (bot, message):
@@ -65,8 +66,11 @@ async def search_cat_name(name, ctx):
         for i in range (0, lg):
             if str(select) == str(emoji[i]):
                 name=search[i]
+                mot=search[i]
         name=get(ctx.guild.categories, name=name)
         number=name.id
+        q.delete()
+        await ctx.send(f"Catégorie : {mot} ✅ \n >Vous pouvez continuer l'inscription des channels. ")
         return number
     else:
         await ctx.send("Il y a trop de correspondance ! Merci de recommencer la commande.", delete_after=30)
@@ -176,6 +180,9 @@ async def ticket(ctx):
         if ticket_chan_content.isnumeric():
             ticket_chan_content=int(ticket_chan_content)
             cat_name = get(guild.categories, id=ticket_chan_content)
+            if ticket_chan_content == "None" :
+                ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
+                return
         else:
             ticket_chan_content=await search_cat_name(ticket_chan_content, ctx)
             cat_name = get(guild.categories, id=ticket_chan_content)
@@ -334,7 +341,7 @@ async def category(ctx):
         return ctx.message.author == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
-    await ctx.delete()
+    print("here")
     emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
     db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
@@ -345,22 +352,27 @@ async def category(ctx):
         await channels.add_reaction("✅")
         if channels.content.lower() == 'stop':
             await channels.delete(delay=10)
+            await ctx.send("Validation en cours !", delete_after=10)
             break
         elif channels.content.lower() == 'cancel':
-            await channels.delete(delay=10)
+            await channels.delete()
+            await ctx.send("Annulation !", delete_after=10)
             return
-        chan.append(channels.content)
+        else:
+            chan_search=channels.content
+            if chan_search.isnumeric():
+                chan_search = int(chan_search)
+            else:
+                chan_search=await search_cat_name(chan_search, ctx)
+        chan.append(chan_search)
         await channels.delete(delay=10)
     if len(chan) >= 10 :
         await ctx.send ("Erreur ! Vous ne pouvez pas mettre plus de 9 catégories !", delete_after=30)
         return
     namelist=[]
+    guild= ctx.message.guild
     for i in range(0,len(chan)):
-        if (chan[i].isnumeric()):
-            number=int(chan[i])
-        else:
-            number=await search_cat_name(chan[i], ctx)
-        guild= ctx.message.guild
+        number=int(chan[i])
         cat = get(guild.categories, id=number)
         if cat == "None" :
             ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
@@ -375,6 +387,7 @@ async def category(ctx):
     question = await ctx.send (f"Quel est le titre de l'embed ?")
     titre = await bot.wait_for("message", timeout = 300, check = checkRep)
     if titre.content == "stop" :
+        await ctx.send("Annulation !", delete_after=30)
         await question.delete()
         await titre.delete()
         return
@@ -513,8 +526,8 @@ async def on_raw_reaction_add(payload):
                         typecreation = "False"
             if typecreation == "True":
                 # Création d'un ticket
-                sql = "SELECT num, modulo, limitation FROM TICKET WHERE idS= ?"
-                c.execute(sql, (serv_here,))
+                sql = "SELECT num, modulo, limitation FROM TICKET WHERE idM= ?"
+                c.execute(sql, (mid,))
                 limitation_options = c.fetchall()
                 limitation_options=list(sum(limitation_options,()))
                 for i in range(0, len(limitation_options)):
@@ -533,8 +546,8 @@ async def on_raw_reaction_add(payload):
                 chan_name = f"{nb} {perso}"
                 category = bot.get_channel(chan_create)
                 new_chan = await category.create_text_channel(chan_name)
-                sql = "UPDATE TICKET SET num = ? WHERE idS = ?"
-                var = (nb, serv_here)
+                sql = "UPDATE TICKET SET num = ? WHERE idM = ?"
+                var = (nb, mid)
                 c.execute(sql, var)
                 sql = "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
                 var = (new_chan.id, payload.user_id, serv_here, mid)
@@ -676,17 +689,41 @@ async def rename (ctx, arg):
 @bot.command(aliases=["count", "edit_count"])
 async def recount(ctx, arg, ticket_id):
     db = sqlite3.connect("owlly_test.db", timeout=3000)
-    c = db.cursor()
-    arg = int(arg)
-    ticket_id=int(ticket_id)
+    c = db.cursor() 
+    search_db="SELECT num FROM TICKET WHERE idM=?"
     sql="UPDATE TICKET SET num = ? WHERE idM=?"
-    var = (arg, (ticket_id))
-    c.execute(sql, var)
-    db.commit()
-    c.close()
-    db.close()
-    await ctx.send(f"Le compte a été fixé à : {arg}", delete_after=30)
-    await ctx.delete()
+    search_regex_arg=re.search('(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$', str(arg))
+    if search_regex_arg is None:
+        search_regex_arg=re.search('(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$', str(ticket_id))
+        if search_regex_arg is None: 
+            await ctx.send("Aucun de vos arguments ne correspond à l'ID du message du créateur de ticket...", delete_after=30)
+            await ctx.delete()
+            c.close()
+            db.close()
+            return
+        else:
+            arg=int(arg)
+            ticket_id=int(ticket_id)
+    else:
+        silent=int(ticket_id)
+        ticket_id=int(arg)
+        arg=silent
+    c.execute(search_db, (ticket_id,))
+    search=c.fetchone()
+    if search is None:
+        await ctx.send("Aucun ne ticket ne possède ce numéro.")
+        await ctx.delete()
+        c.close()
+        db.close()
+        return
+    else:
+        var = (arg, (ticket_id))
+        c.execute(sql, var)
+        db.commit()
+        c.close()
+        db.close()
+        await ctx.send(f"Le compte a été fixé à : {arg}")
+        await ctx.delete()
 
 @bot.event
 async def on_guild_channel_delete (channel):
