@@ -8,28 +8,26 @@ import sys
 import traceback
 import keep_alive
 
-
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 def get_prefix (bot, message):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
     c.execute(prefix, (int(message.guild.id),))
     prefix = c.fetchone()
     if prefix is None :
-        prefix = "!"
+        prefix = "?"
         sql="INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
-        var = ("!", message.guild.id)
+        var = ("?", message.guild.id)
         c.execute(sql, var)
         db.commit()
     c.close()
     db.close()
     return prefix
 
-
 initial_extensions = ['cogs.clean_db']
-bot = commands.Bot(command_prefix=(get_prefix), intents=intents,help_command=None)
-token = os.environ.get('DISCORD_BOT_TOKEN')
+bot = commands.Bot(command_prefix=get_prefix, intents=intents,help_command=None)
+token = "ODA1MTU4MDY4OTg3NDk0NDEz.YBWz4g.elRd3t0dt3G1kLBfISpLsRQ1LUc"
 if __name__ == '__main__':
     for extension in initial_extensions:    
         try:
@@ -37,6 +35,42 @@ if __name__ == '__main__':
         except Exception as e:
             print(e)
 
+async def search_cat_name(name, ctx):
+    emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
+    def checkValid(reaction, user):
+        return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
+    cat_list=[]
+    for cat in ctx.guild.categories:
+        cat_list.append(cat.name)
+    search=[w for w in cat_list if name in w]
+    search_list=[]
+    lg=len(search)
+    if lg == 0:
+        await ctx.send ("Aucune catégorie portant un nom similaire existe, vérifier votre frappe.", delete_after=30)
+        return
+    elif lg == 1:
+        name = search[0]
+        name=get(ctx.guild.categories, name=name)
+        number = name.id
+        return number
+    elif lg > 1 and lg < 10:
+        for i in range (0, lg):
+            phrase=f"{emoji[i]} : {search[i]}"
+            search_list.append(phrase)
+        search_question = "\n".join(search_list)
+        q= await ctx.send(f"Plusieurs catégories correspondent à ce nom. Pour choisir celle que vous souhaitez, cliquez sur le numéro correspondant :\n {search_question}")
+        for i in range(0,lg):
+            await q.add_reaction(emoji[i])
+        select, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        for i in range (0, lg):
+            if str(select) == str(emoji[i]):
+                name=search[i]
+        name=get(ctx.guild.categories, name=name)
+        number=name.id
+        return number
+    else:
+        await ctx.send("Il y a trop de correspondance ! Merci de recommencer la commande.", delete_after=30)
+        return
 @bot.event
 async def on_ready():
     print("[LOGS] ONLINE")
@@ -49,10 +83,10 @@ async def on_command_error(ctx, error):
 
 @bot.event
 async def on_guild_join(guild):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql="INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
-    var = ("!", guild.id)
+    var = ("?", guild.id)
     c.execute(sql, var)
     db.commit()
     c.close()
@@ -61,19 +95,19 @@ async def on_guild_join(guild):
 @bot.event
 async def on_message(message):
     channel=message.channel
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
     c.execute(prefix, (int(message.guild.id),))
     prefix = c.fetchone()
     if bot.user.mentioned_in(message) and 'prefix' in message.content:
-        await channel.send(f'Mon prefix est {prefix[0]}')
+        await channel.send(f'Mon prefix est {prefix}')
     await bot.process_commands(message)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def set_prefix(ctx, prefix):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql="UPDATE SERVEUR SET prefix = ? WHERE idS = ?"
     var = (prefix, ctx.guild.id)
@@ -101,16 +135,16 @@ async def clear(ctx, amount=3):
 @commands.has_permissions(administrator=True)
 @bot.command()
 async def ticket(ctx):
-    limit_content = 0
-    mod_content = 0
-    nb_dep_content=0
-    guild=ctx.message.guild
     def checkValid(reaction, user):
         return ctx.message.author == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
+    limit_content = 0
+    mod_content = 0
+    nb_dep_content=0
+    guild=ctx.message.guild
     await ctx.message.delete()
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     question = await ctx.send (f"Quel est le titre de l'embed ?")
     titre = await bot.wait_for("message", timeout = 300, check = checkRep)
@@ -129,7 +163,7 @@ async def ticket(ctx):
         await question.delete()
         return
     await question.delete()
-    question = await ctx.send ("Dans quel catégorie voulez-vous créer vos tickets ? Rappel : Seul un modérateur pourra les supprimer, car ce sont des tickets permanent.\n Vous devez indiquer un ID de catégorie !")
+    question = await ctx.send ("Dans quel catégorie voulez-vous créer vos tickets ? Rappel : Seul un modérateur pourra les supprimer, car ce sont des tickets permanent.\n Vous pouvez utiliser le nom ou l'ID de la catégorie !")
     ticket_chan=await bot.wait_for("message", timeout=300, check=checkRep)
     ticket_chan_content=ticket_chan.content
     cat_name = "none"
@@ -139,13 +173,12 @@ async def ticket(ctx):
         await ticket_chan.delete()
         return
     else:
-        ticket_chan_content=int(ticket_chan_content)
-        cat_name = get(guild.categories, id=ticket_chan_content)
-        if cat_name == "None" or cat_name == "none":
-            ctx.send("Erreur ! Cette catégorie n'existe pas.", delete_after=30)
-            await question.delete()
-            await ticket_chan.delete()
-            return
+        if ticket_chan_content.isnumeric():
+            ticket_chan_content=int(ticket_chan_content)
+            cat_name = get(guild.categories, id=ticket_chan_content)
+        else:
+            ticket_chan_content=await search_cat_name(ticket_chan_content, ctx)
+            cat_name = get(guild.categories, id=ticket_chan_content)
     await question.delete()
     question = await ctx.send (f"Quelle couleur voulez vous utiliser ?")
     color = await bot.wait_for("message", timeout=300, check=checkRep)
@@ -272,11 +305,11 @@ async def ticket(ctx):
         await question.delete()
         react = await ctx.send(embed=embed)
         await react.add_reaction(symbole)
-        sql = "INSERT INTO TICKET (idM, channelM, type, channel, num, modulo, limitation, emote, idS) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        sql = "INSERT INTO TICKET (idM, channelM, channel, num, modulo, limitation, emote, idS) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         id_serveur = ctx.message.guild.id
         id_message = react.id
         chanM = ctx.channel.id
-        var = (id_message, chanM, typeM, ticket_chan_content, nb_dep_content, mod_content, limit_content, symbole, id_serveur)
+        var = (id_message, chanM, ticket_chan_content, nb_dep_content, mod_content, limit_content, symbole, id_serveur)
         await desc.delete()
         await titre.delete()
         await color.delete()
@@ -297,16 +330,16 @@ async def ticket(ctx):
 @commands.has_permissions(administrator=True)
 @bot.command()
 async def category(ctx):
-  await ctx.delete()
     def checkValid(reaction, user):
         return ctx.message.author == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
+    await ctx.delete()
     emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     chan = []
-    question = await ctx.send("Merci d'envoyer l'ID des catégories que vous souhaitez utiliser pour cette configuration. \n Utiliser `stop` pour valider la saisie et `cancel` pour annuler la commande. ")
+    question = await ctx.send("Merci d'envoyer l'ID des catégories (ou leurs noms) que vous souhaitez utiliser pour cette configuration. \n Utiliser `stop` pour valider la saisie et `cancel` pour annuler la commande. ")
     while True:
         channels = await bot.wait_for("message", timeout=300, check = checkRep)
         await channels.add_reaction("✅")
@@ -323,7 +356,10 @@ async def category(ctx):
         return
     namelist=[]
     for i in range(0,len(chan)):
-        number=int(chan[i])
+        if (chan[i].isnumeric()):
+            number=int(chan[i])
+        else:
+            number=await search_cat_name(chan[i], ctx)
         guild= ctx.message.guild
         cat = get(guild.categories, id=number)
         if cat == "None" :
@@ -398,11 +434,11 @@ async def category(ctx):
         for i in range(0,len(chan)):
             await react.add_reaction(emoji[i])
         category_list_str = ",".join(chan)
-        sql = ("INSERT INTO CATEGORY (idM, channelM, titre, category_list, idS) VALUES (?,?,?,?,?)")
+        sql = ("INSERT INTO CATEGORY (idM, channelM, category_list, idS) VALUES (?,?,?,?)")
         id_serveur = ctx.message.guild.id
         id_message = react.id
         chanM = ctx.channel.id
-        var = (id_message, chanM, titre_content, category_list_str, id_serveur)
+        var = (id_message, chanM, category_list_str, id_serveur)
         c.execute(sql, var)
         db.commit()
         c.close()
@@ -419,7 +455,9 @@ async def category(ctx):
 
 @bot.event
 async def on_raw_reaction_add(payload):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    def checkRep(message):
+        return message.author == payload.message.author and payload.message.channel == message.channel
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     c.execute("SELECT idS FROM TICKET")
     serv_ticket = c.fetchall()
@@ -432,10 +470,7 @@ async def on_raw_reaction_add(payload):
     channel= bot.get_channel(payload.channel_id)
     msg = await channel.fetch_message(mid)
     user = bot.get_user(payload.user_id)
-    def checkRep(msg):
-        return msg.author == user and channel == msg.channel
     if (len (msg.embeds) != 0) and (user.bot is False):
-        titre = msg.embeds[0].title
         if (serv_here in serv_ticket) or (serv_here in serv_cat):
             emoji_cat = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
             sql = "SELECT emote FROM TICKET WHERE idS = ?"
@@ -478,8 +513,8 @@ async def on_raw_reaction_add(payload):
                         typecreation = "False"
             if typecreation == "True":
                 # Création d'un ticket
-                sql = "SELECT num, modulo, limitation FROM TICKET WHERE (idS = ? AND type = ?)"
-                c.execute(sql, (serv_here,titre,))
+                sql = "SELECT num, modulo, limitation FROM TICKET WHERE idS= ?"
+                c.execute(sql, (serv_here,))
                 limitation_options = c.fetchall()
                 limitation_options=list(sum(limitation_options,()))
                 for i in range(0, len(limitation_options)):
@@ -498,8 +533,8 @@ async def on_raw_reaction_add(payload):
                 chan_name = f"{nb} {perso}"
                 category = bot.get_channel(chan_create)
                 new_chan = await category.create_text_channel(chan_name)
-                sql = "UPDATE TICKET SET num = ? WHERE (idS = ? AND type = ?)"
-                var = (nb, serv_here, titre)
+                sql = "UPDATE TICKET SET num = ? WHERE idS = ?"
+                var = (nb, serv_here)
                 c.execute(sql, var)
                 sql = "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
                 var = (new_chan.id, payload.user_id, serv_here, mid)
@@ -533,7 +568,7 @@ async def on_raw_reaction_add(payload):
 async def on_raw_message_delete(payload):
     mid = payload.message_id
     serv= payload.guild_id
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql="SELECT idM FROM TICKET WHERE idS=?"
     c.execute(sql,(serv,))
@@ -556,7 +591,7 @@ async def on_raw_message_delete(payload):
 async def description ( ctx, arg):
     channel_here = ctx.channel.id
     channel = bot.get_channel(channel_here)
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
     var = (ctx.author.id, ctx.guild.id)
@@ -577,7 +612,7 @@ async def description ( ctx, arg):
 async def pins(ctx, id_message):
     channel_here = ctx.channel.id
     channel = bot.get_channel(channel_here)
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
     var = (ctx.author.id, ctx.guild.id)
@@ -599,7 +634,7 @@ async def pins(ctx, id_message):
 async def unpin(ctx, id_message):
     channel_here = ctx.channel.id
     channel = bot.get_channel(channel_here)
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
     var = (ctx.author.id, ctx.guild.id)
@@ -620,7 +655,7 @@ async def unpin(ctx, id_message):
 async def rename (ctx, arg):
     channel_here = ctx.channel.id
     channel = bot.get_channel(channel_here)
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
     var = (ctx.author.id, ctx.guild.id)
@@ -640,7 +675,7 @@ async def rename (ctx, arg):
 @commands.has_permissions(administrator=True)
 @bot.command(aliases=["count", "edit_count"])
 async def recount(ctx, arg, ticket_id):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     arg = int(arg)
     ticket_id=int(ticket_id)
@@ -655,7 +690,7 @@ async def recount(ctx, arg, ticket_id):
 
 @bot.event
 async def on_guild_channel_delete (channel):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     delete=channel.id
     sql="SELECT created_by FROM AUTHOR WHERE channel_id=?"
@@ -677,7 +712,7 @@ async def on_guild_channel_delete (channel):
 @bot.event
 async def on_member_remove(member):
     dep = int(member.id)
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql="DELETE FROM AUTHOR WHERE UserID = ?"
     c.execute(sql, (dep,))
@@ -688,7 +723,7 @@ async def on_member_remove(member):
 @bot.event
 async def on_guild_remove(guild):
     server = guild.id
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql1="DELETE FROM AUTHOR WHERE idS = ?"
     sql2 = "DELETE FROM TICKET WHERE idS = ?"
@@ -706,7 +741,7 @@ async def on_guild_remove(guild):
 @bot.command()
 async def prefix(ctx):
     server = ctx.guild.id
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
     c.execute(prefix, (server,))
@@ -716,7 +751,7 @@ async def prefix(ctx):
 
 @bot.command(aliases=['command','commands','owlly'])
 async def help(ctx):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     serv = ctx.guild.id
     sql="SELECT prefix FROM SERVEUR WHERE idS = ?"
@@ -725,8 +760,8 @@ async def help(ctx):
     p=p[0]
     embed = discord.Embed(title="Liste des commandes", description="", color=0xaac0cc)
     embed.add_field(name=f"Configurer les créateurs (administrateur)", value=f":white_small_square: Ticket : `{p}ticket`\n :white_small_square: Catégories : `{p}category`", inline=False)
-    embed.add_field(name="Fonction sur les channels", value=f"Vous devez être l'auteur original du channel et utiliser ses commandes sur le channel voulu !\n :white_small_square: Editer la description : `{p}desc description` ou `{p}description`\n :white_small_square: Pin un message : `{p}pins <idmessage>` \n :white_small_square: Unpin un message : `{p}unpin <idmessage>` \n :white_small_square: Changer le nom du channel : `{p}rename nom", inline=False)
+    embed.add_field(name="Fonction sur les channels", value=f"Vous devez être l'auteur original du channel et utiliser ses commandes sur le channel voulu !\n :white_small_square: Editer la description : `{p}desc description` ou `{p}description`\n :white_small_square: Pin un message : `{p}pins <idmessage>` \n :white_small_square: Unpin un message : `{p}unpin <idmessage>` \n :white_small_square: Changer le nom du channel : `{p}rename nom`", inline=False)
     embed.add_field(name="Administration", value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets (administrateur): `{p}recount nb`", inline=False)
     await ctx.send(embed=embed)
-keep_alive.keep_alive()
+#keep_alive.keep_alive()
 bot.run(token)
