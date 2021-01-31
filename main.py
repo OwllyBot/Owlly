@@ -82,8 +82,15 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, error):
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    serv = ctx.guild.id
+    sql="SELECT prefix FROM SERVEUR WHERE idS = ?"
+    c.execute(sql, (serv,))
+    p = c.fetchone()
+    p=p[0]
     if isinstance(error, discord.ext.commands.errors.CommandNotFound):
-        await ctx.send("Commande inconnue ! \n Pour avoir la liste des commandes utilisables, utilise `!help` ou `!command`")
+        await ctx.send(f"Commande inconnue ! \n Pour avoir la liste des commandes utilisables, utilise `{p}help` ou `{p}command`")
 
 @bot.event
 async def on_guild_join(guild):
@@ -104,6 +111,7 @@ async def on_message(message):
     prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
     c.execute(prefix, (int(message.guild.id),))
     prefix = c.fetchone()
+    prefix=prefix[0]
     if bot.user.mentioned_in(message) and 'prefix' in message.content:
         await channel.send(f'Mon prefix est {prefix}')
     await bot.process_commands(message)
@@ -425,68 +433,8 @@ async def channel(ctx):
     else:
         await question.delete()
         img_content = "none"
-    question = await ctx.send("Voulez-vous fixer un nombre de départ ?")
-    await question.add_reaction("✅")
-    await question.add_reaction("❌")
-    reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
-    if reaction.emoji == "✅":
-        await question.delete()
-        question = await ctx.send("Merci d'indiquer le nombre de départ.")
-        nb_dep = await bot.wait_for("message", timeout=300, check=checkRep)
-        if nb_dep.content == "stop":
-            await question.delete()
-            await ctx.send("Annulation !", delete_after=10)
-            await nb_dep.delete()
-            return
-        else:
-            nb_dep_content = int(nb_dep.content)
-            await question.delete()
-    else:
-        nb_dep_content = 0
-        await question.delete()
-    question = await ctx.send("Voulez-vous fixer une limite ? C'est à dire que le ticket va se reset après ce nombre.")
-    await question.add_reaction("✅")
-    await question.add_reaction("❌")
-    reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
-    if reaction.emoji == "✅":
-        await question.delete()
-        question = await ctx.send("Merci d'indiquer la limite.")
-        limit = await bot.wait_for("message", timeout=300, check=checkRep)
-        if limit.content == "stop":
-            await ctx.send("Annulation !", delete_after=10)
-            await question.delete()
-            await limit.delete()
-            return
-        else:
-            limit_content = int(limit.content)
-            await limit.delete()
-            mod_content = 0
-            await question.delete()
-            question = await ctx.send("Voulez-vous, après la limite, augmenter d'un certain nombre le numéro ?")
-            await question.add_reaction("✅")
-            await question.add_reaction("❌")
-            reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
-            if reaction.emoji == "✅":
-                await question.delete()
-                question = await ctx.send("Quel est donc ce nombre ?")
-                mod = await bot.wait_for("message", timeout=300, check=checkRep)
-                if mod.content == "stop":
-                    await ctx.send("Annulation !", delete_after=10)
-                    await mod.delete()
-                    await question.delete()
-                    return
-                else:
-                    mod_content = int(mod.content)
-                    await question.delete()
-                    await mod.delete()
-            else:
-                await question.delete()
-    else:
-        limit_content = 0
-        mod_content = 0
-        await question.delete()
     guild = ctx.message.guild
-    question = await ctx.send(f"Vos paramètres sont : \n Titre : {typeM} \n Numéro de départ : {nb_dep_content} \n Intervalle entre les nombres (on se comprend, j'espère) : {mod_content} (0 => Pas d'intervalle) \n Limite : {limit_content} (0 => Pas de limite) \n Catégorie : {cat_name}. \n\n Confirmez-vous ces paramètres ?")
+    question = await ctx.send(f"Vos paramètres sont : \n Titre : {typeM} \n Catégorie : {cat_name}. \n\n Confirmez-vous ces paramètres ?")
     await question.add_reaction("✅")
     await question.add_reaction("❌")
     reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
@@ -510,12 +458,11 @@ async def channel(ctx):
         await question.delete()
         react = await ctx.send(embed=embed)
         await react.add_reaction(symbole)
-        sql = "INSERT INTO TICKET (idM, channelM, channel, num, modulo, limitation, emote, idS) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        sql = "INSERT INTO SOLO_CATEGORY (idM, channelM, category, idS, emote) VALUES (?, ?, ?, ?, ?)"
         id_serveur = ctx.message.guild.id
         id_message = react.id
         chanM = ctx.channel.id
-        var = (id_message, chanM, ticket_chan_content, nb_dep_content,
-               mod_content, limit_content, symbole, id_serveur)
+        var = (id_message, chanM, ticket_chan_content, id_serveur, symbole)
         await desc.delete()
         await titre.delete()
         await color.delete()
@@ -669,6 +616,7 @@ async def category(ctx):
 async def on_raw_reaction_add(payload):
     def checkRep(message):
         return message.author == payload.message.author and payload.message.channel == message.channel
+    emoji_cat = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     c.execute("SELECT idS FROM TICKET")
@@ -677,34 +625,49 @@ async def on_raw_reaction_add(payload):
     c.execute("SELECT idS FROM CATEGORY")
     serv_cat = c.fetchall()
     serv_cat=list(sum(serv_cat,()))
+    c.execute=("SELECT idS FROM SOLO_CATEGORY")
+    serv_chan= c.fetchall()
+    serv_chan=list(sum(serv_chan,()))
     serv_here = payload.guild_id
     mid = payload.message_id
     channel= bot.get_channel(payload.channel_id)
     msg = await channel.fetch_message(mid)
     user = bot.get_user(payload.user_id)
     if (len (msg.embeds) != 0) and (user.bot is False):
-        if (serv_here in serv_ticket) or (serv_here in serv_cat):
-            emoji_cat = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
+        if (serv_here in serv_ticket) or (serv_here in serv_cat) or (serv_here in serv_chan):
+            action = str(payload.emoji.name)
+            await msg.remove_reaction(action,user)
+            typecreation = "stop"
+            chan_create = "stop"
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : TICKET▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
             sql = "SELECT emote FROM TICKET WHERE idS = ?"
             c.execute(sql, (serv_here,))
             emoji_ticket=c.fetchall()
             emoji_ticket=list(sum(emoji_ticket,()))
-            sql = "SELECT idM, channel FROM TICKET WHERE idS = ?"
+            sql = "SELECT idM, category FROM TICKET WHERE idS = ?"
             c.execute(sql, (serv_here,))
             appart=c.fetchall()
             appartDict={}
-            action = str(payload.emoji.name)
-            await msg.remove_reaction(action,user)
-            user = bot.get_user(payload.user_id)
+            for i in range (0, len(appart)):
+                extra={appart[i][0] : appart[i][1]}
+                appartDict.update(extra)
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : SOLO CATEGORY▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+            sql="SELECT emote FROM SOLO_CATEGORY WHERE idS=?"
+            c.execute(sql, (serv_here,))
+            emoji_chan=c.fetchall()
+            emoji_chan=list(sum(emoji_chan,()))
+            sql="SELECT idM, category FROM SOLO_CATEGORY WHERE idS = ?"
+            c.execute(sql, (serv_here,))
+            mono=c.fetchall()
+            monoDict={}
+            for i in range(0,(len(mono))):
+                extra={mono[i][0]:mono[i][1]}
+                monoDict.update(extra)
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT CATEGORY▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
             for i in range(0, len(emoji_cat)):
                 if str(emoji_cat[i]) == action :
                     choice = i
                     break
-            typecreation = "stop"
-            chan_create = "stop"
-            for i in range (0, len(appart)):
-                extra={appart[i][0] : appart[i][1]}
-                appartDict.update(extra)
             sql = "SELECT * FROM CATEGORY WHERE idS = ?"
             c.execute(sql, (serv_here,))
             room = c.fetchall()
@@ -713,18 +676,25 @@ async def on_raw_reaction_add(payload):
                 cate = room[i][3].split(',')
                 extra={room[i][0] : cate}
                 roomDict.update(extra)
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SWITCH BETWEEN OPTION▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
             if action in emoji_ticket:
                 for k, v in appartDict.items():
                     if k == mid:
                         chan_create = int(v)
-                        typecreation = "True"
+                        typecreation = "Ticket"
+            elif action in emoji_chan:
+                for k, v in monoDict.items():
+                    if k == mid:
+                        chan_create = int(v)
+                        typecreation = "Channel"
             else:
                 for k, v in roomDict.items():
                     if k == mid:
                         chan_create=int(v[choice])
-                        typecreation = "False"
-            if typecreation == "True":
-                # Création d'un ticket
+                        typecreation = "Category"
+
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : TICKET▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+            if typecreation == "Ticket":
                 sql = "SELECT num, modulo, limitation FROM TICKET WHERE idM= ?"
                 c.execute(sql, (mid,))
                 limitation_options = c.fetchall()
@@ -754,8 +724,19 @@ async def on_raw_reaction_add(payload):
                 db.commit()
                 c.close()
                 db.close()
-
-            elif typecreation == "False" : #Category et pièce
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : CHANNEL▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+            elif typecreation=="Channel":
+                question = await channel.send(f"Merci d'indiquer le nom de la pièce.")
+                chan_rep = await bot.wait_for("message", timeout=300, check=checkRep)
+                await question.delete()
+                chan_name = chan_rep.content
+                if chan_name == "stop":
+                    channel.send("Annulation de la création.", delete_after=10)
+                    await chan_rep.delete()
+                    return
+                await channel.send(f"Création du channel {chan_name}", delete_after=30)
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : CATEGORY▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+            elif typecreation == "Category" : 
                 category_name = bot.get_channel(chan_create)
                 question = await channel.send(f"Catégorie {category_name} sélectionnée. Merci d'indiquer le nom du channel.")
                 chan_rep = await bot.wait_for("message", timeout=300, check=checkRep)
@@ -766,6 +747,7 @@ async def on_raw_reaction_add(payload):
                     await chan_rep.delete()
                     return
                 await channel.send(f"Création du channel {chan_name} dans {category_name}.", delete_after=30)
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATION▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
                 await chan_rep.delete()
                 category = bot.get_channel(chan_create)
                 new_chan = await category.create_text_channel(chan_name)
@@ -995,9 +977,9 @@ async def help(ctx):
     p = c.fetchone()
     p=p[0]
     embed = discord.Embed(title="Liste des commandes", description="", color=0xaac0cc)
-    embed.add_field(name=f"Configurer les créateurs (administrateur)", value=f":white_small_square: Ticket : `{p}ticket`\n :white_small_square: Catégories : `{p}category`", inline=False)
+    embed.add_field(name=f"Configurer les créateurs (administrateur)", value=f":white_small_square: Ticket : `{p}ticket`\n :white_small_square: Catégories : `{p}category` \n :white_small_square: Créateur de pièce (1 catégorie) :`{p}channel`", inline=False)
     embed.add_field(name="Fonction sur les channels", value=f"Vous devez être l'auteur original du channel et utiliser ses commandes sur le channel voulu !\n :white_small_square: Editer la description : `{p}desc description` ou `{p}description`\n :white_small_square: Pin un message : `{p}pins <idmessage>` \n :white_small_square: Unpin un message : `{p}unpin <idmessage>` \n :white_small_square: Changer le nom du channel : `{p}rename nom`", inline=False)
     embed.add_field(name="Administration", value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets (administrateur): `{p}recount nb`", inline=False)
     await ctx.send(embed=embed)
-#keep_alive.keep_alive()
+keep_alive.keep_alive()
 bot.run(token)
