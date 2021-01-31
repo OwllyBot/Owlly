@@ -7,4 +7,3 @@ __pycache__/
 owlly.db-journal
 .gitsecret/keys/random_seed
 !*.secret
-*.db
