@@ -69,7 +69,7 @@ async def search_cat_name(name, ctx):
                 mot=search[i]
         name=get(ctx.guild.categories, name=name)
         number=name.id
-        q.delete()
+        await q.delete()
         await ctx.send(f"Catégorie : {mot} ✅ \n > Vous pouvez continuer l'inscription des channels. ", delete_after=30)
         return number
     else:
@@ -514,13 +514,10 @@ async def category(ctx):
             return
         else:
             chan_search=channels.content
-            print(chan_search)
-            await question.delete()
             if chan_search.isnumeric():
                 chan_search = int(chan_search)
             else:
                 chan_search=await search_cat_name(chan_search, ctx)
-                print(chan_search)
         chan.append(chan_search)
         await channels.delete(delay=10)
     if len(chan) >= 10 :
@@ -537,6 +534,7 @@ async def category(ctx):
         phrase = f"{emoji[i]} : {cat}"
         namelist.append(phrase)
     msg = "\n".join(namelist)
+    question.delete()
     parameters = await ctx.send (f"Votre channel sera donc créé dans une des catégories suivantes :\n {msg} \n\n Le choix final de la catégories se fait lors des réactions. ")
     parameters_save = parameters.content
     await parameters.delete(delay=10)
