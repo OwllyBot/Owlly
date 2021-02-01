@@ -70,7 +70,7 @@ async def search_cat_name(name, ctx):
         name=get(ctx.guild.categories, name=name)
         number=name.id
         q.delete()
-        await ctx.send(f"Catégorie : {mot} ✅ \n >Vous pouvez continuer l'inscription des channels. ")
+        await ctx.send(f"Catégorie : {mot} ✅ \n > Vous pouvez continuer l'inscription des channels. ", delete_after=30)
         return number
     else:
         await ctx.send("Il y a trop de correspondance ! Merci de recommencer la commande.", delete_after=30)
@@ -491,10 +491,9 @@ async def channel(ctx):
 @bot.command()
 async def category(ctx):
     def checkValid(reaction, user):
-        return ctx.message.author == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+      return ctx.message.author == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
     def checkRep(message):
-        return message.author == ctx.message.author and ctx.message.channel == message.channel
-    print("here")
+      return message.author == ctx.message.author and ctx.message.channel == message.channel
     emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
@@ -506,17 +505,22 @@ async def category(ctx):
         if channels.content.lower() == 'stop':
             await channels.delete(delay=10)
             await ctx.send("Validation en cours !", delete_after=10)
+            await question.delete()
             break
         elif channels.content.lower() == 'cancel':
             await channels.delete()
             await ctx.send("Annulation !", delete_after=10)
+            await question.delete()
             return
         else:
             chan_search=channels.content
+            print(chan_search)
+            await question.delete()
             if chan_search.isnumeric():
                 chan_search = int(chan_search)
             else:
                 chan_search=await search_cat_name(chan_search, ctx)
+                print(chan_search)
         chan.append(chan_search)
         await channels.delete(delay=10)
     if len(chan) >= 10 :
@@ -612,12 +616,17 @@ async def category(ctx):
         await titre.delete()
         await color.delete()
         await question.delete()
+        await ctx.delete()
     else:
         await ctx.send ("Annulation !", delete_after=10)
         await question.delete()
         await titre.delete()
         await color.delete()
+        await ctx.delete()
+        c.close()
+        db.close()
         return 
+        
 
 @bot.event
 async def on_raw_reaction_add(payload):
@@ -632,7 +641,7 @@ async def on_raw_reaction_add(payload):
     c.execute("SELECT idS FROM CATEGORY")
     serv_cat = c.fetchall()
     serv_cat=list(sum(serv_cat,()))
-    c.execute=("SELECT idS FROM SOLO_CATEGORY")
+    c.execute("SELECT idS FROM SOLO_CATEGORY")
     serv_chan= c.fetchall()
     serv_chan=list(sum(serv_chan,()))
     serv_here = payload.guild_id
@@ -921,7 +930,7 @@ async def on_guild_channel_delete (channel):
     c.execute(sql, (delete,))
     verif_ticket=c.fetchone()
     sql="SELECT num FROM TICKET WHERE idM = ?"
-    c.execute(sql, verif_ticket)
+    c.execute(sql, (verif_ticket,))
     count=c.fetchone()
     count = int(count[0])-1
     sql="UPDATE TICKET SET num = ? WHERE idM = ?"
