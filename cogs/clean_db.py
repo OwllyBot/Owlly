@@ -40,6 +40,11 @@ class CommandErrorHandler(commands.Cog):
         c.close()
         db.close()
         print("cleaned")
+<<<<<<< HEAD
+=======
+        await ctx.send("Nettoyé !", delete_after=30)
+        await ctx.message.delete()
+>>>>>>> eabee50... remove error
 
     @clean_db.error
     async def clean_db_handler(self,error):
