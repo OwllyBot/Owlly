@@ -534,11 +534,9 @@ async def category(ctx):
         phrase = f"{emoji[i]} : {cat}"
         namelist.append(phrase)
     msg = "\n".join(namelist)
-    question.delete()
     parameters = await ctx.send (f"Votre channel sera donc créé dans une des catégories suivantes :\n {msg} \n\n Le choix final de la catégories se fait lors des réactions. ")
     parameters_save = parameters.content
-    await parameters.delete(delay=10)
-    await question.delete()
+    await parameters.delete()
     question = await ctx.send (f"Quel est le titre de l'embed ?")
     titre = await bot.wait_for("message", timeout = 300, check = checkRep)
     if titre.content == "stop" :
@@ -548,6 +546,8 @@ async def category(ctx):
         return
     else:
         await question.delete()
+        await titre.add_reaction("✅")
+        await titre.delete(delay=30)
         titre_content = titre.content
     question = await ctx.send (f"Quelle couleur voulez vous utiliser ?")
     color = await bot.wait_for("message", timeout=300, check=checkRep)
@@ -566,10 +566,14 @@ async def category(ctx):
         col = "0xabb1b4"
         col = int(col, 16)
         await question.delete()
+        await color.add_reaction("✅")
+        await color.delete(delay=30)
     else:
         await question.delete()
         col = col.replace("#", "0x")
         col = int(col, 16)
+        await color.add_reaction("✅")
+        await color.delete(delay=30)
     question = await ctx.send ("Voulez-vous utiliser une image ?")
     await question.add_reaction("✅")
     await question.add_reaction("❌")
@@ -611,20 +615,14 @@ async def category(ctx):
         db.commit()
         c.close()
         db.close()
-        await titre.delete()
-        await color.delete()
-        await question.delete()
-        await ctx.delete()
     else:
         await ctx.send ("Annulation !", delete_after=10)
-        await question.delete()
-        await titre.delete()
-        await color.delete()
-        await ctx.delete()
         c.close()
         db.close()
         return 
-        
+    await question.delete()
+    await ctx.delete()
+    
 
 @bot.event
 async def on_raw_reaction_add(payload):
