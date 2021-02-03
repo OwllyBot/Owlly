@@ -2,5 +2,6 @@
 .vscode/
 DB Browser for SQLite
 *.db-journal
-__pycache__
+__pycache__/
 *.pyc
+cogs/__pycache__/
