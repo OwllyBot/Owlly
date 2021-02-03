@@ -1,8 +1,7 @@
 .history/
 .vscode/
-database.db-journal
 DB Browser for SQLite
+*.db-journal
 __pycache__/
-
-owlly.db-journal
-.gitsecret/keys/random_seed
+*.pyc
+cogs/__pycache__/
