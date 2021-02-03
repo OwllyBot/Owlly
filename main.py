@@ -158,17 +158,9 @@ async def on_raw_reaction_add(payload):
                             nb = 0
                 perso = payload.member.nick
                 chan_name = f"{nb} {perso}"
-                category = bot.get_channel(chan_create)
-                new_chan = await category.create_text_channel(chan_name)
                 sql = "UPDATE TICKET SET num = ? WHERE idM = ?"
                 var = (nb, mid)
                 c.execute(sql, var)
-                sql = "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
-                var = (new_chan.id, payload.user_id, serv_here, mid)
-                c.execute(sql, var)
-                db.commit()
-                c.close()
-                db.close()
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : CHANNEL▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
             elif typecreation == "Channel":
                 question = await channel.send(f"Merci d'indiquer le nom de la pièce.")
@@ -292,9 +284,12 @@ async def on_guild_channel_delete(channel):
     verif_ticket = c.fetchone()
     if verif_ticket != None:
         sql = "SELECT num FROM TICKET WHERE idM = ?"
-        c.execute(sql, (verif_ticket,))
+        c.execute(sql, verif_ticket)
         count = c.fetchone()
-        count = int(count[0])-1
+        if count >0:
+            count = int(count[0])-1
+        else:
+            count = 0
         sql = "UPDATE TICKET SET num = ? WHERE idM = ?"
         var = (count, (int(verif_ticket[0])))
         c.execute(sql, var)
