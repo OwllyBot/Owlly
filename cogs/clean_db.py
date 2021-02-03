@@ -8,11 +8,9 @@ import sqlite3
 intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
 
 
-class CommandErrorHandler(commands.Cog):
+class DB_utils(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.id_message = None
-        self.idS=None
 
     @commands.command()
     async def clean_db(self, ctx):
@@ -73,4 +71,4 @@ class CommandErrorHandler(commands.Cog):
         await ctx.message.delete()
 
 def setup(bot):
-  bot.add_cog(CommandErrorHandler(bot))
+  bot.add_cog(DB_utils(bot))
