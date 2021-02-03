@@ -1,3 +1,4 @@
+import emoji
 import discord
 from discord.ext import commands, tasks
 from discord.utils import get
@@ -8,20 +9,35 @@ import sys
 import traceback
 import keep_alive
 import re
+import random
+from emoji import unicode_codes
+from discord import Color
 
-intents = discord.Intents(messages=True, guilds=True,
-                          reactions=True, members=True)
+intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
 
+# ▬▬▬▬▬▬▬▬▬▬▬ EMOJI ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+def emojis_random():
+    all_emojis = unicode_codes.EMOJI_UNICODE["en"]
+    all_emojis_key=list(all_emojis.keys())
+    decodation=[]
+    for i in range (0, len(all_emojis_key)):
+        d=emoji.emojize(all_emojis_key[i])
+        decodation.append(d)
+    rand_emoji=random.sample(decodation,1)
+    rand_emoji = rand_emoji[0]
+    return rand_emoji
 
-def get_prefix(bot, message):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+# ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+def get_prefix (bot, message):
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
     c.execute(prefix, (int(message.guild.id),))
     prefix = c.fetchone()
-    if prefix is None:
+    if prefix is None :
         prefix = "?"
-        sql = "INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
+        sql="INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
         var = ("?", message.guild.id)
         c.execute(sql, var)
         db.commit()
@@ -29,11 +45,11 @@ def get_prefix(bot, message):
     db.close()
     return prefix
 
+# ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 initial_extensions = ['cogs.clean_db']
-bot = commands.Bot(command_prefix=get_prefix,
-                   intents=intents, help_command=None)
-token = os.environ.get('DISCORD_BOT_TOKEN')
+bot = commands.Bot(command_prefix=get_prefix,intents=intents, help_command=None)
+token = os.environ.get('DISCORD_BOT_TOKEN_TESTING')
 if __name__ == '__main__':
     for extension in initial_extensions:
         try:
@@ -41,10 +57,10 @@ if __name__ == '__main__':
         except Exception as e:
             print(e)
 
+# ▬▬▬▬▬▬▬▬▬▬▬ SEARCH CAT NAME ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 async def search_cat_name(name, ctx):
     emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-
     def checkValid(reaction, user):
         return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
     cat_list = []
@@ -83,16 +99,14 @@ async def search_cat_name(name, ctx):
         await ctx.send("Il y a trop de correspondance ! Merci de recommencer la commande.", delete_after=30)
         return
 
-
 @bot.event
 async def on_ready():
     print("[LOGS] ONLINE")
     await bot.change_presence(activity=discord.Game("ouvrir des portes !"))
 
-
 @bot.event
 async def on_command_error(ctx, error):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     serv = ctx.guild.id
     sql = "SELECT prefix FROM SERVEUR WHERE idS = ?"
@@ -102,10 +116,9 @@ async def on_command_error(ctx, error):
     if isinstance(error, discord.ext.commands.errors.CommandNotFound):
         await ctx.send(f"Commande inconnue ! \n Pour avoir la liste des commandes utilisables, utilise `{p}help` ou `{p}command`")
 
-
 @bot.event
 async def on_guild_join(guild):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql = "INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
     var = ("?", guild.id)
@@ -114,11 +127,10 @@ async def on_guild_join(guild):
     c.close()
     db.close()
 
-
 @bot.event
 async def on_message(message):
     channel = message.channel
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
     c.execute(prefix, (int(message.guild.id),))
@@ -133,7 +145,7 @@ async def on_message(message):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def set_prefix(ctx, prefix):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql = "UPDATE SERVEUR SET prefix = ? WHERE idS = ?"
     var = (prefix, ctx.guild.id)
@@ -143,33 +155,27 @@ async def set_prefix(ctx, prefix):
     c.close()
     db.close()
 
-
 @bot.command()
 async def ping(ctx):
     await ctx.send(f"🏓 Pong with {str(round(bot.latency, 2))}")
-
 
 @bot.command(name="whoami")
 async def whoami(ctx):
     await ctx.send(f"You are {ctx.message.author.name}")
 
-
 @bot.command()
 async def serv(ctx):
     await ctx.send(f"{ctx.message.guild.id}")
 
-
 @bot.command()
 async def clear(ctx, amount=3):
     await ctx.channel.purge(limit=amount)
-
 
 @commands.has_permissions(administrator=True)
 @bot.command()
 async def ticket(ctx):
     def checkValid(reaction, user):
         return ctx.message.author == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
-
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
     limit_content = 0
@@ -177,7 +183,7 @@ async def ticket(ctx):
     nb_dep_content = 0
     guild = ctx.message.guild
     await ctx.message.delete()
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     question = await ctx.send(f"Quel est le titre de l'embed ?")
     titre = await bot.wait_for("message", timeout=300, check=checkRep)
@@ -327,8 +333,7 @@ async def ticket(ctx):
     reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
     if reaction.emoji == "✅":
         await question.delete()
-        embed = discord.Embed(title=titre.content,
-                              description=desc.content, color=col)
+        embed = discord.Embed(title=titre.content, description=desc.content, color=col)
         if img_content != "none":
             embed.set_image(url=img_content)
         question = await ctx.send("Vous pouvez choisir l'émoji de réaction en réagissant à ce message. Il sera sauvegardé et mis sur l'embed. Par défaut, l'émoji est : 🗒")
@@ -374,12 +379,11 @@ async def ticket(ctx):
 async def channel(ctx):
     def checkValid(reaction, user):
         return ctx.message.author == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
-
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
     guild = ctx.message.guild
     await ctx.message.delete()
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     question = await ctx.send(f"Quel est le titre de l'embed ?")
     titre = await bot.wait_for("message", timeout=300, check=checkRep)
@@ -516,11 +520,10 @@ async def channel(ctx):
 async def category(ctx):
     def checkValid(reaction, user):
       return ctx.message.author == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
-
     def checkRep(message):
       return message.author == ctx.message.author and ctx.message.channel == message.channel
     emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     chan = []
     question = await ctx.send("Merci d'envoyer l'ID des catégories (ou leurs noms) que vous souhaitez utiliser pour cette configuration. \n Utiliser `stop` pour valider la saisie et `cancel` pour annuler la commande. ")
@@ -573,7 +576,6 @@ async def category(ctx):
         await question.delete()
         await titre.add_reaction("✅")
         await titre.delete(delay=30)
-        titre_content = titre.content
     question = await ctx.send(f"Quelle couleur voulez vous utiliser ?")
     color = await bot.wait_for("message", timeout=300, check=checkRep)
     col = color.content
@@ -652,10 +654,8 @@ async def category(ctx):
 
 @bot.event
 async def on_raw_reaction_add(payload):
-    def checkRep(message):
-        return message.author == payload.message.author and payload.message.channel == message.channel
     emoji_cat = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     c.execute("SELECT idS FROM TICKET")
     serv_ticket = c.fetchall()
@@ -671,6 +671,10 @@ async def on_raw_reaction_add(payload):
     channel = bot.get_channel(payload.channel_id)
     msg = await channel.fetch_message(mid)
     user = bot.get_user(payload.user_id)
+    def checkRep(message):
+       return message.author == user and channel == message.channel
+    def checkValid(reaction, user):
+        return bot.get_user(payload.user_id) == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
     if (len(msg.embeds) != 0) and (user.bot is False):
         if (serv_here in serv_ticket) or (serv_here in serv_cat) or (serv_here in serv_chan):
             action = str(payload.emoji.name)
@@ -682,7 +686,7 @@ async def on_raw_reaction_add(payload):
             c.execute(sql, (serv_here,))
             emoji_ticket = c.fetchall()
             emoji_ticket = list(sum(emoji_ticket, ()))
-            sql = "SELECT idM, category FROM TICKET WHERE idS = ?"
+            sql = "SELECT idM, channel FROM TICKET WHERE idS = ?"
             c.execute(sql, (serv_here,))
             appart = c.fetchall()
             appartDict = {}
@@ -771,7 +775,30 @@ async def on_raw_reaction_add(payload):
                     channel.send("Annulation de la création.", delete_after=10)
                     await chan_rep.delete()
                     return
+                question = await channel.send ("Voulez-vous fixer un emoji pour votre pièce ?")
+                await question.add_reaction("✅")
+                await question.add_reaction("❌")
+                reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                symbole = emojis_random()
+                if reaction.emoji == "✅":
+                    await question.delete()
+                    question = await channel.send("Merci d'insérer l'émoji en réagissant à ce message.")
+                    symb, user = await bot.wait_for("reaction_add", timeout=300)
+                    if symb.custom_emoji:
+                        if symb.emoji in payload.guild.emojis:
+                            symbole = str(symb.emoji)
+                        else:
+                            symbole = emojis_random()
+                    else:
+                        symbole = str(symb.emoji)
+                else:
+                    symbole = emojis_random()
+                print("pouic")
+                await question.delete()
+                await chan_rep.delete()
+                chan_name = f"{symbole}╿{chan_name}"
                 await channel.send(f"Création du channel {chan_name}", delete_after=30)
+                print("pouic")
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : CATEGORY▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
             elif typecreation == "Category":
                 category_name = bot.get_channel(chan_create)
@@ -783,25 +810,45 @@ async def on_raw_reaction_add(payload):
                     channel.send("Annulation de la création.", delete_after=10)
                     await chan_rep.delete()
                     return
+                question = await channel.send ("Voulez-vous fixer un emoji pour votre pièce ?")
+                await question.add_reaction("✅")
+                await question.add_reaction("❌")
+                reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                symbole = emojis_random()
+                if reaction.emoji == "✅":
+                    await question.delete()
+                    question = await channel.send("Merci d'insérer l'émoji en réagissant à ce message.")
+                    symb, user = await bot.wait_for("reaction_add", timeout=300)
+                    if symb.custom_emoji:
+                        if symb.emoji in payload.guild.emojis:
+                            symbole = str(symb.emoji)
+                        else:
+                            symbole = emojis_random()
+                    else:
+                        symbole = str(symb.emoji)
+                else:
+                    symbole = emojis_random()
+                await chan_rep.delete()
+                await question.delete()
+                chan_name = f"{symbole}╿{chan_name}"
+                chan_name=chan_name.replace(" ", "")
                 await channel.send(f"Création du channel {chan_name} dans {category_name}.", delete_after=30)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATION▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-                await chan_rep.delete()
-                category = bot.get_channel(chan_create)
-                new_chan = await category.create_text_channel(chan_name)
-                sql = "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
-                var = (new_chan.id, payload.user_id,
-                       serv_here, payload.message_id)
-                c.execute(sql, var)
-                db.commit()
-                c.close()
-                db.close()
+            category = bot.get_channel(chan_create)
+            new_chan = await category.create_text_channel(chan_name)
+            sql = "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
+            var = (new_chan.id, payload.user_id, serv_here, payload.message_id)
+            c.execute(sql, var)
+            db.commit()
+            c.close()
+            db.close()
 
 
 @bot.event
 async def on_raw_message_delete(payload):
     mid = payload.message_id
     serv = payload.guild_id
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT idM FROM TICKET WHERE idS=?"
     c.execute(sql, (serv,))
@@ -825,7 +872,7 @@ async def on_raw_message_delete(payload):
 async def description(ctx, arg):
     channel_here = ctx.channel.id
     channel = bot.get_channel(channel_here)
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
     var = (ctx.author.id, ctx.guild.id)
@@ -848,7 +895,7 @@ async def description(ctx, arg):
 async def pins(ctx, id_message):
     channel_here = ctx.channel.id
     channel = bot.get_channel(channel_here)
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
     var = (ctx.author.id, ctx.guild.id)
@@ -870,7 +917,7 @@ async def pins(ctx, id_message):
 async def unpin(ctx, id_message):
     channel_here = ctx.channel.id
     channel = bot.get_channel(channel_here)
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
     var = (ctx.author.id, ctx.guild.id)
@@ -892,7 +939,7 @@ async def unpin(ctx, id_message):
 async def rename(ctx, arg):
     channel_here = ctx.channel.id
     channel = bot.get_channel(channel_here)
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
     var = (ctx.author.id, ctx.guild.id)
@@ -914,7 +961,7 @@ async def rename(ctx, arg):
 @commands.has_permissions(administrator=True)
 @bot.command(aliases=["count", "edit_count"])
 async def recount(ctx, arg, ticket_id):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     search_db = "SELECT num FROM TICKET WHERE idM=?"
     sql = "UPDATE TICKET SET num = ? WHERE idM=?"
@@ -956,7 +1003,7 @@ async def recount(ctx, arg, ticket_id):
 
 @bot.event
 async def on_guild_channel_delete(channel):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     delete = channel.id
     sql = "SELECT created_by FROM AUTHOR WHERE channel_id=?"
@@ -979,7 +1026,7 @@ async def on_guild_channel_delete(channel):
 @bot.event
 async def on_member_remove(member):
     dep = int(member.id)
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql = "DELETE FROM AUTHOR WHERE UserID = ?"
     c.execute(sql, (dep,))
@@ -991,7 +1038,7 @@ async def on_member_remove(member):
 @bot.event
 async def on_guild_remove(guild):
     server = guild.id
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     sql1 = "DELETE FROM AUTHOR WHERE idS = ?"
     sql2 = "DELETE FROM TICKET WHERE idS = ?"
@@ -1010,7 +1057,7 @@ async def on_guild_remove(guild):
 @bot.command()
 async def prefix(ctx):
     server = ctx.guild.id
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
     c.execute(prefix, (server,))
@@ -1019,9 +1066,9 @@ async def prefix(ctx):
     return commands.when_mentioned_or(prefix)(bot, message)
 
 
-@bot.command(aliases=['command', 'commands', 'owlly'])
+@bot.command(aliases=['command', 'commands', 'owlly_test'])
 async def help(ctx):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("owlly_test.db", timeout=3000)
     c = db.cursor()
     serv = ctx.guild.id
     sql = "SELECT prefix FROM SERVEUR WHERE idS = ?"
@@ -1037,5 +1084,6 @@ async def help(ctx):
     embed.add_field(name="Administration",
                     value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets (administrateur): `{p}recount nb`", inline=False)
     await ctx.send(embed=embed)
-keep_alive.keep_alive()
+#keep_alive.keep_alive()
+
 bot.run(token)
