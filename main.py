@@ -12,16 +12,15 @@ import re
 import random
 from emoji import unicode_codes
 from discord import Color
-
 intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
 
 # ▬▬▬▬▬▬▬▬▬▬▬ EMOJI ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 def emojis_random():
     all_emojis = unicode_codes.EMOJI_UNICODE["en"]
-    all_emojis_key=list(all_emojis.keys())
+    all_emojis_key=list(all_emojis.values())
     decodation=[]
     for i in range (0, len(all_emojis_key)):
-        d=emoji.emojize(all_emojis_key[i])
+        d=(all_emojis_key[i])
         decodation.append(d)
     rand_emoji=random.sample(decodation,1)
     rand_emoji = rand_emoji[0]
@@ -138,9 +137,8 @@ async def on_message(message):
     if prefix is not None:
         prefix = prefix[0]
     if bot.user.mentioned_in(message) and 'prefix' in message.content:
-        await channel.send(f'Mon prefix est {prefix}')
+        await channel.send(f'Mon prefix est `{prefix}`')
     await bot.process_commands(message)
-
 
 @bot.command()
 @commands.has_permissions(administrator=True)
@@ -789,16 +787,16 @@ async def on_raw_reaction_add(payload):
                             symbole = str(symb.emoji)
                         else:
                             symbole = emojis_random()
+                            symbole=symbole[0]
                     else:
                         symbole = str(symb.emoji)
                 else:
                     symbole = emojis_random()
-                print("pouic")
+                    symbole=symbole[0]
                 await question.delete()
                 await chan_rep.delete()
                 chan_name = f"{symbole}╿{chan_name}"
                 await channel.send(f"Création du channel {chan_name}", delete_after=30)
-                print("pouic")
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : CATEGORY▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
             elif typecreation == "Category":
                 category_name = bot.get_channel(chan_create)
@@ -1009,13 +1007,14 @@ async def on_guild_channel_delete(channel):
     sql = "SELECT created_by FROM AUTHOR WHERE channel_id=?"
     c.execute(sql, (delete,))
     verif_ticket = c.fetchone()
-    sql = "SELECT num FROM TICKET WHERE idM = ?"
-    c.execute(sql, (verif_ticket,))
-    count = c.fetchone()
-    count = int(count[0])-1
-    sql = "UPDATE TICKET SET num = ? WHERE idM = ?"
-    var = (count, (int(verif_ticket[0])))
-    c.execute(sql, var)
+    if verif_ticket != None:
+        sql = "SELECT num FROM TICKET WHERE idM = ?"
+        c.execute(sql, (verif_ticket,))
+        count = c.fetchone()
+        count = int(count[0])-1
+        sql = "UPDATE TICKET SET num = ? WHERE idM = ?"
+        var = (count, (int(verif_ticket[0])))
+        c.execute(sql, var)
     sql = "DELETE FROM AUTHOR WHERE channel_id = ?"
     c.execute(sql, (delete,))
     db.commit()
