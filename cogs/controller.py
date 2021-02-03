@@ -1,10 +1,18 @@
+import emoji
 import discord
 from discord.ext import commands, tasks
 from discord.utils import get
 from discord import CategoryChannel
-from discord import NotFound
 import os
 import sqlite3
+import sys
+import traceback
+import keep_alive
+import re
+import random
+from emoji import unicode_codes
+from discord import Color
+from discord import NotFound
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
 

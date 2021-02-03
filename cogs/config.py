@@ -102,11 +102,13 @@ class config(commands.Cog):
                   await ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
                   return
           else:
-              ticket_chan_content = await self.search_cat_name(ticket_chan_content, ctx)
+              ticket_chan_content = await self.search_cat_name(ctx, ticket_chan_content)
               cat_name = get(guild.categories, id=ticket_chan_content)
               if ticket_chan_content == 12:
-                  await ctx.send("Aucune catégorie portant un nom similaire existe, vérifier votre frappe.", delete_after=30)
-              return
+                await ctx.send("Aucune catégorie portant un nom similaire existe, vérifier votre frappe.", delete_after=30)
+                return
+              else:
+                cat_name = get(guild.categories, id=ticket_chan_content)
       await question.delete()
       question = await ctx.send(f"Quelle couleur voulez vous utiliser ?")
       color = await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -302,12 +304,12 @@ class config(commands.Cog):
                   await ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
                   return
           else:
-              ticket_chan_content = await self.search_cat_name(ticket_chan_content, ctx)
+              ticket_chan_content = await self.search_cat_name(ctx, ticket_chan_content)
               if ticket_chan_content == 12:
-                  await ctx.send("Aucune catégorie portant un nom similaire existe, vérifier votre frappe.", delete_after=30)
-                  return
+                await ctx.send("Aucune catégorie portant un nom similaire existe, vérifier votre frappe.", delete_after=30)
+                return
               else:
-                  cat_name = get(guild.categories, id=ticket_chan_content)
+                cat_name = get(guild.categories, id=ticket_chan_content)
       await question.delete()
       question = await ctx.send(f"Quelle couleur voulez vous utiliser ?")
       color = await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -428,7 +430,7 @@ class config(commands.Cog):
               if chan_search.isnumeric():
                   chan_search = int(chan_search)
               else:
-                  chan_search = await self.search_cat_name(chan_search, ctx)
+                  chan_search = await self.search_cat_name(ctx, chan_search)
           chan.append(chan_search)
           await channels.delete(delay=10)
       if len(chan) >= 10:
