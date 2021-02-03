@@ -1,4 +1,6 @@
 .history/
 .vscode/
 DB Browser for SQLite
-
+*.db-journal
+__pycache__
+*.pyc
