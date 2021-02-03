@@ -1,8 +1,4 @@
 .history/
 .vscode/
-*.db-journal
 DB Browser for SQLite
 __pycache__/
-*.pyc
-cogs/__pycache__/clean_db.cpython-39.pyc
-owlly_test.db-journal
