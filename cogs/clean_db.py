@@ -15,7 +15,7 @@ class DB_utils(commands.Cog):
     @commands.command()
     async def clean_db(self, ctx):
         print("start clean")
-        db = sqlite3.connect("owlly_test.db", timeout=3000)
+        db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
         sql=("SELECT idM, channelM FROM TICKET WHERE idS=?")
         self.idS=ctx.guild.id

@@ -66,7 +66,7 @@ class config(commands.Cog):
       nb_dep_content = 0
       guild = ctx.message.guild
       await ctx.message.delete()
-      db = sqlite3.connect("owlly_test.db", timeout=3000)
+      db = sqlite3.connect("owlly.db", timeout=3000)
       c = db.cursor()
       question = await ctx.send(f"Quel est le titre de l'embed ?")
       titre = await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -268,7 +268,7 @@ class config(commands.Cog):
           return message.author == ctx.message.author and ctx.message.channel == message.channel
       guild = ctx.message.guild
       await ctx.message.delete()
-      db = sqlite3.connect("owlly_test.db", timeout=3000)
+      db = sqlite3.connect("owlly.db", timeout=3000)
       c = db.cursor()
       question = await ctx.send(f"Quel est le titre de l'embed ?")
       titre = await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -408,7 +408,7 @@ class config(commands.Cog):
       def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
       emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-      db = sqlite3.connect("owlly_test.db", timeout=3000)
+      db = sqlite3.connect("owlly.db", timeout=3000)
       c = db.cursor()
       chan = []
       question = await ctx.send("Merci d'envoyer l'ID des catégories (ou leurs noms) que vous souhaitez utiliser pour cette configuration. \n Utiliser `stop` pour valider la saisie et `cancel` pour annuler la commande. ")
@@ -539,7 +539,7 @@ class config(commands.Cog):
   @commands.has_permissions(administrator=True)
   @commands.command(aliases=["count", "edit_count"])
   async def recount(self,ctx, arg, ticket_id):
-      db = sqlite3.connect("owlly_test.db", timeout=3000)
+      db = sqlite3.connect("owlly.db", timeout=3000)
       c = db.cursor()
       search_db = "SELECT num FROM TICKET WHERE idM=?"
       sql = "UPDATE TICKET SET num = ? WHERE idM=?"

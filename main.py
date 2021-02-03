@@ -30,7 +30,7 @@ def emojis_random():
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 def get_prefix (bot, message):
-    db = sqlite3.connect("owlly_test.db", timeout=3000)
+    db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
     c.execute(prefix, (int(message.guild.id),))
@@ -49,7 +49,7 @@ def get_prefix (bot, message):
 
 initial_extensions = ['cogs.clean_db','cogs.utils','cogs.config','cogs.controller']
 bot = commands.Bot(command_prefix=get_prefix,intents=intents, help_command=None)
-token = os.environ.get('DISCORD_BOT_TOKEN_TESTING')
+token = os.environ.get('DISCORD_BOT_TOKEN')
 if __name__ == '__main__':
     for extension in initial_extensions:
         try:
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 @bot.event
 async def on_raw_reaction_add(payload):
     emoji_cat = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-    db = sqlite3.connect("owlly_test.db", timeout=3000)
+    db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     c.execute("SELECT idS FROM TICKET")
     serv_ticket = c.fetchall()
@@ -244,7 +244,7 @@ async def on_raw_reaction_add(payload):
 async def on_raw_message_delete(payload):
     mid = payload.message_id
     serv = payload.guild_id
-    db = sqlite3.connect("owlly_test.db", timeout=3000)
+    db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT idM FROM TICKET WHERE idS=?"
     c.execute(sql, (serv,))
@@ -276,7 +276,7 @@ async def on_raw_message_delete(payload):
 
 @bot.event
 async def on_guild_channel_delete(channel):
-    db = sqlite3.connect("owlly_test.db", timeout=3000)
+    db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     delete = channel.id
     sql = "SELECT created_by FROM AUTHOR WHERE channel_id=?"
@@ -302,7 +302,7 @@ async def on_guild_channel_delete(channel):
 @bot.event
 async def on_member_remove(member):
     dep = int(member.id)
-    db = sqlite3.connect("owlly_test.db", timeout=3000)
+    db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     sql = "DELETE FROM AUTHOR WHERE UserID = ?"
     c.execute(sql, (dep,))
@@ -313,7 +313,7 @@ async def on_member_remove(member):
 @bot.event
 async def on_guild_remove(guild):
     server = guild.id
-    db = sqlite3.connect("owlly_test.db", timeout=3000)
+    db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     sql1 = "DELETE FROM AUTHOR WHERE idS = ?"
     sql2 = "DELETE FROM TICKET WHERE idS = ?"

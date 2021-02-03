@@ -19,7 +19,7 @@ class CogUtils(commands.Cog):
 
   @commands.Cog.listener()
   async def on_command_error(self, ctx, error):
-      db = sqlite3.connect("owlly_test.db", timeout=3000)
+      db = sqlite3.connect("owlly.db", timeout=3000)
       c = db.cursor()
       serv = ctx.guild.id
       sql = "SELECT prefix FROM SERVEUR WHERE idS = ?"
@@ -32,7 +32,7 @@ class CogUtils(commands.Cog):
 
   @commands.Cog.listener()
   async def on_guild_join(self,guild):
-      db = sqlite3.connect("owlly_test.db", timeout=3000)
+      db = sqlite3.connect("owlly.db", timeout=3000)
       c = db.cursor()
       sql = "INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
       var = ("?", guild.id)
@@ -45,7 +45,7 @@ class CogUtils(commands.Cog):
   @commands.Cog.listener()
   async def on_message(self,message):
       channel = message.channel
-      db = sqlite3.connect("owlly_test.db", timeout=3000)
+      db = sqlite3.connect("owlly.db", timeout=3000)
       c = db.cursor()
       prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
       c.execute(prefix, (int(message.guild.id),))
@@ -59,7 +59,7 @@ class CogUtils(commands.Cog):
   @commands.command()
   @commands.has_permissions(administrator=True)
   async def set_prefix(self, ctx, prefix):
-      db = sqlite3.connect("owlly_test.db", timeout=3000)
+      db = sqlite3.connect("owlly.db", timeout=3000)
       c = db.cursor()
       sql = "UPDATE SERVEUR SET prefix = ? WHERE idS = ?"
       var = (prefix, ctx.guild.id)
@@ -89,9 +89,9 @@ class CogUtils(commands.Cog):
   async def clear(self,ctx, amount=3):
     await ctx.channel.purge(limit=amount)
 
-  @commands.command(aliases=['command', 'commands', 'owlly_test'])
+  @commands.command(aliases=['command', 'commands', 'owlly'])
   async def help(self,ctx):
-      db = sqlite3.connect("owlly_test.db", timeout=3000)
+      db = sqlite3.connect("owlly.db", timeout=3000)
       c = db.cursor()
       serv = ctx.guild.id
       sql = "SELECT prefix FROM SERVEUR WHERE idS = ?"
@@ -111,7 +111,7 @@ class CogUtils(commands.Cog):
   @commands.command()
   async def prefix(self,ctx):
     server = ctx.guild.id
-    db = sqlite3.connect("owlly_test.db", timeout=3000)
+    db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
     c.execute(prefix, (server,))
