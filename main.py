@@ -71,43 +71,38 @@ if __name__ == '__main__':
 
 @bot.event
 async def on_raw_reaction_add(payload):
-    print("hey")
-    emoji_cat = ["1⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-    db = sqlite3.connect("owlly.db", timeout=3000)
-    c = db.cursor()
-    c.execute("SELECT idS FROM TICKET")
-    serv_ticket = c.fetchall()
-    serv_ticket = list(sum(serv_ticket, ()))
-    c.execute("SELECT idS FROM CATEGORY")
-    serv_cat = c.fetchall()
-    serv_cat = list(sum(serv_cat, ()))
-    c.execute("SELECT idS FROM SOLO_CATEGORY")
-    serv_chan = c.fetchall()
-    serv_chan = list(sum(serv_chan, ()))
-    serv_here = payload.guild_id
-    mid = payload.message_id
-    channel = bot.get_channel(payload.channel_id)
-    msg = await channel.fetch_message(mid)
-    user = bot.get_user(payload.user_id)
+	print("hey")
+	emoji_cat = ["1⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
+	db = sqlite3.connect("owlly.db", timeout=3000)
+	c = db.cursor()
+	c.execute("SELECT idS FROM TICKET")
+	serv_ticket = c.fetchall()
+	serv_ticket = list(sum(serv_ticket, ()))
+	c.execute("SELECT idS FROM CATEGORY")
+	serv_cat = c.fetchall()
+	serv_cat = list(sum(serv_cat, ()))
+	c.execute("SELECT idS FROM SOLO_CATEGORY")
+	serv_chan = c.fetchall()
+	serv_chan = list(sum(serv_chan, ()))
+	serv_here = payload.guild_id
+	mid = payload.message_id
+	channel = bot.get_channel(payload.channel_id)
+	msg = await channel.fetch_message(mid)
+	user = bot.get_user(payload.user_id)
 
 	def checkRep(message):
 		return message.author == user and channel == message.channel
 
 	def checkValid(reaction, user):
-		return bot.get_user(
-		    payload.user_id
-		) == user and question.id == reaction.message.id and (str(
-		    reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+		return bot.get_user(payload.user_id) == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
 
 	if (len(msg.embeds) != 0) and (user.bot is False):
-		if (serv_here in serv_ticket) or (serv_here
-		                                  in serv_cat) or (serv_here
-		                                                   in serv_chan):
+		if (serv_here in serv_ticket) or (serv_here in serv_cat) or (serv_here in serv_chan):
 			action = str(payload.emoji.name)
 			await msg.remove_reaction(action, user)
 			typecreation = "stop"
 			chan_create = "stop"
-# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT  TICKET▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT  TICKET ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			sql = "SELECT emote FROM TICKET WHERE idS = ?"
 			c.execute(sql, (serv_here, ))
 			emoji_ticket = c.fetchall()
@@ -119,7 +114,7 @@ async def on_raw_reaction_add(payload):
 			for i in range(0, len(appart)):
 				extra = {appart[i][0]: appart[i][1]}
 				appartDict.update(extra)
-# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : SOLO CATEGORY▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : SOLO CATEGORY ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			sql = "SELECT emote FROM SOLO_CATEGORY WHERE idS=?"
 			c.execute(sql, (serv_here, ))
 			emoji_chan = c.fetchall()
@@ -131,7 +126,7 @@ async def on_raw_reaction_add(payload):
 			for i in range(0, (len(mono))):
 				extra = {mono[i][0]: mono[i][1]}
 				monoDict.update(extra)
-# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT CATEGORY▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT CATEGORY ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			for i in range(0, len(emoji_cat)):
 				if str(emoji_cat[i]) == action:
 					choice = i
@@ -143,7 +138,7 @@ async def on_raw_reaction_add(payload):
 				cate = room[i][3].split(',')
 				extra = {room[i][0]: cate}
 				roomDict.update(extra)
-# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SWITCH BETWEEN OPTION▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SWITCH BETWEEN OPTION ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			if action in emoji_ticket:
 				for k, v in appartDict.items():
 					if k == mid:
@@ -160,7 +155,7 @@ async def on_raw_reaction_add(payload):
 					if k == mid:
 						chan_create = int(v[choice])
 						typecreation = "Category"
-# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : TICKET▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : TICKET ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			if typecreation == "Ticket":
 				sql = "SELECT num, modulo, limitation FROM TICKET WHERE idM= ?"
 				c.execute(sql, (mid, ))
@@ -183,7 +178,7 @@ async def on_raw_reaction_add(payload):
 				sql = "UPDATE TICKET SET num = ? WHERE idM = ?"
 				var = (nb, mid)
 				c.execute(sql, var)
-# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : CHANNEL▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : CHANNEL▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			elif typecreation == "Channel":
 				question = await channel.send(
 				    f"Merci d'indiquer le nom de la pièce.")
@@ -226,7 +221,7 @@ async def on_raw_reaction_add(payload):
 				chan_name = f"{symbole}╿{chan_name}"
 				await channel.send(f"Création du channel {chan_name}",
 				                   delete_after=30)
-# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : CATEGORY▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : CATEGORY  ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			elif typecreation == "Category":
 				question = await channel.send(
 				    f"Catégorie {category_name} sélectionnée. Merci d'indiquer le nom du channel. \n Merci d'indiquer le nom de la pièce"
@@ -323,10 +318,13 @@ async def on_guild_channel_delete(channel):
 	db = sqlite3.connect("owlly.db", timeout=3000)
 	c = db.cursor()
 	delete = channel.id
-	sql = "SELECT created_by FROM AUTHOR WHERE channel_id=?"
+	sql = "SELECT created_by FROM AUTHOR WHERE created_by =?"
 	c.execute(sql, (delete, ))
 	verif_ticket = c.fetchone()
-	if verif_ticket != None:
+	print(verif_ticket)
+	if verif_ticket == None:
+	  print("coucou")
+	if verif_ticket != None :
 		sql = "SELECT num FROM TICKET WHERE idM = ?"
 		c.execute(sql, verif_ticket)
 		count = c.fetchone()
