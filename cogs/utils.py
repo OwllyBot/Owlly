@@ -118,6 +118,7 @@ class CogUtils(commands.Cog):
     prefix = c.fetchone()
     message = await ctx.send(f"Mon préfix est {prefix}")
     return commands.when_mentioned_or(prefix)(self.bot, message)
+    
 
 def setup(bot):
   bot.add_cog(CogUtils(bot))
