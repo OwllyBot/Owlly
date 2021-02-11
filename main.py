@@ -162,73 +162,40 @@ async def on_raw_reaction_add(payload):
                 var = (nb, mid)
                 c.execute(sql, var)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : CHANNEL▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-            elif typecreation == "Channel":
-                question = await channel.send(f"Merci d'indiquer le nom de la pièce.")
-                chan_rep = await bot.wait_for("message", timeout=300, check=checkRep)
-                await question.delete()
-                chan_name = chan_rep.content
-                if chan_name == "stop":
-                    channel.send("Annulation de la création.", delete_after=10)
-                    await chan_rep.delete()
-                    return
-                question = await channel.send ("Voulez-vous fixer un emoji pour votre pièce ?")
-                await question.add_reaction("✅")
-                await question.add_reaction("❌")
-                reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
-                symbole = emojis_random()
-                if reaction.emoji == "✅":
-                    await question.delete()
-                    question = await channel.send("Merci d'insérer l'émoji en réagissant à ce message.")
-                    symb, user = await bot.wait_for("reaction_add", timeout=300)
-                    if symb.custom_emoji:
-                        if symb.emoji in payload.guild.emojis:
-                            symbole = str(symb.emoji)
-                        else:
-                            symbole = emojis_random()
-                            symbole=symbole[0]
-                    else:
-                        symbole = str(symb.emoji)
-                else:
-                    symbole = emojis_random()
-                    symbole=symbole[0]
-                await question.delete()
-                await chan_rep.delete()
-                chan_name = f"{symbole}╿{chan_name}"
-                await channel.send(f"Création du channel {chan_name}", delete_after=30)
+			elif typecreation == "Channel":
+				question = await channel.send(
+				    f"Merci d'indiquer le nom de la pièce.")
+				chan_rep = await bot.wait_for("message",
+				                              timeout=300,
+				                              check=checkRep)
+				await question.delete()
+				chan_name = chan_rep.content
+				if chan_name == "stop":
+					channel.send("Annulation de la création.", delete_after=10)
+					await chan_rep.delete()
+					return
+				
+				chan_name = f"{chan_name}"
+				await channel.send(f"Création du channel {chan_name}", delete_after=30)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : CATEGORY▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-            elif typecreation == "Category":
-                category_name = bot.get_channel(chan_create)
-                question = await channel.send(f"Catégorie {category_name} sélectionnée. Merci d'indiquer le nom du channel.")
-                chan_rep = await bot.wait_for("message", timeout=300, check=checkRep)
-                await question.delete()
-                chan_name = chan_rep.content
-                if chan_name == "stop":
-                    channel.send("Annulation de la création.", delete_after=10)
-                    await chan_rep.delete()
-                    return
-                question = await channel.send ("Voulez-vous fixer un emoji pour votre pièce ?")
-                await question.add_reaction("✅")
-                await question.add_reaction("❌")
-                reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
-                symbole = emojis_random()
-                if reaction.emoji == "✅":
-                    await question.delete()
-                    question = await channel.send("Merci d'insérer l'émoji en réagissant à ce message.")
-                    symb, user = await bot.wait_for("reaction_add", timeout=300)
-                    if symb.custom_emoji:
-                        if symb.emoji in payload.guild.emojis:
-                            symbole = str(symb.emoji)
-                        else:
-                            symbole = emojis_random()
-                    else:
-                        symbole = str(symb.emoji)
-                else:
-                    symbole = emojis_random()
-                await chan_rep.delete()
-                await question.delete()
-                chan_name = f"{symbole}╿{chan_name}"
-                chan_name=chan_name.replace(" ", "")
-                await channel.send(f"Création du channel {chan_name} dans {category_name}.", delete_after=30)
+			elif typecreation == "Category":
+				question = await channel.send(
+				    f"Catégorie {category_name} sélectionnée. Merci d'indiquer le nom du channel. \n Merci d'indiquer le nom de la pièce"
+				)
+				chan_rep = await bot.wait_for("message",
+				                              timeout=300,
+				                              check=checkRep)
+				await question.delete()
+				chan_name = chan_rep.content
+				if chan_name == "stop":
+					channel.send("Annulation de la création.", delete_after=10)
+					await chan_rep.delete()
+					return
+				chan_name = f"{chan_name}"
+				chan_name = chan_name.replace(" ", "")
+				await channel.send(
+				    f"Création du channel {chan_name} dans {category_name}.",
+				    delete_after=30)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATION▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
             category = bot.get_channel(chan_create)
             new_chan = await category.create_text_channel(chan_name)
