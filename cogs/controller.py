@@ -25,7 +25,7 @@ class controlleur(commands.Cog):
   async def description(self,ctx, arg):
     channel_here = ctx.channel.id
     channel = self.bot.get_channel(channel_here)
-    db = sqlite3.connect("owlly_test.db", timeout=3000)
+    db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
     var = (ctx.author.id, ctx.guild.id)
@@ -47,7 +47,7 @@ class controlleur(commands.Cog):
   async def pins(self,ctx, id_message):
     channel_here = ctx.channel.id
     channel = self.bot.get_channel(channel_here)
-    db = sqlite3.connect("owlly_test.db", timeout=3000)
+    db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
     var = (ctx.author.id, ctx.guild.id)
@@ -69,7 +69,7 @@ class controlleur(commands.Cog):
   async def unpin(self,ctx, id_message):
     channel_here = ctx.channel.id
     channel = self.bot.get_channel(channel_here)
-    db = sqlite3.connect("owlly_test.db", timeout=3000)
+    db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
     var = (ctx.author.id, ctx.guild.id)
@@ -91,7 +91,7 @@ class controlleur(commands.Cog):
   async def rename(self,ctx, arg):
     channel_here = ctx.channel.id
     channel = self.bot.get_channel(channel_here)
-    db = sqlite3.connect("owlly_test.db", timeout=3000)
+    db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
     var = (ctx.author.id, ctx.guild.id)

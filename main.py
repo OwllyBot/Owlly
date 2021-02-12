@@ -34,7 +34,6 @@ def emojis_random():
 
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
-
 def get_prefix(bot, message):
 	db = sqlite3.connect("owlly.db", timeout=3000)
 	c = db.cursor()
@@ -51,9 +50,7 @@ def get_prefix(bot, message):
 	db.close()
 	return prefix
 
-
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-
 initial_extensions = [
     'cogs.clean_db', 'cogs.utils', 'cogs.config', 'cogs.controller', 'cogs.member']
 bot = commands.Bot(command_prefix=get_prefix,
@@ -66,6 +63,34 @@ if __name__ == '__main__':
 			bot.load_extension(extension)
 		except Exception as e:
 			print(e)
+
+@bot.event
+async def on_command_error(ctx, error):
+  if hasattr(ctx.command, 'on_error'):
+    return
+  cog=ctx.cog
+  if cog:
+    if cog._get_overridden_method(cog.cog_command_error) is not None:
+      return
+    ignored=(commands.CommandNotFound,)
+    error=getattr(error,'original',error)
+  if isinstance(error,ignored):
+    return
+  if isinstance(error, commands.DisabledCommand):
+    await ctx.send(f'{ctx.command} has been disabled.')
+  elif isinstance(error, commands.NoPrivateMessage):
+    try:
+      await ctx.author.send(f'{ctx.command} can not be used in Private Messages.')
+    except discord.HTTPException:
+      pass
+  # For this error example we check to see where it came from...
+  elif isinstance(error, commands.BadArgument):
+    if ctx.command.qualified_name == 'tag list':  # Check if the command being invoked is 'tag list'
+      await ctx.send('I could not find that member. Please try again.')
+  else:
+      # All other Errors not returned come here. And we can just print the default TraceBack.
+    print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
+    traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
 
 @bot.event
