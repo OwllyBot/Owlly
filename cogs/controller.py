@@ -35,10 +35,10 @@ class controlleur(commands.Cog):
     if channel_here in list_chan:
         await channel.edit(topic=arg)
         await ctx.send("Changé !", delete_after=10)
-        await ctx.delete()
+        await ctx.message.delete()
     else:
       ctx.send("Erreur, vous n'êtes pas l'auteur de ce channel !", delete_after=30)
-      await ctx.delete()
+      await ctx.message.delete()
     c.close()
     db.close()
 
@@ -57,7 +57,7 @@ class controlleur(commands.Cog):
     if channel_here in list_chan:
       message = await channel.fetch_message(id_message)
       await message.pin()
-      await ctx.delete()
+      await ctx.message.delete()
     else:
       await ctx.send("Vous n'êtes pas l'auteur de ce channel !", delete_after=10)
       await ctx.message.delete()
@@ -79,10 +79,10 @@ class controlleur(commands.Cog):
     if channel_here in list_chan:
         message = await channel.fetch_message(id_message)
         await message.unpin()
-        await ctx.delete()
+        await ctx.message.delete()
     else:
         await ctx.send("Vous n'êtes pas l'auteur de ce channel !", delete_after=10)
-        await ctx.delete()
+        await ctx.message.delete()
     c.close()
     db.close()
 
@@ -101,10 +101,10 @@ class controlleur(commands.Cog):
     if channel_here in list_chan:
         await channel.edit(name=arg)
         await ctx.send("Changé !", delete_after=10)
-        await ctx.delete()
+        await ctx.message.delete()
     else:
         ctx.send("Erreur, vous n'êtes pas l'auteur de ce channel !",delete_after=30)
-        await ctx.delete()
+        await ctx.message.delete()
     c.close()
     db.close()
 

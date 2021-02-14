@@ -16,6 +16,9 @@ class CogUtils(commands.Cog):
       print("[LOGS] ONLINE")
       await self.bot.change_presence(activity=discord.Game("ouvrir des portes !"))
 
+  @commands.command()
+  async def test(self, ctx):
+    await ctx.message.delete()
 
   @commands.Cog.listener()
   async def on_command_error(self, ctx, error):

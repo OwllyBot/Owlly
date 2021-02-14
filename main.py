@@ -151,12 +151,12 @@ async def on_raw_reaction_add(payload):
 			for i in range(0, len(emoji_cat)):
 				if str(emoji_cat[i]) == action:
 					choice = i
-			sql = "SELECT * FROM CATEGORY WHERE idS = ?"
+			sql = "SELECT idM, category_list FROM CATEGORY WHERE idS = ?"
 			c.execute(sql, (serv_here, ))
 			room = c.fetchall()
 			roomDict = {}
 			for i in range(0, len(room)):
-				cate = room[i][3].split(',')
+				cate = room[i][1].split(',')
 				extra = {room[i][0]: cate}
 				roomDict.update(extra)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SWITCH BETWEEN OPTION ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
@@ -176,6 +176,10 @@ async def on_raw_reaction_add(payload):
 					if k == mid:
 						chan_create = int(v[choice])
 						typecreation = "Category"
+						sql="SELECT config_name FROM CATEGORY WHERE (idM = ? AND idS = ?)"
+						var=(mid, serv_here,)
+						c.execute(sql, var)
+						name_creat=c.fetchone()
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : TICKET ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			if typecreation == "Ticket":
 				sql = "SELECT num, modulo, limitation FROM TICKET WHERE idM= ?"
@@ -215,16 +219,19 @@ async def on_raw_reaction_add(payload):
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : CATEGORY  ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			elif typecreation == "Category":
 				category_name=get(payload.guild.categories, id=chan_create)
-				question = await channel.send(f"Catégorie {category_name} sélectionnée. \n Merci d'indiquer le nom de la pièce")
-				chan_rep = await bot.wait_for("message",timeout=300,check=checkRep)
-				await question.delete()
-				chan_name = chan_rep.content
-				if chan_name == "stop":
-					channel.send("Annulation de la création.", delete_after=10)
-					await chan_rep.delete()
-					return
-				chan_name = f"{chan_name}"
-				chan_name = chan_name.replace(" ", "")
+				if name_creat == 1:
+					question = await channel.send(f"Catégorie {category_name} sélectionnée. \n Merci d'indiquer le nom de la pièce")
+					chan_rep = await bot.wait_for("message",timeout=300,check=checkRep)
+					await question.delete()
+					chan_name = chan_rep.content
+					if chan_name == "stop":
+						channel.send("Annulation de la création.", delete_after=10)
+						await chan_rep.delete()
+						return
+					chan_name = f"{chan_name}"
+					chan_name = chan_name.replace(" ", "")
+				else:
+					chan_name=f"{payload.member.nick}"
 				await channel.send(f"Création du channel {chan_name} dans {category_name}.", delete_after=30)
 
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATION▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬

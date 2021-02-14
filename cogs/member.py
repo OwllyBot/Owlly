@@ -3,10 +3,10 @@ from discord.ext import commands, tasks
 from discord.utils import get
 from discord import CategoryChannel
 from discord import NotFound
+import unicodedata
 import os
 import sqlite3
-intents = discord.Intents(messages=True, guilds=True,
-                          reactions=True, members=True)
+intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
 
 class memberAssign(commands.Cog):
@@ -14,6 +14,12 @@ class memberAssign(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
+	@commands.Cog.listener()
+	async def on_member_join(self, Member):
+		name=Member.name
+		normal_name = unicodedata.normalize('NFKD', name)
+		await Member.edit(nick=normal_name)
+ 
 	@commands.has_permissions(administrator=True)
 	@commands.command()
 	async def roliste(self, ctx, *role: discord.Role):
@@ -47,8 +53,12 @@ class memberAssign(commands.Cog):
 		sql = "SELECT roliste FROM SERVEUR WHERE idS=?"
 		c.execute(sql, (ctx.guild.id,))
 		defaut=c.fetchone()
+		rolelist=[]
+		defaut=','.join(defaut)
+		defaut=defaut.split(',')
 		for i in defaut:
-			print(i)
+			i=get(ctx.guild.roles, id=int(i))
+			await user.add_roles(i)
 		for i in role:
 			i = i.replace("<", "")
 			i = i.replace(">", "")
@@ -78,7 +88,8 @@ class memberAssign(commands.Cog):
 		if (len(infoNew)) > 0:
 			infoNew = "\n ◽".join(infoNew)
 			roleInfo = roleInfo + " " + infoNew
-		await ctx.send(f"{user.display_name} est devenu un membre du serveur ! Il a donc reçu les rôles : {roleInfo}. ")
+		await ctx.send(f"{user.Mention} est devenu un membre du serveur ! Il•Elle a donc reçu les rôles : {roleInfo}. ", delete_after=60)
+		await ctx.message.delete()
 
 
 def setup(bot):
