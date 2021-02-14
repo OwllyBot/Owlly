@@ -13,10 +13,7 @@ import random
 from emoji import unicode_codes
 from discord import Color
 from discord import NotFound
-intents = discord.Intents(messages=True,
-                          guilds=True,
-                          reactions=True,
-                          members=True)
+intents = discord.Intents(messages=True,guilds=True,reactions=True,members=True)
 
 
 # ▬▬▬▬▬▬▬▬▬▬▬ EMOJI ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
