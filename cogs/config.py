@@ -484,12 +484,9 @@ class config(commands.Cog):
 	@commands.command()
 	async def category(self, ctx):
 		def checkValid(reaction, user):
-			return ctx.message.author == user and question.id == reaction.message.id and (
-			    str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
-
+			return ctx.message.author == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
 		def checkRep(message):
 			return message.author == ctx.message.author and ctx.message.channel == message.channel
-
 		emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
@@ -498,9 +495,7 @@ class config(commands.Cog):
 		    "Merci d'envoyer l'ID des catégories (ou leurs noms) que vous souhaitez utiliser pour cette configuration. \n Utiliser `stop` pour valider la saisie et `cancel` pour annuler la commande. "
 		)
 		while True:
-			channels = await self.bot.wait_for("message",
-			                                   timeout=300,
-			                                   check=checkRep)
+			channels = await self.bot.wait_for("message",timeout=300,check=checkRep)
 			await channels.add_reaction("✅")
 			if channels.content.lower() == 'stop':
 				await channels.delete(delay=10)
@@ -537,11 +532,18 @@ class config(commands.Cog):
 			phrase = f"{emoji[i]} : {cat}"
 			namelist.append(phrase)
 		msg = "\n".join(namelist)
-		parameters = await ctx.send(
-		    f"Votre channel sera donc créé dans une des catégories suivantes :\n {msg} \n\n Le choix final de la catégories se fait lors des réactions. "
-		)
+		parameters = await ctx.send(f"Votre channel sera donc créé dans une des catégories suivantes :\n {msg} \n\n Le choix final de la catégories se fait lors des réactions. ", delete_after=30)
 		parameters_save = parameters.content
-		await parameters.delete()
+		question = await ctx.send("Voulez-vous pouvoir nommer librement les channels créées ?")
+		await question.add_reaction("✅")
+		await question.add_reaction("❌")
+		reaction, user = await self.bot.wait_for("reaction_add",timeout=300,check=checkValid)
+		name_para=0
+		if reaction.emoji == "✅":
+			name_para=1
+		else:
+			name_para=0
+		await question.delete()		
 		question = await ctx.send(f"Quel est le titre de l'embed ?")
 		titre = await self.bot.wait_for("message", timeout=300, check=checkRep)
 		if titre.content == "stop":
@@ -557,8 +559,7 @@ class config(commands.Cog):
 		color = await self.bot.wait_for("message", timeout=300, check=checkRep)
 		col = color.content
 		if (col.find("#") == -1) and (col != "stop") and (col != "0"):
-			await ctx.send(f"Erreur ! Vous avez oublié le # !",
-			               delete_after=30)
+			await ctx.send(f"Erreur ! Vous avez oublié le # !",delete_after=30)
 			await color.delete()
 			await question.delete()
 			return
@@ -582,17 +583,13 @@ class config(commands.Cog):
 		question = await ctx.send("Voulez-vous utiliser une image ?")
 		await question.add_reaction("✅")
 		await question.add_reaction("❌")
-		reaction, user = await self.bot.wait_for("reaction_add",
-		                                         timeout=300,
-		                                         check=checkValid)
+		reaction, user = await self.bot.wait_for("reaction_add",timeout=300,check=checkValid)
 		if reaction.emoji == "✅":
 			await question.delete()
 			question = await ctx.send(
 			    "Merci d'envoyer l'image. \n**⚡ ATTENTION : LE MESSAGE EN REPONSE EST SUPPRIMÉ VOUS DEVEZ DONC UTILISER UN LIEN PERMANENT (hébergement sur un autre channel/serveur, imgur, lien google...)**"
 			)
-			img = await self.bot.wait_for("message",
-			                              timeout=300,
-			                              check=checkRep)
+			img = await self.bot.wait_for("message",timeout=300,check=checkRep)
 			img_content = img.content
 			if img_content == "stop":
 				await ctx.send("Annulation !", delete_after=10)
@@ -608,24 +605,20 @@ class config(commands.Cog):
 		embed = discord.Embed(title=titre.content, description=msg, color=col)
 		if img_content != "none":
 			embed.set_image(url=img_content)
-		question = await ctx.send(
-		    f"Les catégories dans lequel vous pourrez créer des canaux seront : {parameters_save} \n Validez-vous ses paramètres ?"
-		)
+		question = await ctx.send(f"Les catégories dans lequel vous pourrez créer des canaux seront : {parameters_save} \n Validez-vous ses paramètres ?")
 		await question.add_reaction("✅")
 		await question.add_reaction("❌")
-		reaction, user = await self.bot.wait_for("reaction_add",
-		                                         timeout=300,
-		                                         check=checkValid)
+		reaction, user = await self.bot.wait_for("reaction_add",timeout=300,check=checkValid)
 		if reaction.emoji == "✅":
 			react = await ctx.send(embed=embed)
 			for i in range(0, len(chan)):
 				await react.add_reaction(emoji[i])
 			category_list_str = ",".join(chan)
-			sql = "INSERT INTO CATEGORY (idM, channelM, category_list, idS) VALUES (?,?,?,?)"
+			sql = "INSERT INTO CATEGORY (idM, channelM, category_list, idS, config_name) VALUES (?,?,?,?)"
 			id_serveur = ctx.message.guild.id
 			id_message = react.id
 			chanM = ctx.channel.id
-			var = (id_message, chanM, category_list_str, id_serveur)
+			var = (id_message, chanM, category_list_str, id_serveur, name_para)
 			c.execute(sql, var)
 			db.commit()
 			c.close()
@@ -636,7 +629,7 @@ class config(commands.Cog):
 			db.close()
 			return
 		await question.delete()
-		await ctx.delete()
+		await ctx.message.delete()
 
 	@commands.has_permissions(administrator=True)
 	@commands.command(aliases=["count", "edit_count"])
@@ -656,7 +649,7 @@ class config(commands.Cog):
 				await ctx.send(
 				    "Aucun de vos arguments ne correspond à l'ID du message du créateur de ticket...",
 				    delete_after=30)
-				await ctx.delete()
+				await ctx.message.delete()
 				c.close()
 				db.close()
 				return
@@ -671,7 +664,7 @@ class config(commands.Cog):
 		search = c.fetchone()
 		if search is None:
 			await ctx.send("Aucun ne ticket ne possède ce numéro.")
-			await ctx.delete()
+			await ctx.message.delete()
 			c.close()
 			db.close()
 			return
@@ -682,7 +675,7 @@ class config(commands.Cog):
 			c.close()
 			db.close()
 			await ctx.send(f"Le compte a été fixé à : {arg}")
-			await ctx.delete()
+			await ctx.message.delete()
 
 
 def setup(bot):

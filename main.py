@@ -13,10 +13,7 @@ import random
 from emoji import unicode_codes
 from discord import Color
 from discord import NotFound
-intents = discord.Intents(messages=True,
-                          guilds=True,
-                          reactions=True,
-                          members=True)
+intents = discord.Intents(messages=True,guilds=True,reactions=True,members=True)
 
 
 # ▬▬▬▬▬▬▬▬▬▬▬ EMOJI ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
@@ -34,6 +31,21 @@ def emojis_random():
 
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
+def get_prefix(bot, message):
+	db = sqlite3.connect("owlly.db", timeout=3000)
+	c = db.cursor()
+	prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
+	c.execute(prefix, (int(message.guild.id), ))
+	prefix = c.fetchone()
+	if prefix is None:
+		prefix = "?"
+		sql = "INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
+		var = ("?", message.guild.id)
+		c.execute(sql, var)
+		db.commit()
+	c.close()
+	db.close()
+	return prefix
 
 def get_prefix(bot, message):
 	db = sqlite3.connect("owlly.db", timeout=3000)
@@ -53,20 +65,46 @@ def get_prefix(bot, message):
 
 
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-
 initial_extensions = [
-    'cogs.clean_db', 'cogs.utils', 'cogs.config', 'cogs.controller'
-]
+    'cogs.clean_db', 'cogs.utils', 'cogs.config', 'cogs.controller', 'cogs.member']
 bot = commands.Bot(command_prefix=get_prefix,
                    intents=intents,
                    help_command=None)
-token = os.environ.get('DISCORD_BOT_TOKEN')
+token = os.environ.get('DISCORD_BOT_TOKEN_TESTING')
 if __name__ == '__main__':
 	for extension in initial_extensions:
 		try:
 			bot.load_extension(extension)
 		except Exception as e:
 			print(e)
+
+@bot.event
+async def on_command_error(ctx, error):
+  if hasattr(ctx.command, 'on_error'):
+    return
+  cog=ctx.cog
+  if cog:
+    if cog._get_overridden_method(cog.cog_command_error) is not None:
+      return
+    ignored=(commands.CommandNotFound,)
+    error=getattr(error,'original',error)
+  if isinstance(error,ignored):
+    return
+  if isinstance(error, commands.DisabledCommand):
+    await ctx.send(f'{ctx.command} has been disabled.')
+  elif isinstance(error, commands.NoPrivateMessage):
+    try:
+      await ctx.author.send(f'{ctx.command} can not be used in Private Messages.')
+    except discord.HTTPException:
+      pass
+  # For this error example we check to see where it came from...
+  elif isinstance(error, commands.BadArgument):
+    if ctx.command.qualified_name == 'tag list':  # Check if the command being invoked is 'tag list'
+      await ctx.send('I could not find that member. Please try again.')
+  else:
+      # All other Errors not returned come here. And we can just print the default TraceBack.
+    print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
+    traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
 
 @bot.event
@@ -92,9 +130,6 @@ async def on_raw_reaction_add(payload):
 
 	def checkRep(message):
 		return message.author == user and channel == message.channel
-
-	def checkValid(reaction, user):
-		return bot.get_user(payload.user_id) == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
 
 	if (len(msg.embeds) != 0) and (user.bot is False):
 		if (serv_here in serv_ticket) or (serv_here in serv_cat) or (serv_here in serv_chan):
@@ -130,12 +165,12 @@ async def on_raw_reaction_add(payload):
 			for i in range(0, len(emoji_cat)):
 				if str(emoji_cat[i]) == action:
 					choice = i
-			sql = "SELECT * FROM CATEGORY WHERE idS = ?"
+			sql = "SELECT idM, category_list FROM CATEGORY WHERE idS = ?"
 			c.execute(sql, (serv_here, ))
 			room = c.fetchall()
 			roomDict = {}
 			for i in range(0, len(room)):
-				cate = room[i][3].split(',')
+				cate = room[i][1].split(',')
 				extra = {room[i][0]: cate}
 				roomDict.update(extra)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SWITCH BETWEEN OPTION ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
@@ -155,6 +190,10 @@ async def on_raw_reaction_add(payload):
 					if k == mid:
 						chan_create = int(v[choice])
 						typecreation = "Category"
+						sql="SELECT config_name FROM CATEGORY WHERE (idM = ? AND idS = ?)"
+						var=(mid, serv_here,)
+						c.execute(sql, var)
+						name_creat=c.fetchone()
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : TICKET ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			if typecreation == "Ticket":
 				sql = "SELECT num, modulo, limitation FROM TICKET WHERE idM= ?"
@@ -182,90 +221,32 @@ async def on_raw_reaction_add(payload):
 			elif typecreation == "Channel":
 				question = await channel.send(
 				    f"Merci d'indiquer le nom de la pièce.")
-				chan_rep = await bot.wait_for("message",
-				                              timeout=300,
-				                              check=checkRep)
+				chan_rep = await bot.wait_for("message", timeout=300,check=checkRep)
 				await question.delete()
 				chan_name = chan_rep.content
 				if chan_name == "stop":
 					channel.send("Annulation de la création.", delete_after=10)
 					await chan_rep.delete()
 					return
-				question = await channel.send(
-				    "Voulez-vous fixer un emoji pour votre pièce ?")
-				await question.add_reaction("✅")
-				await question.add_reaction("❌")
-				reaction, user = await bot.wait_for("reaction_add",
-				                                    timeout=300,
-				                                    check=checkValid)
-				symbole = emojis_random()
-				if reaction.emoji == "✅":
-					await question.delete()
-					question = await channel.send(
-					    "Merci d'insérer l'émoji en réagissant à ce message.")
-					symb, user = await bot.wait_for("reaction_add",
-					                                timeout=300)
-					if symb.custom_emoji:
-						if symb.emoji in payload.guild.emojis:
-							symbole = str(symb.emoji)
-						else:
-							symbole = emojis_random()
-							symbole = symbole[0]
-					else:
-						symbole = str(symb.emoji)
-				else:
-					symbole = emojis_random()
-					symbole = symbole[0]
-				await question.delete()
-				await chan_rep.delete()
-				chan_name = f"{symbole}╿{chan_name}"
-				await channel.send(f"Création du channel {chan_name}",
-				                   delete_after=30)
+				chan_name = f"{chan_name}"
+				await channel.send(f"Création du channel {chan_name}",delete_after=30)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : CATEGORY  ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			elif typecreation == "Category":
-				question = await channel.send(
-				    f"Catégorie {category_name} sélectionnée. Merci d'indiquer le nom du channel. \n Merci d'indiquer le nom de la pièce"
-				)
-				chan_rep = await bot.wait_for("message",
-				                              timeout=300,
-				                              check=checkRep)
-				await question.delete()
-				chan_name = chan_rep.content
-				if chan_name == "stop":
-					channel.send("Annulation de la création.", delete_after=10)
-					await chan_rep.delete()
-					return
-				question = await channel.send(
-				    "Voulez-vous fixer un emoji pour votre pièce ?")
-				await question.add_reaction("✅")
-				await question.add_reaction("❌")
-				reaction, user = await bot.wait_for("reaction_add",
-				                                    timeout=300,
-				                                    check=checkValid)
-				symbole = emojis_random()
-				if reaction.emoji == "✅":
+				category_name=get(payload.guild.categories, id=chan_create)
+				if name_creat == 1:
+					question = await channel.send(f"Catégorie {category_name} sélectionnée. \n Merci d'indiquer le nom de la pièce")
+					chan_rep = await bot.wait_for("message",timeout=300,check=checkRep)
 					await question.delete()
-					question = await channel.send(
-					    "Merci d'insérer l'émoji en réagissant à ce message.")
-					symb, user = await bot.wait_for("reaction_add",
-					                                timeout=300)
-					if symb.custom_emoji:
-						if symb.emoji in payload.guild.emojis:
-							symbole = str(symb.emoji)
-						else:
-							symbole = emojis_random()
-					else:
-						symbole = str(symb.emoji)
+					chan_name = chan_rep.content
+					if chan_name == "stop":
+						channel.send("Annulation de la création.", delete_after=10)
+						await chan_rep.delete()
+						return
+					chan_name = f"{chan_name}"
+					chan_name = chan_name.replace(" ", "")
 				else:
-					symbole = emojis_random()
-				await chan_rep.delete()
-				await question.delete()
-				chan_name = f"{symbole}╿{chan_name}"
-				chan_name = chan_name.replace(" ", "")
-				await channel.send(
-				    f"Création du channel {chan_name} dans {category_name}.",
-				    delete_after=30)
-
+					chan_name=f"{payload.member.nick}"
+				await channel.send(f"Création du channel {chan_name} dans {category_name}.", delete_after=30)
 
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATION▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			category = bot.get_channel(chan_create)
