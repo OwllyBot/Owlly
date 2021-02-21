@@ -5,7 +5,7 @@ from discord import CategoryChannel
 from discord import NotFound
 import os
 import sqlite3
-intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
+intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
 
 
 class CogUtils(commands.Cog):
@@ -47,7 +47,7 @@ class CogUtils(commands.Cog):
             await channel.send(f'Mon prefix est `{prefix}`')
 
     @commands.Cog.listener()
-    async def on_guild_join(self,guild):
+    async def on_guild_join(self, guild):
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
         sql = "INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
@@ -62,7 +62,7 @@ class CogUtils(commands.Cog):
         await ctx.send(f"🏓 Pong with {str(round(self.bot.latency, 2))}")
 
     @commands.Cog.listener()
-    async def on_message(self,message):
+    async def on_message(self, message):
         channel = message.channel
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
@@ -101,23 +101,20 @@ class CogUtils(commands.Cog):
         p = c.fetchone()
         p = p[0]
         embed = discord.Embed(title="Liste des commandes",
-		                      description="",
-		                      color=0xaac0cc)
+                              description="",
+                              color=0xaac0cc)
         embed.add_field(
-		    name=f"Configurer les créateurs (administrateur)",
-		    value=
-		    f":white_small_square: Ticket : `{p}ticket`\n :white_small_square: Catégories : `{p}category` \n :white_small_square: Créateur de pièce (1 catégorie) :`{p}channel`",
-		    inline=False)
+            name=f"Configurer les créateurs (administrateur)",
+            value=f":white_small_square: Ticket : `{p}ticket`\n :white_small_square: Catégories : `{p}category` \n :white_small_square: Créateur de pièce (1 catégorie) :`{p}channel`",
+      		    inline=False)
         embed.add_field(
-		    name="Fonction sur les channels",
-		    value=
-		    f"Vous devez être l'auteur original du channel et utiliser ses commandes sur le channel voulu !\n :white_small_square: Editer la description : `{p}desc description` ou `{p}description`\n :white_small_square: Pin un message : `{p}pins <idmessage>` \n :white_small_square: Unpin un message : `{p}unpin <idmessage>` \n :white_small_square: Changer le nom du channel : `{p}rename nom`",
-		    inline=False)
+            name="Fonction sur les channels",
+            value=f"Vous devez être l'auteur original du channel et utiliser ses commandes sur le channel voulu !\n :white_small_square: Editer la description : `{p}desc description` ou `{p}description`\n :white_small_square: Pin un message : `{p}pins <idmessage>` \n :white_small_square: Unpin un message : `{p}unpin <idmessage>` \n :white_small_square: Changer le nom du channel : `{p}rename nom`",
+      		    inline=False)
         embed.add_field(
-		    name="Administration",
-		    value=
-		    f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets (administrateur): `{p}recount nb`",
-		    inline=False)
+            name="Administration",
+            value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets (administrateur): `{p}recount nb`",
+      		    inline=False)
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -131,23 +128,20 @@ class CogUtils(commands.Cog):
         message = await ctx.send(f"Mon préfix est {prefix}")
         return commands.when_mentioned_or(prefix)(self.bot, message)
 
-
     @commands.command(name="whoami")
-    async def whoami(self,ctx):
+    async def whoami(self, ctx):
         await ctx.send(f"You are {ctx.message.author.name}")
 
-
     @commands.command()
-    async def serv(self,ctx):
+    async def serv(self, ctx):
         await ctx.send(f"{ctx.message.guild.id}")
 
-
     @commands.command()
-    async def clear(self,ctx, amount=3):
+    async def clear(self, ctx, amount=3):
         await ctx.channel.purge(limit=amount)
 
     @commands.command(aliases=['command', 'commands', 'owlly'])
-    async def help(self,ctx):
+    async def help(self, ctx):
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
         serv = ctx.guild.id
@@ -156,7 +150,7 @@ class CogUtils(commands.Cog):
         p = c.fetchone()
         p = p[0]
         embed = discord.Embed(title="Liste des commandes",
-                                description="", color=0xaac0cc)
+                              description="", color=0xaac0cc)
         embed.add_field(name=f"Configurer les créateurs (administrateur)",
                         value=f":white_small_square: Ticket : `{p}ticket`\n :white_small_square: Catégories : `{p}category` \n :white_small_square: Créateur de pièce (1 catégorie) :`{p}channel`", inline=False)
         embed.add_field(name="Fonction sur les channels",
@@ -164,9 +158,9 @@ class CogUtils(commands.Cog):
         embed.add_field(name="Administration",
                         value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets (administrateur): `{p}recount nb`", inline=False)
         await ctx.send(embed=embed)
-  
+
     @commands.command()
-    async def prefix(self,ctx):
+    async def prefix(self, ctx):
         server = ctx.guild.id
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
@@ -175,6 +169,7 @@ class CogUtils(commands.Cog):
         prefix = c.fetchone()
         message = await ctx.send(f"Mon préfix est {prefix}")
         return commands.when_mentioned_or(prefix)(self.bot, message)
+
 
 def setup(bot):
     bot.add_cog(CogUtils(bot))
