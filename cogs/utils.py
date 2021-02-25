@@ -113,7 +113,7 @@ class CogUtils(commands.Cog):
       		    inline=False)
         embed.add_field(
             name="Administration",
-            value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets (administrateur): `{p}recount nb`",
+            value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets (administrateur): `{p}recount nb` \n :white_small_square: Ajouter des rôles (fiche validées) : {p}roliste *@role (vous pouvez mettre autant que vous voulez). \n :white_small_square: Valider des membres : {p}member @mention Role \n > Vous pouvez mettre des rôles qui n'existent pas. En outre, les rôles qui ont été mis dans la fonction \"roliste\" sera aussi mis sur la personne. Les rôles qui n'existent pas seront créées puis rajouter sur la cible.",
       		    inline=False)
         await ctx.send(embed=embed)
 
