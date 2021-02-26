@@ -83,44 +83,36 @@ class CogUtils(commands.Cog):
       await ctx.send(f"You are {ctx.message.author.name}")
 
 
-  @commands.command()
-  async def serv(self,ctx):
-    await ctx.send(f"{ctx.message.guild.id}")
-
-
-  @commands.command()
-  async def clear(self,ctx, amount=3):
-    await ctx.channel.purge(limit=amount)
-
-  @commands.command(aliases=['command', 'commands', 'owlly'])
-  async def help(self,ctx):
-      db = sqlite3.connect("owlly.db", timeout=3000)
-      c = db.cursor()
-      serv = ctx.guild.id
-      sql = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-      c.execute(sql, (serv,))
-      p = c.fetchone()
-      p = p[0]
-      embed = discord.Embed(title="Liste des commandes",
-                            description="", color=0xaac0cc)
-      embed.add_field(name=f"Configurer les créateurs (administrateur)",
-                      value=f":white_small_square: Ticket : `{p}ticket`\n :white_small_square: Catégories : `{p}category` \n :white_small_square: Créateur de pièce (1 catégorie) :`{p}channel`", inline=False)
-      embed.add_field(name="Fonction sur les channels",
-                      value=f"Vous devez être l'auteur original du channel et utiliser ses commandes sur le channel voulu !\n :white_small_square: Editer la description : `{p}desc description` ou `{p}description`\n :white_small_square: Pin un message : `{p}pins <idmessage>` \n :white_small_square: Unpin un message : `{p}unpin <idmessage>` \n :white_small_square: Changer le nom du channel : `{p}rename nom`", inline=False)
-      embed.add_field(name="Administration",
-                      value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets (administrateur): `{p}recount nb`", inline=False)
-      await ctx.send(embed=embed)
-  
-  @commands.command()
-  async def prefix(self,ctx):
-    server = ctx.guild.id
-    db = sqlite3.connect("owlly.db", timeout=3000)
-    c = db.cursor()
-    prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-    c.execute(prefix, (server,))
-    prefix = c.fetchone()
-    message = await ctx.send(f"Mon préfix est {prefix}")
-    return commands.when_mentioned_or(prefix)(self.bot, message)
+    @commands.command(aliases=['search'])
+    async def lexique(self, ctx, *, word:str):
+        server = ctx.guild.id
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        sql="SELECT notes FROM SERVEUR WHERE idS=?"
+        c.execute(sql,(server,))
+        chanID = c.fetchone()
+        if chanID is None:
+            await ctx.send("Vous n'avez pas configuré le channel des notes. Faites `notes_config` pour cela. ", delete_after=30)
+            await ctx.message.delete()
+            return
+        else:
+            chanID=chanID[0]
+            chan=self.bot.get_channel(chanID)
+            messages=await chan.history(limit=300).flatten()
+            w = re.compile(f"{word}(\W+)?:", re.IGNORECASE)
+            print(w)
+            search=list(filter(w.match, messages))
+            print(search)
+            lg=len(search)
+            if lg == 0:
+                await ctx.send("Pas de résultat.")
+                await ctx.message.delete()
+            else:
+                found=search[0]
+                for msg in messages:
+                    if found in msg.content:
+                        await ctx.send(f"Résultat : \n {msg.content}")
+                await ctx.message.delete()
     
 
 def setup(bot):
