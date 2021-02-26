@@ -67,10 +67,8 @@ def get_prefix(bot, message):
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 initial_extensions = [
     'cogs.clean_db', 'cogs.utils', 'cogs.config', 'cogs.controller', 'cogs.member']
-bot = commands.Bot(command_prefix=get_prefix,
-                   intents=intents,
-                   help_command=None)
-token = os.environ.get('DISCORD_BOT_TOKEN_TESTING')
+bot = commands.Bot(command_prefix=get_prefix,intents=intents,help_command=None)
+token = os.environ.get('DISCORD_BOT_TOKEN')
 if __name__ == '__main__':
 	for extension in initial_extensions:
 		try:
@@ -353,7 +351,5 @@ async def on_guild_remove(guild):
 	c.close()
 	db.close()
 
-
 keep_alive.keep_alive()
-
 bot.run(token)
