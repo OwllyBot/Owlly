@@ -10,24 +10,9 @@ import traceback
 import keep_alive
 import re
 import random
-from emoji import unicode_codes
 from discord import Color
 from discord import NotFound
 intents = discord.Intents(messages=True,guilds=True,reactions=True,members=True)
-
-
-# ▬▬▬▬▬▬▬▬▬▬▬ EMOJI ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-def emojis_random():
-	all_emojis = unicode_codes.EMOJI_UNICODE["en"]
-	all_emojis_key = list(all_emojis.values())
-	decodation = []
-	for i in range(0, len(all_emojis_key)):
-		d = (all_emojis_key[i])
-		decodation.append(d)
-	rand_emoji = random.sample(decodation, 1)
-	rand_emoji = rand_emoji[0]
-	return rand_emoji
-
 
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 

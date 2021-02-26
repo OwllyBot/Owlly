@@ -5,3 +5,4 @@ DB Browser for SQLite
 __pycache__/
 *.pyc
 cogs/__pycache__/
+.env
