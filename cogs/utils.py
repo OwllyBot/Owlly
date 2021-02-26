@@ -1,9 +1,6 @@
 import discord
 from discord.ext import commands, tasks
-from discord.utils import get
-from discord import CategoryChannel
-from discord import NotFound
-import os
+import re
 import sqlite3
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
@@ -15,10 +12,6 @@ class CogUtils(commands.Cog):
   async def on_ready(self):
       print("[LOGS] ONLINE")
       await self.bot.change_presence(activity=discord.Game("ouvrir des portes !"))
-
-  @commands.command()
-  async def test(self, ctx):
-    await ctx.message.delete()
 
   @commands.Cog.listener()
   async def on_command_error(self, ctx, error):
@@ -60,27 +53,13 @@ class CogUtils(commands.Cog):
 
 
   @commands.command()
-  @commands.has_permissions(administrator=True)
-  async def set_prefix(self, ctx, prefix):
-      db = sqlite3.connect("owlly.db", timeout=3000)
-      c = db.cursor()
-      sql = "UPDATE SERVEUR SET prefix = ? WHERE idS = ?"
-      var = (prefix, ctx.guild.id)
-      c.execute(sql, var)
-      await ctx.send(f"Prefix changé pour {prefix}")
-      db.commit()
-      c.close()
-      db.close()
-
-
-  @commands.command()
   async def ping(self,ctx):
     await ctx.send(f"🏓 Pong with {str(round(self.bot.latency, 2))}")
 
 
   @commands.command(name="whoami")
   async def whoami(self,ctx):
-      await ctx.send(f"You are {ctx.message.author.name}")
+    await ctx.send(f"You are {ctx.message.author.name}")
 
 
     @commands.command(aliases=['search'])

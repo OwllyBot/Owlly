@@ -19,30 +19,6 @@ class memberAssign(commands.Cog):
 		name=Member.name
 		normal_name = unicodedata.normalize('NFKD', name)
 		await Member.edit(nick=normal_name)
- 
-	@commands.has_permissions(administrator=True)
-	@commands.command()
-	async def roliste(self, ctx, *role: discord.Role):
-		db = sqlite3.connect("owlly.db", timeout=3000)
-		c = db.cursor()
-		sql = "UPDATE SERVEUR SET roliste = ? WHERE idS = ?"
-		role_list=[]
-		if (len(role)) > 1:
-			for i in role :
-				role_list.append(str(i.id))
-		else:
-			role_str = str(role[0].id)
-		role_str= ",".join((role_list))
-		var = (role_str, ctx.guild.id)
-		c.execute(sql, var)
-		phrase=[]
-		for i in role:
-			phrase.append(i.name)
-		phrase=", ".join(phrase)
-		await ctx.send(f"Les rôles {phrase} ont bien été enregistré dans la base de données")
-		db.commit()
-		c.close()
-		db.close()
   
 	@commands.command()
 	async def member(self, ctx, user: discord.Member, *role: str):

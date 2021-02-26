@@ -10,24 +10,9 @@ import traceback
 import keep_alive
 import re
 import random
-from emoji import unicode_codes
 from discord import Color
 from discord import NotFound
 intents = discord.Intents(messages=True,guilds=True,reactions=True,members=True)
-
-
-# ▬▬▬▬▬▬▬▬▬▬▬ EMOJI ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-def emojis_random():
-	all_emojis = unicode_codes.EMOJI_UNICODE["en"]
-	all_emojis_key = list(all_emojis.values())
-	decodation = []
-	for i in range(0, len(all_emojis_key)):
-		d = (all_emojis_key[i])
-		decodation.append(d)
-	rand_emoji = random.sample(decodation, 1)
-	rand_emoji = rand_emoji[0]
-	return rand_emoji
-
 
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
@@ -49,7 +34,7 @@ def get_prefix(bot, message):
 
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 initial_extensions = [
-    'cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member']
+    'cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
 bot = commands.Bot(command_prefix=get_prefix,intents=intents,help_command=None)
 token = os.environ.get('DISCORD_BOT_TOKEN')
 if __name__ == '__main__':
@@ -335,6 +320,6 @@ async def on_guild_remove(guild):
 	db.close()
 
 
-keep_alive.keep_alive()
+#keep_alive.keep_alive()
 
 bot.run(token)
