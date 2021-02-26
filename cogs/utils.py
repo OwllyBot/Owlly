@@ -1,9 +1,5 @@
 import discord
 from discord.ext import commands, tasks
-from discord.utils import get
-from discord import CategoryChannel
-from discord import NotFound
-import os
 import re
 import sqlite3
 intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
@@ -171,22 +167,6 @@ class CogUtils(commands.Cog):
                     if found in msg.content:
                         await ctx.send(f"Résultat : \n {msg.content}")
                 await ctx.message.delete()
-    
-    @commands.command(aliases=['lexique_config'])
-    async def notes_config(self, ctx, chan:discord.TextChannel):
-        server = ctx.guild.id
-        db = sqlite3.connect("owlly.db", timeout=3000)
-        c = db.cursor()
-        sql="UPDATE SERVEUR SET notes=? WHERE idS=?"
-        chanID=chan.id
-        var=(chanID,server)
-        c.execute(sql,var)
-        db.commit()
-        c.close()
-        db.close()
-        await ctx.send(f"Le channels des notes est donc {chan}", delete_after=30)
-        await ctx.message.delete()
-            
 
 def setup(bot):
     bot.add_cog(CogUtils(bot))

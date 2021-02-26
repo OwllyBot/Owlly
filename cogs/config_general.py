@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 import sqlite3
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
-class cogAdmins(commands.Cog):
+class CogAdmins(commands.Cog):
   def __init__ (self, bot):
     self.bot = bot
     
@@ -61,4 +61,4 @@ class cogAdmins(commands.Cog):
     db.close()
   
 def setup(bot):
-  bot.add_cog(cogAdmins(bot))
+  bot.add_cog(CogAdmins(bot))

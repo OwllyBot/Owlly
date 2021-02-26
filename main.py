@@ -2,16 +2,11 @@ import emoji
 import discord
 from discord.ext import commands, tasks
 from discord.utils import get
-from discord import CategoryChannel
 import os
 import sqlite3
 import sys
 import traceback
 import keep_alive
-import re
-import random
-from discord import Color
-from discord import NotFound
 intents = discord.Intents(messages=True,guilds=True,reactions=True,members=True)
 
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
@@ -51,7 +46,7 @@ def get_prefix(bot, message):
 
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 initial_extensions = [
-    'cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member']
+    'cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
 bot = commands.Bot(command_prefix=get_prefix,intents=intents,help_command=None)
 token = os.environ.get('DISCORD_BOT_TOKEN')
 if __name__ == '__main__':
@@ -336,5 +331,5 @@ async def on_guild_remove(guild):
 	c.close()
 	db.close()
 
-keep_alive.keep_alive()
+#keep_alive.keep_alive()
 bot.run(token)
