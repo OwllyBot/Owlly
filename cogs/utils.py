@@ -4,6 +4,7 @@ from discord.utils import get
 from discord import CategoryChannel
 from discord import NotFound
 import os
+import re
 import sqlite3
 intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
 
@@ -140,6 +141,49 @@ class CogUtils(commands.Cog):
     async def clear(self, ctx, amount=3):
         await ctx.channel.purge(limit=amount)
 
+    @commands.command(aliases=['search'])
+    async def lexique(self, ctx, *, word:str):
+        server = ctx.guild.id
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        sql="SELECT notes FROM SERVEUR WHERE idS=?"
+        c.execute(sql,(server,))
+        chanID = c.fetchone()
+        if chanID is None:
+            await ctx.send("Vous n'avez pas configuré le channel des notes. Faites `notes_config` pour cela. ", delete_after=30)
+            await ctx.message.delete()
+            return
+        else:
+            chan=self.bot.get_channel(chanID)
+            messages=await ctx.chan.history(limit=300).flatten()
+            w = re.compile(f"{word}(\W+)?:", re.IGNORECASE)
+            search=list(filter(w.match, messages))
+            lg=len(search)
+            if lg == 0:
+                await ctx.send("Pas de résultat.")
+                await ctx.message.delete()
+            else:
+                found=search[0]
+                for msg in messages:
+                    if found in msg.content:
+                        await ctx.send(f"Résultat : \n {msg.content}")
+                await ctx.message.delete()
+    
+    @commands.command(aliases=['lexique_config'])
+    async def notes_config(self, ctx, chan:discord.TextChannel):
+        server = ctx.guild.id
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        sql="UPDATE SERVEUR SET notes=? WHERE idS=?"
+        chanID=chan.id
+        var=(chanID,server)
+        c.execute(sql,var)
+        db.commit()
+        c.close()
+        db.close()
+        await ctx.send(f"Le channels des notes est donc {chan}", delete_after=30)
+        await ctx.message.delete()
+            
 
 def setup(bot):
     bot.add_cog(CogUtils(bot))
