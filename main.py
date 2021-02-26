@@ -66,7 +66,7 @@ def get_prefix(bot, message):
 
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 initial_extensions = [
-    'cogs.clean_db', 'cogs.utils', 'cogs.config', 'cogs.controller', 'cogs.member']
+    'cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member']
 bot = commands.Bot(command_prefix=get_prefix,intents=intents,help_command=None)
 token = os.environ.get('DISCORD_BOT_TOKEN')
 if __name__ == '__main__':

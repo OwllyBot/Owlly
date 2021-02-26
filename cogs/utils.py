@@ -154,10 +154,13 @@ class CogUtils(commands.Cog):
             await ctx.message.delete()
             return
         else:
+            chanID=chanID[0]
             chan=self.bot.get_channel(chanID)
-            messages=await ctx.chan.history(limit=300).flatten()
+            messages=await chan.history(limit=300).flatten()
             w = re.compile(f"{word}(\W+)?:", re.IGNORECASE)
+            print(w)
             search=list(filter(w.match, messages))
+            print(search)
             lg=len(search)
             if lg == 0:
                 await ctx.send("Pas de résultat.")
