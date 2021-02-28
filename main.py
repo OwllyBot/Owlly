@@ -313,5 +313,5 @@ async def on_guild_remove(guild):
 	c.close()
 	db.close()
 
-#keep_alive.keep_alive()
+keep_alive.keep_alive()
 bot.run(token)
