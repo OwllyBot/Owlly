@@ -1,20 +1,14 @@
 import discord
 from discord.ext import commands, tasks
 from discord.utils import get
-from discord import CategoryChannel
-from discord import NotFound
-import os
 import sqlite3
 import re
-intents = discord.Intents(messages=True,
-                          guilds=True,
-                          reactions=True,
-                          members=True)
+intents = discord.Intents(messages=True,guilds=True,reactions=True,members=True)
 
 # ▬▬▬▬▬▬▬▬▬▬▬ SEARCH CAT NAME ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 
-class config(commands.Cog):
+class config(commands.Cog, name="Créateurs", description="Permet de créer les messages pour créer des channels dans les catégories."):
 	def __init__(self, bot):
 		self.bot = bot
 
@@ -70,7 +64,7 @@ class config(commands.Cog):
 			return
 
 	@commands.has_permissions(administrator=True)
-	@commands.command()
+	@commands.command(name="Ticket", brief="Débute la configuration des tickets", help="Permet de créer la configuration des tickets avec divers paramètres, notamment ceux le numéros dans le nom, ainsi que le moment où ce numéros va se reset. Les tickets sont des channels dont le nom est fixé.", description="Configuration pour une seule catégorie.")
 	async def ticket(self, ctx):
 		def checkValid(reaction, user):
 			return ctx.message.author == user and question.id == reaction.message.id and (
@@ -316,7 +310,7 @@ class config(commands.Cog):
 			return
 
 	@commands.has_permissions(administrator=True)
-	@commands.command(aliases=['chan'])
+	@commands.command(aliases=['chan'], name="Channel", help="Permet de créer un message de création de channels dans une seule catégorie, à l'instar des tickets, sans les paramètres. En outre, les créateurs peuvent nommer leur channel, contrairement aux tickets.", brief="Similaire aux tickets, mais permettant de nommer le channel.", description="Configuration pour une seule catégorie.")
 	async def channel(self, ctx):
 		def checkValid(reaction, user):
 			return ctx.message.author == user and question.id == reaction.message.id and (
@@ -481,7 +475,7 @@ class config(commands.Cog):
 			return
 
 	@commands.has_permissions(administrator=True)
-	@commands.command()
+	@commands.command(name="Catégorie", brief="Configuration d'un créateur pour plusieurs catégorie", help="Permet de créer divers channels dans plusieurs catégories qui seront recherchées sur le serveur. La configuration offre une option pour autoriser ou nom le nommage automatique des channels.", description="Pour plusieurs catégories, 9 au maximum.")
 	async def category(self, ctx):
 		def checkValid(reaction, user):
 			return ctx.message.author == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
@@ -632,7 +626,7 @@ class config(commands.Cog):
 		await ctx.message.delete()
 
 	@commands.has_permissions(administrator=True)
-	@commands.command(aliases=["count", "edit_count"])
+	@commands.command(aliases=["count", "edit_count"], brief="Permet de changer le compteur des ticket", help="Permet de reset, ou changer manuellement le numéro d'un créateur de ticket.", usage="nombre id_message_createur")
 	async def recount(self, ctx, arg, ticket_id):
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()

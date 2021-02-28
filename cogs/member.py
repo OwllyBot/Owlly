@@ -1,15 +1,13 @@
 import discord
 from discord.ext import commands, tasks
 from discord.utils import get
-from discord import CategoryChannel
-from discord import NotFound
 import unicodedata
 import os
 import sqlite3
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
 
-class memberAssign(commands.Cog):
+class memberAssign(commands.Cog, name="Membre", description="Des commandes gérants les membres."):
 
 	def __init__(self, bot):
 		self.bot = bot
@@ -19,32 +17,9 @@ class memberAssign(commands.Cog):
 		name=Member.name
 		normal_name = unicodedata.normalize('NFKD', name)
 		await Member.edit(nick=normal_name)
- 
-	@commands.has_permissions(administrator=True)
-	@commands.command()
-	async def roliste(self, ctx, *role: discord.Role):
-		db = sqlite3.connect("owlly.db", timeout=3000)
-		c = db.cursor()
-		sql = "UPDATE SERVEUR SET roliste = ? WHERE idS = ?"
-		role_list=[]
-		if (len(role)) > 1:
-			for i in role :
-				role_list.append(str(i.id))
-		else:
-			role_str = str(role[0].id)
-		role_str= ",".join((role_list))
-		var = (role_str, ctx.guild.id)
-		c.execute(sql, var)
-		phrase=[]
-		for i in role:
-			phrase.append(i.name)
-		phrase=", ".join(phrase)
-		await ctx.send(f"Les rôles {phrase} ont bien été enregistré dans la base de données")
-		db.commit()
-		c.close()
-		db.close()
   
-	@commands.command()
+	@commands.command(name="Assignation", usage="@mention *role", brief="Donne divers rôles.", help="Permet de donner des rôles à un membre, ainsi que les rôles qui ont été inscrits dans la base. Si les rôles n'existent pas, le bot les crée avant.")
+	@commands.has_permissions(administrator=True)
 	async def member(self, ctx, user: discord.Member, *role: str):
 		addRole = []
 		infoNew = []

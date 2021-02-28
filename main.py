@@ -1,33 +1,13 @@
-import emoji
 import discord
 from discord.ext import commands, tasks
 from discord.utils import get
-from discord import CategoryChannel
 import os
 import sqlite3
 import sys
 import traceback
 import keep_alive
-import re
-import random
-from emoji import unicode_codes
-from discord import Color
-from discord import NotFound
+from pretty_help import PrettyHelp
 intents = discord.Intents(messages=True,guilds=True,reactions=True,members=True)
-
-
-# ▬▬▬▬▬▬▬▬▬▬▬ EMOJI ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-def emojis_random():
-	all_emojis = unicode_codes.EMOJI_UNICODE["en"]
-	all_emojis_key = list(all_emojis.values())
-	decodation = []
-	for i in range(0, len(all_emojis_key)):
-		d = (all_emojis_key[i])
-		decodation.append(d)
-	rand_emoji = random.sample(decodation, 1)
-	rand_emoji = rand_emoji[0]
-	return rand_emoji
-
 
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
@@ -47,28 +27,11 @@ def get_prefix(bot, message):
 	db.close()
 	return prefix
 
-def get_prefix(bot, message):
-	db = sqlite3.connect("owlly.db", timeout=3000)
-	c = db.cursor()
-	prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-	c.execute(prefix, (int(message.guild.id), ))
-	prefix = c.fetchone()
-	if prefix is None:
-		prefix = "?"
-		sql = "INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
-		var = ("?", message.guild.id)
-		c.execute(sql, var)
-		db.commit()
-	c.close()
-	db.close()
-	return prefix
-
-
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 initial_extensions = [
-    'cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member']
-bot = commands.Bot(command_prefix=get_prefix,intents=intents,help_command=None)
+    'cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
 token = os.environ.get('DISCORD_BOT_TOKEN')
+bot = commands.Bot(command_prefix=get_prefix,intents=intents)
 if __name__ == '__main__':
 	for extension in initial_extensions:
 		try:
@@ -86,7 +49,7 @@ async def on_command_error(ctx, error):
       return
     ignored=(commands.CommandNotFound,)
     error=getattr(error,'original',error)
-  if isinstance(error,ignored):
+  if isinstance(error,commands.CommandNotFound,):
     return
   if isinstance(error, commands.DisabledCommand):
     await ctx.send(f'{ctx.command} has been disabled.')
@@ -103,11 +66,10 @@ async def on_command_error(ctx, error):
       # All other Errors not returned come here. And we can just print the default TraceBack.
     print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
     traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-
+bot.help_command=PrettyHelp(no_category="Autres")
 
 @bot.event
 async def on_raw_reaction_add(payload):
-	print("hey")
 	emoji_cat = ["1⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 	db = sqlite3.connect("owlly.db", timeout=3000)
 	c = db.cursor()
@@ -351,5 +313,5 @@ async def on_guild_remove(guild):
 	c.close()
 	db.close()
 
-keep_alive.keep_alive()
+#keep_alive.keep_alive()
 bot.run(token)
