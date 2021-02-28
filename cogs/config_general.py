@@ -7,7 +7,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
   def __init__ (self, bot):
     self.bot = bot
     
-  @commands.command(name="Set_prefix", help="Permet de changer le prefix du bot.", brief="Changement du prefix.")
+  @commands.command(name="set_prefix", help="Permet de changer le prefix du bot.", brief="Changement du prefix.")
   @commands.has_permissions(administrator=True)
   async def set_prefix(self, ctx, prefix):
     db = sqlite3.connect("owlly.db", timeout=3000)
@@ -20,7 +20,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
     c.close()
     db.close()
       
-  @commands.command(aliases=['lexique_config'], name="Lexique config", help="Permet de configurer le channel dans lequel la commande `search` va faire ses recherches.", brief="Configuration de la recherche de message dans un channel.")
+  @commands.command(aliases=['lexique_config'], help="Permet de configurer le channel dans lequel la commande `search` va faire ses recherches.", brief="Configuration de la recherche de message dans un channel.")
   @commands.has_permissions(administrator=True)
   async def notes_config(self, ctx, chan:discord.TextChannel):
     server = ctx.guild.id
@@ -37,7 +37,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
     await ctx.message.delete()
     
   @commands.has_permissions(administrator=True)
-  @commands.command(name="Role", help="Assignation des rôles assignés par défaut par la commande `member`.", brief="Enregistrement de rôle.", usage="@mention/ID des rôles à enregistrer")
+  @commands.command(name="Roliste", help="Assignation des rôles assignés par défaut par la commande `member`.", brief="Enregistrement de rôles pour la commande member.", usage="@mention/ID des rôles à enregistrer", aliases=['role_config', 'roliste_config', 'assign', 'Roliste'])
   async def roliste(self, ctx, *role: discord.Role):
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()

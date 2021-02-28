@@ -9,7 +9,7 @@ class controlleur(commands.Cog, name="Auteur", description="Permet aux auteurs d
   def __init__(self, bot):
     self.bot = bot
 
-  @commands.command(name="Description", aliases=['edit_desc'], brief="Edition de la description",help="Permet à un auteur de modifier la description de son channel.", usage="description du channel", description="La commande doit être faite sur le channel que l'on souhaite modifier.")
+  @commands.command(aliases=['edit_desc'], brief="Edition de la description",help="Permet à un auteur de modifier la description de son channel.", usage="description du channel", description="La commande doit être faite sur le channel que l'on souhaite modifier.")
   async def desc(self, ctx, arg):
     channel_here = ctx.channel.id
     channel = self.bot.get_channel(channel_here)

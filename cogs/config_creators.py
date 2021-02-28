@@ -64,7 +64,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
 			return
 
 	@commands.has_permissions(administrator=True)
-	@commands.command(name="Ticket", brief="Débute la configuration des tickets", help="Permet de créer la configuration des tickets avec divers paramètres, notamment ceux le numéros dans le nom, ainsi que le moment où ce numéros va se reset. Les tickets sont des channels dont le nom est fixé.", description="Configuration pour une seule catégorie.")
+	@commands.command(aliases=['tick', 'Ticket'], name="Ticket", brief="Débute la configuration des tickets", help="Permet de créer la configuration des tickets avec divers paramètres, notamment ceux le numéros dans le nom, ainsi que le moment où ce numéros va se reset. Les tickets sont des channels dont le nom est fixé.", description="Configuration pour une seule catégorie.")
 	async def ticket(self, ctx):
 		def checkValid(reaction, user):
 			return ctx.message.author == user and question.id == reaction.message.id and (
@@ -310,7 +310,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
 			return
 
 	@commands.has_permissions(administrator=True)
-	@commands.command(aliases=['chan'], name="Channel", help="Permet de créer un message de création de channels dans une seule catégorie, à l'instar des tickets, sans les paramètres. En outre, les créateurs peuvent nommer leur channel, contrairement aux tickets.", brief="Similaire aux tickets, mais permettant de nommer le channel.", description="Configuration pour une seule catégorie.")
+	@commands.command(aliases=['chan, Channel'], name="Channel", help="Permet de créer un message de création de channels dans une seule catégorie, à l'instar des tickets, sans les paramètres. En outre, les créateurs peuvent nommer leur channel, contrairement aux tickets.", brief="Similaire aux tickets, mais permettant de nommer le channel.", description="Configuration pour une seule catégorie.")
 	async def channel(self, ctx):
 		def checkValid(reaction, user):
 			return ctx.message.author == user and question.id == reaction.message.id and (
@@ -475,7 +475,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
 			return
 
 	@commands.has_permissions(administrator=True)
-	@commands.command(name="Catégorie", brief="Configuration d'un créateur pour plusieurs catégorie", help="Permet de créer divers channels dans plusieurs catégories qui seront recherchées sur le serveur. La configuration offre une option pour autoriser ou nom le nommage automatique des channels.", description="Pour plusieurs catégories, 9 au maximum.")
+	@commands.command(aliases=['Category','cat', 'categories'], name="Category", brief="Configuration d'un créateur pour plusieurs catégorie", help="Permet de créer divers channels dans plusieurs catégories qui seront recherchées sur le serveur. La configuration offre une option pour autoriser ou nom le nommage automatique des channels.", description="Pour plusieurs catégories, 9 au maximum.")
 	async def category(self, ctx):
 		def checkValid(reaction, user):
 			return ctx.message.author == user and question.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")

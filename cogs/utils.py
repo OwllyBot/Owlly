@@ -55,11 +55,7 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
         if self.bot.user.mentioned_in(message) and 'prefix' in message.content:
             await channel.send(f'Mon prefix est `{prefix}`')
 
-    @commands.command(name="Serveur ID", brief="Donne simplement l'ID du serveur.", help="Donne l'ID du serveur")
-    async def serv(self, ctx):
-        await ctx.send(f"{ctx.message.guild.id}")
-
-    @commands.command(name="Prefix", help="Affiche le prefix du bot. Il est possible de l'obtenir en le mentionnant simplement.", brief="Donne le préfix du bot. ")
+    @commands.command(name="prefix", help="Affiche le prefix du bot. Il est possible de l'obtenir en le mentionnant simplement.", brief="Donne le préfix du bot. ")
     async def prefix(self, ctx):
         server = ctx.guild.id
         db = sqlite3.connect("owlly.db", timeout=3000)
@@ -79,7 +75,7 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
     async def clear(self, ctx, amount=3):
         await ctx.channel.purge(limit=amount)
 
-    @commands.command(name="Lexique", brief="Une recherche dans un channel", help="Permet de chercher un texte parmi le channel fixée", aliases=['search'])
+    @commands.command(name="search", brief="Une recherche dans un channel", help="Permet de chercher un texte parmi le channel fixée", aliases=['search'])
     async def lexique(self, ctx, *, word:str):
         server = ctx.guild.id
         db = sqlite3.connect("owlly.db", timeout=3000)
