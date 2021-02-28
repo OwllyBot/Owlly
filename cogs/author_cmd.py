@@ -5,12 +5,12 @@ import sqlite3
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
 
-class controlleur(commands.Cog, name="Channel command", description="Permet aux auteurs des channels de modifiers certains attributs du dit channel. Attention, toutes les commandes doivent être faites dans le channel créées."):
+class controlleur(commands.Cog, name="Auteur", description="Permet aux auteurs des channels de modifiers certains attributs du dit channel. Attention, toutes les commandes doivent être faites dans le channel créées."):
   def __init__(self, bot):
     self.bot = bot
 
-  @commands.command(name="description", aliases=['desc', 'edit_desc'], brief="Edition de la description",help="Permet à un auteur de modifier la description de son channel.", usage="\"description du channel\"", description="La commande doit être faite sur le channel que l'on souhaite modifier.")
-  async def description(self, ctx, arg):
+  @commands.command(name="Description", aliases=['edit_desc'], brief="Edition de la description",help="Permet à un auteur de modifier la description de son channel.", usage="description du channel", description="La commande doit être faite sur le channel que l'on souhaite modifier.")
+  async def desc(self, ctx, arg):
     channel_here = ctx.channel.id
     channel = self.bot.get_channel(channel_here)
     db = sqlite3.connect("owlly.db", timeout=3000)
@@ -30,26 +30,26 @@ class controlleur(commands.Cog, name="Channel command", description="Permet aux 
     c.close()
     db.close()
 
-    @commands.command(usage="id du message à unpin", brief="Désépingle un message", help="Permet de désépingler un message.")
-    async def unpin(self, ctx, id_message):
-      channel_here = ctx.channel.id
-      channel = self.bot.get_channel(channel_here)
-      db = sqlite3.connect("owlly.db", timeout=3000)
-      c = db.cursor()
-      sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
-      var = (ctx.author.id, ctx.guild.id)
-      c.execute(sql, var)
-      list_chan = c.fetchall()
-      list_chan = list(sum(list_chan, ()))
-      if channel_here in list_chan:
-        message = await channel.fetch_message(id_message)
-        await message.unpin()
-        await ctx.message.delete()
-      else:
-        await ctx.send("Vous n'êtes pas l'auteur de ce channel !",delete_after=10)
-        await ctx.message.delete()
-      c.close()
-      db.close()
+  @commands.command(usage="id du message à unpin", brief="Désépingle un message", help="Permet de désépingler un message.")
+  async def unpin(self, ctx, id_message):
+    channel_here = ctx.channel.id
+    channel = self.bot.get_channel(channel_here)
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    sql = "SELECT channel_id FROM AUTHOR WHERE (userID = ? AND idS = ?)"
+    var = (ctx.author.id, ctx.guild.id)
+    c.execute(sql, var)
+    list_chan = c.fetchall()
+    list_chan = list(sum(list_chan, ()))
+    if channel_here in list_chan:
+      message = await channel.fetch_message(id_message)
+      await message.unpin()
+      await ctx.message.delete()
+    else:
+      await ctx.send("Vous n'êtes pas l'auteur de ce channel !",delete_after=10)
+      await ctx.message.delete()
+    c.close()
+    db.close()
 
   @commands.command(aliases=['pin'], help="Permet d'épingler un message sur le channel", usage="id du message à épingler", brief="Epingle un message.")
   async def pins(self, ctx, id_message):

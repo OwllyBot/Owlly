@@ -8,7 +8,7 @@ intents = discord.Intents(messages=True,guilds=True,reactions=True,members=True)
 # ▬▬▬▬▬▬▬▬▬▬▬ SEARCH CAT NAME ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 
-class config(commands.Cog, name="Créateurs de channels", description="Permet de créer les messages pour créer des channels dans les catégories."):
+class config(commands.Cog, name="Créateurs", description="Permet de créer les messages pour créer des channels dans les catégories."):
 	def __init__(self, bot):
 		self.bot = bot
 

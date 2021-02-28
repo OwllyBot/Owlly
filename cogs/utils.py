@@ -93,21 +93,32 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
             return
         else:
             chanID=chanID[0]
+            print(chanID)
             chan=self.bot.get_channel(chanID)
             messages=await chan.history(limit=300).flatten()
-            w = re.compile(f"{word}(\W+)?:", re.IGNORECASE)
-            print(w)
-            search=list(filter(w.match, messages))
-            print(search)
+            msg_content=[]
+            for i in messages:
+                msg_content.append(i.content)
+            w = re.compile(f"(.*)?{word}(.*)?(\W+)?:", re.IGNORECASE)
+            search=list(filter(w.match,msg_content))
             lg=len(search)
             if lg == 0:
                 await ctx.send("Pas de résultat.")
                 await ctx.message.delete()
-            else:
+            elif lg==1:
                 found=search[0]
                 for msg in messages:
                     if found in msg.content:
-                        await ctx.send(f"Résultat : \n {msg.content}")
+                        await ctx.send(f"{msg.content}")
+                await ctx.message.delete()
+            else:
+                phrase=[]
+                for i in search:
+                    for msg in messages:
+                        if i in msg.content:
+                            phrase.append(f":white_small_square:{msg.content}")
+                phrase_rep="\n".join(phrase)
+                await ctx.send(f"__Résultats__ :\n{phrase_rep}")
                 await ctx.message.delete()
 
 def setup(bot):
