@@ -66,7 +66,7 @@ async def on_command_error(ctx, error):
       # All other Errors not returned come here. And we can just print the default TraceBack.
     print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
     traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-bot.help_command=PrettyHelp(no_category="Autres")
+bot.help_command=PrettyHelp(no_category="Autres", active_time=180)
 
 @bot.event
 async def on_raw_reaction_add(payload):
