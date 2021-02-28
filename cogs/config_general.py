@@ -3,11 +3,11 @@ from discord.ext import commands, tasks
 import sqlite3
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
-class CogAdmins(commands.Cog):
+class CogAdmins(commands.Cog, name="Configuration générale", description="Permet d'enregistrer quelques paramètres pour le bot."):
   def __init__ (self, bot):
     self.bot = bot
     
-  @commands.command()
+  @commands.command(name="Set_prefix", help="Permet de changer le prefix du bot.", brief="Changement du prefix.")
   @commands.has_permissions(administrator=True)
   async def set_prefix(self, ctx, prefix):
     db = sqlite3.connect("owlly.db", timeout=3000)
@@ -20,7 +20,7 @@ class CogAdmins(commands.Cog):
     c.close()
     db.close()
       
-  @commands.command(aliases=['lexique_config'])
+  @commands.command(aliases=['lexique_config'], name="Lexique config", help="Permet de configurer le channel dans lequel la commande `search` va faire ses recherches.", brief="Configuration de la recherche de message dans un channel.")
   @commands.has_permissions(administrator=True)
   async def notes_config(self, ctx, chan:discord.TextChannel):
     server = ctx.guild.id
@@ -37,7 +37,7 @@ class CogAdmins(commands.Cog):
     await ctx.message.delete()
     
   @commands.has_permissions(administrator=True)
-  @commands.command()
+  @commands.command(name="Role", help="Assignation des rôles assignés par défaut par la commande `member`.", brief="Enregistrement de rôle.", usage="@mention/ID des rôles à enregistrer")
   async def roliste(self, ctx, *role: discord.Role):
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()

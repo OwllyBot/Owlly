@@ -9,7 +9,8 @@ class DB_utils(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(hidden=True)
+    @commands.has_permissions(administrator=True)
     async def clean_db(self, ctx):
         print("start clean")
         db = sqlite3.connect("owlly.db", timeout=3000)
@@ -66,6 +67,19 @@ class DB_utils(commands.Cog):
         db.close()
         await ctx.send("DB cleanned !", delete_after=30)
         await ctx.message.delete()
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        serv = ctx.guild.id
+        sql = "SELECT prefix FROM SERVEUR WHERE idS = ?"
+        c.execute(sql, (serv,))
+        p = c.fetchone()
+        p = p[0]
+        if isinstance(error, discord.ext.commands.errors.CommandNotFound):
+            await ctx.send(f"Commande inconnue ! \n Pour avoir la liste des commandes utilisables, utilise `{p}help` ou `{p}command`")
+
 
 def setup(bot):
   bot.add_cog(DB_utils(bot))

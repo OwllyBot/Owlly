@@ -5,7 +5,7 @@ import sqlite3
 intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
 
 
-class CogUtils(commands.Cog):
+class CogUtils(commands.Cog, name="Utilitaire", description="Une série de commande permettant notamment le débug, mais donnant aussi des informations."):
     def __init__(self, bot):
         self.bot = bot
 
@@ -13,22 +13,6 @@ class CogUtils(commands.Cog):
     async def on_ready(self):
         print("[LOGS] ONLINE")
         await self.bot.change_presence(activity=discord.Game("ouvrir des portes !"))
-
-    @commands.command()
-    async def test(self, ctx):
-        await ctx.message.delete()
-
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
-        db = sqlite3.connect("owlly.db", timeout=3000)
-        c = db.cursor()
-        serv = ctx.guild.id
-        sql = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-        c.execute(sql, (serv,))
-        p = c.fetchone()
-        p = p[0]
-        if isinstance(error, discord.ext.commands.errors.CommandNotFound):
-            await ctx.send(f"Commande inconnue ! \n Pour avoir la liste des commandes utilisables, utilise `{p}help` ou `{p}command`")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -54,7 +38,7 @@ class CogUtils(commands.Cog):
         c.close()
         db.close()
 
-    @commands.command()
+    @commands.command(name="ping", brief="Permet d'avoir la latence du bot.", help="Permet d'avoir la latence du bot.")
     async def ping(self, ctx):
         await ctx.send(f"🏓 Pong with {str(round(self.bot.latency, 2))}")
 
@@ -71,50 +55,11 @@ class CogUtils(commands.Cog):
         if self.bot.user.mentioned_in(message) and 'prefix' in message.content:
             await channel.send(f'Mon prefix est `{prefix}`')
 
-    @commands.command()
+    @commands.command(name="Serveur ID", brief="Donne simplement l'ID du serveur.", help="Donne l'ID du serveur")
     async def serv(self, ctx):
         await ctx.send(f"{ctx.message.guild.id}")
 
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def set_prefix(self, ctx, prefix):
-        db = sqlite3.connect("owlly.db", timeout=3000)
-        c = db.cursor()
-        sql = "UPDATE SERVEUR SET prefix = ? WHERE idS = ?"
-        var = (prefix, ctx.guild.id)
-        c.execute(sql, var)
-        await ctx.send(f"Prefix changé pour {prefix}")
-        db.commit()
-        c.close()
-        db.close()
-
-    @commands.command(aliases=['command', 'commands', 'owlly'])
-    async def help(self, ctx):
-        db = sqlite3.connect("owlly.db", timeout=3000)
-        c = db.cursor()
-        serv = ctx.guild.id
-        sql = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-        c.execute(sql, (serv, ))
-        p = c.fetchone()
-        p = p[0]
-        embed = discord.Embed(title="Liste des commandes",
-                              description="",
-                              color=0xaac0cc)
-        embed.add_field(
-            name=f"Configurer les créateurs (administrateur)",
-            value=f":white_small_square: Ticket : `{p}ticket`\n :white_small_square: Catégories : `{p}category` \n :white_small_square: Créateur de pièce (1 catégorie) :`{p}channel`",
-      		    inline=False)
-        embed.add_field(
-            name="Fonction sur les channels",
-            value=f"Vous devez être l'auteur original du channel et utiliser ses commandes sur le channel voulu !\n :white_small_square: Editer la description : `{p}desc description` ou `{p}description`\n :white_small_square: Pin un message : `{p}pins <idmessage>` \n :white_small_square: Unpin un message : `{p}unpin <idmessage>` \n :white_small_square: Changer le nom du channel : `{p}rename nom`",
-      		    inline=False)
-        embed.add_field(
-            name="Administration",
-            value=f":white_small_square: Prefix : `{p}prefix` \n :white_small_square: Changer le prefix (administrateur) : `{p}set_prefix` \n :white_small_square: Changer le compteur des tickets (administrateur): `{p}recount nb` \n :white_small_square: Ajouter des rôles (fiche validées) : `{p}roliste *@role` (vous pouvez mettre autant que vous voulez). \n :white_small_square: Valider des membres : `{p}member @mention Role` \n > Vous pouvez mettre des rôles qui n'existent pas. En outre, les rôles qui ont été mis dans la fonction \"roliste\" sera aussi mis sur la personne. Les rôles qui n'existent pas seront créées puis rajouter sur la cible.",
-      		    inline=False)
-        await ctx.send(embed=embed)
-
-    @commands.command()
+    @commands.command(name="Prefix", help="Affiche le prefix du bot. Il est possible de l'obtenir en le mentionnant simplement.", brief="Donne le préfix du bot. ")
     async def prefix(self, ctx):
         server = ctx.guild.id
         db = sqlite3.connect("owlly.db", timeout=3000)
@@ -125,19 +70,16 @@ class CogUtils(commands.Cog):
         message = await ctx.send(f"Mon préfix est {prefix}")
         return commands.when_mentioned_or(prefix)(self.bot, message)
 
-    @commands.command(name="whoami")
+    @commands.command(name="whoami", help="Affiche simplement votre nom...", brief="Affiche votre nom.")
     async def whoami(self, ctx):
         await ctx.send(f"You are {ctx.message.author.name}")
 
-    @commands.command()
-    async def serv(self, ctx):
-        await ctx.send(f"{ctx.message.guild.id}")
-
-    @commands.command()
+    @commands.command(name="clear",help="Permet de nettoyer un channel. Attention, nécessite d'être administrateur.", brief="Purge un channel.")
+    @commands.has_permissions(administrator=True)
     async def clear(self, ctx, amount=3):
         await ctx.channel.purge(limit=amount)
 
-    @commands.command(aliases=['search'])
+    @commands.command(name="Lexique", brief="Une recherche dans un channel", help="Permet de chercher un texte parmi le channel fixée", aliases=['search'])
     async def lexique(self, ctx, *, word:str):
         server = ctx.guild.id
         db = sqlite3.connect("owlly.db", timeout=3000)

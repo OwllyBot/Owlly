@@ -1,4 +1,3 @@
-import emoji
 import discord
 from discord.ext import commands, tasks
 from discord.utils import get
@@ -27,27 +26,11 @@ def get_prefix(bot, message):
 	db.close()
 	return prefix
 
-def get_prefix(bot, message):
-	db = sqlite3.connect("owlly.db", timeout=3000)
-	c = db.cursor()
-	prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-	c.execute(prefix, (int(message.guild.id), ))
-	prefix = c.fetchone()
-	if prefix is None:
-		prefix = "?"
-		sql = "INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
-		var = ("?", message.guild.id)
-		c.execute(sql, var)
-		db.commit()
-	c.close()
-	db.close()
-	return prefix
-
-
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 initial_extensions = [
-    'cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
-bot = commands.Bot(command_prefix=get_prefix,intents=intents,help_command=None)
+    'cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member', 'cogs.config_general', 'cogs.custom_help']
+bot = commands.Bot(command_prefix=get_prefix,intents=intents)
+
 token = os.environ.get('DISCORD_BOT_TOKEN')
 if __name__ == '__main__':
 	for extension in initial_extensions:
@@ -55,6 +38,8 @@ if __name__ == '__main__':
 			bot.load_extension(extension)
 		except Exception as e:
 			print(e)
+
+bot.help_command=MyHelp
 
 @bot.event
 async def on_command_error(ctx, error):

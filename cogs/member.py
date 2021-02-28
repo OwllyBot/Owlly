@@ -7,7 +7,7 @@ import sqlite3
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
 
-class memberAssign(commands.Cog):
+class memberAssign(commands.Cog, name="Membre", description="Des commandes gérants les membres."):
 
 	def __init__(self, bot):
 		self.bot = bot
@@ -18,7 +18,8 @@ class memberAssign(commands.Cog):
 		normal_name = unicodedata.normalize('NFKD', name)
 		await Member.edit(nick=normal_name)
   
-	@commands.command()
+	@commands.command(name="Assignation", usage="@mention *role", brief="Donne divers rôles.", help="Permet de donner des rôles à un membre, ainsi que les rôles qui ont été inscrits dans la base. Si les rôles n'existent pas, le bot les crée avant.")
+	@commands.has_permissions(administrator=True)
 	async def member(self, ctx, user: discord.Member, *role: str):
 		addRole = []
 		infoNew = []
