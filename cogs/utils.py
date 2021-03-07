@@ -41,6 +41,8 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
     @commands.command(name="ping", brief="Permet d'avoir la latence du bot.", help="Permet d'avoir la latence du bot.")
     async def ping(self, ctx):
         await ctx.send(f"🏓 Pong with {str(round(self.bot.latency, 2))}")
+    
+    
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -72,8 +74,13 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 
     @commands.command(name="clear",help="Permet de nettoyer un channel. Attention, nécessite d'être administrateur.", brief="Purge un channel.")
     @commands.has_permissions(administrator=True)
-    async def clear(self, ctx, amount=3):
-        await ctx.channel.purge(limit=amount)
+    async def clear(self, ctx, nombre: int):
+        messages = await ctx.channel.history(limit=nombre + 1).flatten()
+        a = 0
+        for message in messages:
+            await message.delete()
+            a += 1
+        await ctx.send(f"J'ai nettoyé {a} messages", delete_after=30)
 
     @commands.command(name="search", brief="Une recherche dans un channel", help="Permet de chercher un texte parmi le channel fixée", aliases=['search'])
     async def lexique(self, ctx, *, word:str):
