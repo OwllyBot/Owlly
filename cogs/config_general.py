@@ -37,7 +37,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
     await ctx.message.delete()
     
   @commands.has_permissions(administrator=True)
-  @commands.command(name="Roliste", help="Assignation des rôles assignés par défaut par la commande `member`.", brief="Enregistrement de rôles pour la commande member.", usage="@mention/ID des rôles à enregistrer", aliases=['role_config', 'roliste_config', 'assign', 'Roliste'])
+  @commands.command(name="Roliste", help="Assignation des rôles assignés par défaut par la commande `member`.", brief="Enregistrement de rôles pour la commande member.", usage="@mention/ID des rôles à enregistrer", aliases=['role_config', 'roliste_config', 'assign'])
   async def roliste(self, ctx, *role: discord.Role):
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
@@ -59,6 +59,51 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
     db.commit()
     c.close()
     db.close()
-  
+
+
+  @commands.has_permissions(administrator=True)
+  @commands.command(aliases=["count", "edit_count"], brief="Permet de changer le compteur des ticket", help="Permet de reset, ou changer manuellement le numéro d'un créateur de ticket.", usage="nombre id_message_createur")
+  async def recount(self, ctx, arg, ticket_id):
+    await ctx.message.delete()
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    search_db = "SELECT num FROM TICKET WHERE idM=?"
+    sql = "UPDATE TICKET SET num = ? WHERE idM=?"
+    search_regex_arg = re.search(
+        '(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$',
+        str(arg))
+    if search_regex_arg is None:
+        search_regex_arg = re.search(
+            '(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$',
+            str(ticket_id))
+        if search_regex_arg is None:
+            await ctx.send(
+                "Aucun de vos arguments ne correspond à l'ID du message du créateur de ticket...",
+                delete_after=30)
+            c.close()
+            db.close()
+            return
+        else:
+            arg = int(arg)
+            ticket_id = int(ticket_id)
+    else:
+        silent = int(ticket_id)
+        ticket_id = int(arg)
+        arg = silent
+    c.execute(search_db, (ticket_id, ))
+    search = c.fetchone()
+    if search is None:
+        await ctx.send("Aucun ne ticket ne possède ce numéro.")
+        c.close()
+        db.close()
+        return
+    else:
+        var = (arg, (ticket_id))
+        c.execute(sql, var)
+        db.commit()
+        c.close()
+        db.close()
+        await ctx.send(f"Le compte a été fixé à : {arg}")  
+
 def setup(bot):
   bot.add_cog(CogAdmins(bot))

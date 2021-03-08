@@ -2,6 +2,9 @@ import discord
 from discord.ext import commands, tasks
 import re
 import sqlite3
+from typing import Optional, Union
+from discord import Colour
+import asyncio
 intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
 
 
@@ -81,12 +84,8 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
             await message.delete()
             a += 1
         await ctx.send(f"J'ai nettoyé {a} messages", delete_after=30)
-    
-    @commands.command()
-    async def convertColor(self, ctx, color: discord.Colour):
-        return color
 
-    @commands.command(name="search", brief="Une recherche dans un channel", help="Permet de chercher un texte parmi le channel fixée", aliases=['search'])
+    @commands.command(brief="Une recherche dans un channel", help="Permet de chercher un texte parmi le channel fixée", aliases=['search'])
     async def lexique(self, ctx, *, word:str):
         server = ctx.guild.id
         db = sqlite3.connect("owlly.db", timeout=3000)
