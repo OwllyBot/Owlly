@@ -81,6 +81,10 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
             await message.delete()
             a += 1
         await ctx.send(f"J'ai nettoyé {a} messages", delete_after=30)
+    
+    @commands.command()
+    async def convertColor(self, ctx, color: discord.Colour):
+        return color
 
     @commands.command(name="search", brief="Une recherche dans un channel", help="Permet de chercher un texte parmi le channel fixée", aliases=['search'])
     async def lexique(self, ctx, *, word:str):
