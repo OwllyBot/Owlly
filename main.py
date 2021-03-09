@@ -1,5 +1,7 @@
+from typing import ContextManager
 import discord
 from discord.ext import commands, tasks
+from discord.ext.commands.help import HelpCommand
 from discord.utils import get
 import os
 import sqlite3
@@ -7,11 +9,12 @@ import sys
 import traceback
 import keep_alive
 from pretty_help import PrettyHelp
+from discord.ext.commands.help import HelpCommand
 intents = discord.Intents(messages=True,guilds=True,reactions=True,members=True)
 
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
-def get_prefix(bot, message):
+def getprefix(bot, message):
 	db = sqlite3.connect("owlly.db", timeout=3000)
 	c = db.cursor()
 	prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
@@ -23,15 +26,18 @@ def get_prefix(bot, message):
 		var = ("?", message.guild.id)
 		c.execute(sql, var)
 		db.commit()
+	else:
+		prefix = prefix[0]
 	c.close()
 	db.close()
 	return prefix
 
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-initial_extensions = [
-    'cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
+
+initial_extensions = ['cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
 token = os.environ.get('DISCORD_BOT_TOKEN')
-bot = commands.Bot(command_prefix=get_prefix,intents=intents)
+prefix="x"
+bot = commands.Bot(command_prefix=getprefix,intents=intents)
 if __name__ == '__main__':
 	for extension in initial_extensions:
 		try:
@@ -67,7 +73,12 @@ async def on_command_error(ctx, error):
     print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
     traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
-bot.help_command=PrettyHelp(no_category="Autres", active_time=180, ending_note="test")
+color = discord.Color.blurple()
+
+ending = "Si vous trouverez un bug, contactez @Mara#3000 !"
+
+bot.help_command = PrettyHelp(color=color, index_title="Owlly - Aide", ending_note=ending)
+
 
 @bot.event
 async def on_raw_reaction_add(payload):

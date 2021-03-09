@@ -11,7 +11,7 @@ intents = discord.Intents(messages=True, guilds=True,reactions=True, members=Tru
 class CogUtils(commands.Cog, name="Utilitaire", description="Une série de commande permettant notamment le débug, mais donnant aussi des informations."):
     def __init__(self, bot):
         self.bot = bot
-
+    
     @commands.Cog.listener()
     async def on_ready(self):
         print("[LOGS] ONLINE")
@@ -29,7 +29,7 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
             prefix = prefix[0]
         if self.bot.user.mentioned_in(message) and 'prefix' in message.content:
             await channel.send(f'Mon prefix est `{prefix}`')
-
+        
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
         db = sqlite3.connect("owlly.db", timeout=3000)
@@ -45,8 +45,6 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
     async def ping(self, ctx):
         await ctx.send(f"🏓 Pong with {str(round(self.bot.latency, 2))}")
     
-    
-
     @commands.Cog.listener()
     async def on_message(self, message):
         channel = message.channel
