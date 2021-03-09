@@ -67,7 +67,7 @@ async def on_command_error(ctx, error):
     print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
     traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
-bot.help_command=PrettyHelp(no_category="Autres", active_time=180)
+bot.help_command=PrettyHelp(no_category="Autres", active_time=180, ending_note="Tape !help commande pour avoir plus d'informations sur une commande. \n Tu peux aussi taper !help categorie pour plus d'informations sur une catégorie.")
 
 @bot.event
 async def on_raw_reaction_add(payload):
