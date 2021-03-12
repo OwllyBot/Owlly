@@ -15,7 +15,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
     def __init__(self, bot):
         self.bot = bot
 
-    def convertColor(self, ctx, color: Optional[discord.Color] = None):
+    def convertColor(self, color: Optional[discord.Color] = None):
         if color is None:
             return Colour.blurple()
         else:
