@@ -137,7 +137,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         elif col == "0":
             col = Colour.random()
         else:
-            col=self.convertColor(ctx, col)
+            col=self.convertColor(col)
         print(type(col))
         await color.delete()
         q.edit(content="Voulez-vous ajouter une image ?")
@@ -335,7 +335,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         elif col == 0:
             col = await Colour.random()
         else:
-            col=self.convertColor(ctx,col)
+            col=self.convertColor(col)
         await rep.delete()
         await q.edit(content="Voulez-vous ajouter une image ?")
         await q.add_reaction("✅")
@@ -491,7 +491,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         elif col == "0":
             col = Colour.random()
         else:
-            col=self.convertColor(ctx, col)
+            col=self.convertColor(col)
             print(col)
         print(type(col))
         print(col)
