@@ -335,7 +335,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         elif col == 0:
             col = await Colour.random()
         else:
-            col=await self.convertColor(ctx,col)
+            col=self.convertColor(ctx,col)
         await rep.delete()
         await q.edit(content="Voulez-vous ajouter une image ?")
         await q.add_reaction("✅")
@@ -458,8 +458,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             namelist.append(phrase)
         msg = "\n".join(namelist)
         await q.delete()
-        q=await ctx.send(f"Votre channel sera donc créé dans une des catégories suivantes :\n {msg} \n\n Le choix final de la catégories se fait lors des réactions. ")
-        parameters_save = q.content
+        parameters_save = f"Votre channel sera donc créé dans une des catégories suivantes: \n {msg} \n\n Le choix final de la catégories se fait lors des réactions."
         await q.edit(content="Voulez-vous pouvoir nommer librement les channels créées ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
@@ -492,8 +491,8 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         elif col == "0":
             col = Colour.random()
         else:
-            col=await self.convertColor(ctx, col)
-            print('bite')
+            col=self.convertColor(ctx, col)
+            print(col)
         print(type(col))
         print(col)
         await q.edit(content="Voulez-vous utiliser une image ?")
