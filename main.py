@@ -77,7 +77,7 @@ color = discord.Color.blurple()
 
 ending = "Si vous trouverez un bug, contactez @Mara#3000 !"
 
-bot.help_command = PrettyHelp(color=color, index_title="Owlly - Aide", ending_note=ending)
+bot.help_command = PrettyHelp(color=color, index_title="Owlly - Aide", ending_note=ending, active_time=300)
 
 
 @bot.event

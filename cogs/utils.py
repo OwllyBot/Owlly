@@ -73,7 +73,7 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
     async def whoami(self, ctx):
         await ctx.send(f"You are {ctx.message.author.name}")
 
-    @commands.command(name="clear",help="Permet de nettoyer un channel. Attention, nécessite d'être administrateur.", brief="Purge un channel.")
+    @commands.command(aliases=["purge", "clean"], help="Permet de nettoyer un channel. Attention, nécessite d'être administrateur.", brief="Purge un channel.")
     @commands.has_permissions(administrator=True)
     async def clear(self, ctx, nombre: int):
         messages = await ctx.channel.history(limit=nombre + 1).flatten()
@@ -82,6 +82,17 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
             await message.delete()
             a += 1
         await ctx.send(f"J'ai nettoyé {a} messages", delete_after=30)
+    @commands.command()
+    async def convertColor(self, ctx, color: Optional[discord.Color] = None):
+        print(color)
+        if color is None:
+            col= Colour.blurple()
+            print(type(col))
+            return col
+        else:
+            print(type(color))
+            return color
+
 
     @commands.command(brief="Une recherche dans un channel", help="Permet de chercher un texte parmi le channel fixée", aliases=['search'])
     async def lexique(self, ctx, *, word:str):
