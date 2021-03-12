@@ -5,6 +5,7 @@ from typing import Optional
 import sqlite3
 import re
 from discord import Colour
+from discord.ext.commands import ColourConverter
 intents = discord.Intents(messages=True, guilds=True,
                           reactions=True, members=True)
 
@@ -19,7 +20,8 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         if color is None:
             return Colour.blurple()
         else:
-            return color
+            colur = await ColourConverter.convert(self,ctx, color)
+            return colur
     
     def checkImg(self, ctx, img):
         pattern = 'http(s?):\/\/www\.(.*)(png|jpg|jpeg|gif|gifv|)'
@@ -73,7 +75,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
     @commands.command(aliases=['tick'], name="Ticket", brief="Débute la configuration des tickets", help="Permet de créer la configuration des tickets avec divers paramètres, notamment ceux le numéros dans le nom, ainsi que le moment où ce numéros va se reset. Les tickets sont des channels dont le nom est fixé.", description="Configuration pour une seule catégorie.")
     async def ticket(self, ctx):
         def checkValid(reaction, user):
-            return ctx.message.author == user and question.id == reaction.message.id and (
+            return ctx.message.author == user and q.id == reaction.message.id and (
                 str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
         def checkRep(message):
             return message.author == ctx.message.author and ctx.message.channel == message.channel
@@ -111,7 +113,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             if ticket_chan_content.isnumeric():
                 ticket_chan_content = int(ticket_chan_content)
                 cat_name = get(guild.categories, id=ticket_chan_content)
-                if cat_name == "None":
+                if cat_name == "None" or cat_name is None:
                     await ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
                     await q.delete()
                     return
@@ -132,10 +134,13 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             await q.delete()
             await color.delete()
             return
-        elif col == 0:
+        elif col == "0":
             col = Colour.random()
         else:
-            col=self.convertColor(col)
+            try:
+                col= await ColourConverter.convert(self, ctx, col)
+            except CommandError:
+                col = Colour.blurple()
         await color.delete()
         q.edit(content="Voulez-vous ajouter une image ?")
         await q.add_reaction("✅")
@@ -152,7 +157,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
                 await img.delete()
                 return
             else:
-                img_content=self.checkImg(img_content)
+                img_content=self.checkImg(ctx, img_content)
                 if img_content=="Error":
                     await ctx.send("Erreur ! Votre lien n'est pas une image valide.", delete_after=60)
                     await q.delete()
@@ -306,7 +311,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             if ticket_chan_content.isnumeric():
                 ticket_chan_content = int(ticket_chan_content)
                 cat_name = get(guild.categories, id=ticket_chan_content)
-                if ticket_chan_content == "None":
+                if ticket_chan_content == "None" or ticket_chan_content is None:
                     await ctx.send("Erreur : Cette catégorie n'existe pas !",delete_after=30)
                     await q.delete()
                     await rep.delete()
@@ -330,9 +335,12 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             await rep.delete()
             return
         elif col == 0:
-            col = Colour.random()
+            col = await Colour.random()
         else:
-            col=self.convertColor(col)
+            try:
+                co = await ColourConverter.convert(self, ctx, col)
+            except CommandError:
+                col = Colour.random()
         await rep.delete()
         await q.edit(content="Voulez-vous ajouter une image ?")
         await q.add_reaction("✅")
@@ -341,7 +349,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         if reaction.emoji == "✅":
             await q.clear_reactions()
             await q.edit(content=
-                "Merci d'envoyer l'image. \n**⚡ ATTENTION : LE MESSAGE EN REPONSE EST SUPPRIMÉ VOUS DEVEZ DONC UTILISER UN LIEN PERMANENT (hébergement sur un autre channel/serveur, imgur, lien google...)**"
+                "Merci d'envoyer l'image. \n**⚡ ATTENTION : Le message sera supprimé après la configuration, vous devez donc utiliser un lien permanent (hébergement sur un autre channel/serveur, imgur, lien google...)**"
             )
             rep = await self.bot.wait_for("message",timeout=300,check=checkRep)
             img_content = rep.content
@@ -351,14 +359,14 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
                 await rep.delete()
                 return
             else:
-                img_content = self.checkImg(img_content)
+                img_content = self.checkImg(ctx, img_content)
                 if img_content=="Error":
                     await ctx.send("Erreur ! Votre lien n'est pas une image valide.", delete_after=60)
                     await q.delete()
                     await rep.delete()
                     return
                 else:
-                    rep.delete()
+                    await rep.delete()
         else:
             await q.clear_reactions()
             img_content = "none"
@@ -405,8 +413,9 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             return
 
     @commands.has_permissions(administrator=True)
-    @commands.command(aliases=['cat', 'categories'], name="Category", brief="Configuration d'un créateur pour plusieurs catégorie", help="Permet de créer divers channels dans plusieurs catégories qui seront recherchées sur le serveur. La configuration offre une option pour autoriser ou nom le nommage automatique des channels.", description="Pour plusieurs catégories, 9 au maximum.")
+    @commands.command(aliases=['cat', 'categories'], brief="Configuration d'un créateur pour plusieurs catégorie", help="Permet de créer divers channels dans plusieurs catégories qui seront recherchées sur le serveur. La configuration offre une option pour autoriser ou nom le nommage automatique des channels.", description="Pour plusieurs catégories, 9 au maximum.")
     async def category(self, ctx):
+        await ctx.message.delete()
         def checkValid(reaction, user):
             return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
         def checkRep(message):
@@ -420,24 +429,36 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         )
         while True:
             channels = await self.bot.wait_for("message", timeout=300, check=checkRep)
-            await channels.add_reaction("✅")
-            if channels.content.lower() == 'stop':
-                await channels.delete(delay=30)
-                await ctx.send("Validation en cours !", delete_after=30)
+            chan_search = channels.content
+            if chan_search.lower() == 'stop':
+                await ctx.send("Validation en cours !", delete_after=5)
                 break
-            elif channels.content.lower() == 'cancel':
+            elif chan_search.lower() == 'cancel':
                 await channels.delete()
                 await ctx.send("Annulation !", delete_after=30)
                 await q.delete()
                 return
             else:
-                chan_search = channels.content
+                await channels.add_reaction("✅")
                 if chan_search.isnumeric():
                     chan_search = int(chan_search)
+                    check_id=get(guild.categories, id=chan_search)
+                    if check_id is None or check_id=="None":
+                        await ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
+                        await q.delete()
+                        await channels.delete()
+                    else:
+                        chan.append(str(chan_search))
                 else:
                     chan_search = await self.search_cat_name(ctx, chan_search)
-            chan.append(str(chan_search))
-            await channels.delete(delay=30)
+                    if chan_search == 12:
+                        await ctx.send("Aucune catégorie portant un nom similaire existe, vérifier votre frappe.", delete_after=30)
+                        await q.delete()
+                        await channels.delete()
+                        return
+                    else:
+                        chan.append(str(chan_search))
+            await channels.delete(delay=10)
         if len(chan) >= 10:
             await ctx.send("Erreur ! Vous ne pouvez pas mettre plus de 9 catégories !",delete_after=30)
             await q.delete()
@@ -447,16 +468,17 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         for i in range(0, len(chan)):
             number = int(chan[i])
             cat = get(guild.categories, id=number)
-            if cat == "None":
+            if cat == "None" or cat is None:
                 await ctx.send("Erreur : Cette catégorie n'existe pas !",delete_after=30)
                 await q.delete()
                 return
             phrase = f"{emoji[i]} : {cat}"
             namelist.append(phrase)
         msg = "\n".join(namelist)
-        await q.edit(content=f"Votre channel sera donc créé dans une des catégories suivantes :\n {msg} \n\n Le choix final de la catégories se fait lors des réactions. ")
-        parameters_save = q.content
-        await q.edit("Voulez-vous pouvoir nommer librement les channels créées ?")
+        await q.delete()
+        parameters_save = f"Votre channel sera donc créé dans une des catégories suivantes:\n{msg}\n\nLe choix final de la catégories se fait lors des réactions."
+        print(parameters_save)
+        q=await ctx.send("Voulez-vous pouvoir nommer librement les channels créées ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
         reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
@@ -476,8 +498,8 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         else:
             titre=rep.content
             await rep.add_reaction("✅")
-            await rep.delete(delay=30)
-        await q.edit(content="Quelle couleur voulez vous utiliser ?")
+            await rep.delete(delay=5)
+        await q.edit(content="Quelle couleur voulez vous utiliser ?\n 0 donnera une couleur aléatoire")
         rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
         col = rep.content
         if col == "stop":
@@ -485,10 +507,15 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             await q.delete()
             await rep.delete()
             return
-        elif col == 0:
+        elif col == "0":
             col = Colour.random()
         else:
-            col=self.convertColor(col)
+            try:
+                col = await ColourConverter.convert(self, ctx, col)
+            except CommandError:
+                col = Colour.random()
+        print(type(col))
+        print(col)
         await q.edit(content="Voulez-vous utiliser une image ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
@@ -496,7 +523,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         if reaction.emoji == "✅":
             await q.clear_reactions()
             await q.edit(content=
-                "Merci d'envoyer l'image. \n**⚡ ATTENTION : LE MESSAGE EN REPONSE EST SUPPRIMÉ VOUS DEVEZ DONC UTILISER UN LIEN PERMANENT (hébergement sur un autre channel/serveur, imgur, lien google...)**"
+                "Merci d'envoyer l'image. \n**⚡ ATTENTION : Le message sera supprimé après l'envoi, vous devez donc utiliser un lien permanent. (hébergement sur un autre channel/serveur, imgur, lien google...)**"
             )
             rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
             img_content = rep.content
@@ -506,14 +533,14 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
                 await rep.delete()
                 return
             else:
-                img_content = self.checkImg(img_content)
+                img_content = self.checkImg(ctx, img_content)
                 if img_content == "Error":
                     await ctx.send("Erreur ! Votre lien n'est pas une image valide.", delete_after=60)
                     await q.delete()
                     await rep.delete()
                     return
                 else:
-                    rep.delete()
+                    await rep.delete()
         else:
             await q.clear_reactions()
             img_content = "none"
@@ -529,7 +556,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             for i in range(0, len(chan)):
                 await react.add_reaction(emoji[i])
             category_list_str = ",".join(chan)
-            sql = "INSERT INTO CATEGORY (idM, channelM, category_list, idS, config_name) VALUES (?,?,?,?)"
+            sql = "INSERT INTO CATEGORY (idM, channelM, category_list, idS, config_name) VALUES (?,?,?,?,?)"
             id_serveur = ctx.message.guild.id
             id_message = react.id
             chanM = ctx.channel.id
