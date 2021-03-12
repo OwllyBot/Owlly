@@ -38,7 +38,7 @@ def getprefix(bot, message):
 initial_extensions = ['cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
 repo_name = Repository('.').head.shorthand
 if repo_name=="main":
-	token = os.environ.get('DISCORD_BOT_TOKEN')
+    	token = os.environ.get('DISCORD_BOT_TOKEN')
 else:
     token = os.environ.get('DISCORD_BOT_TOKEN_TESTING')
 prefix="x"
@@ -329,6 +329,10 @@ async def on_guild_remove(guild):
 	c.close()
 	db.close()
 
-keep_alive.keep_alive()
+if repo_name=="main":
+	token = os.environ.get('DISCORD_BOT_TOKEN')
+	keep_alive.keep_alive()
+else:
+    token = os.environ.get('DISCORD_BOT_TOKEN_TESTING')
 bot.run(token)
 
