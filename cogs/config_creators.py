@@ -459,7 +459,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         msg = "\n".join(namelist)
         await q.delete()
         parameters_save = f"Votre channel sera donc créé dans une des catégories suivantes: \n {msg} \n\n Le choix final de la catégories se fait lors des réactions."
-        await q.edit(content="Voulez-vous pouvoir nommer librement les channels créées ?")
+        q=await ctx.send("Voulez-vous pouvoir nommer librement les channels créées ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
         reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
