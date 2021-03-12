@@ -10,6 +10,7 @@ import traceback
 import keep_alive
 from pretty_help import PrettyHelp
 from discord.ext.commands.help import HelpCommand
+from pygit2 import Repository
 intents = discord.Intents(messages=True,guilds=True,reactions=True,members=True)
 
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
@@ -35,7 +36,11 @@ def getprefix(bot, message):
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 initial_extensions = ['cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
-token = os.environ.get('DISCORD_BOT_TOKEN')
+repo_name = Repository('.').head.shorthand
+if repo_name=="main":
+	token = os.environ.get('DISCORD_BOT_TOKEN')
+else:
+    token = os.environ.get('DISCORD_BOT_TOKEN_TESTING')
 prefix="x"
 bot = commands.Bot(command_prefix=getprefix,intents=intents)
 if __name__ == '__main__':
@@ -44,6 +49,7 @@ if __name__ == '__main__':
 			bot.load_extension(extension)
 		except Exception as e:
 			print(e)
+
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -74,9 +80,7 @@ async def on_command_error(ctx, error):
     traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
 color = discord.Color.blurple()
-
 ending = "Si vous trouverez un bug, contactez @Mara#3000 !"
-
 bot.help_command = PrettyHelp(color=color, index_title="Owlly - Aide", ending_note=ending, active_time=300)
 
 
