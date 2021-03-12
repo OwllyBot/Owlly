@@ -5,6 +5,7 @@ from typing import Optional
 import sqlite3
 import re
 from discord import Colour
+from discord.ext.commands import ColourConverter
 intents = discord.Intents(messages=True, guilds=True,
                           reactions=True, members=True)
 
@@ -15,13 +16,12 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
     def __init__(self, bot):
         self.bot = bot
 
-    def convertColor(self, color: Optional[discord.Color] = None):
+    async def convertColor(self, ctx, color: Optional[discord.Color] = None):
         if color is None:
             return Colour.blurple()
         else:
-            print(color)
-            print(type(color))
-            return color
+            colur = await ColourConverter.convert(self,ctx, color)
+            return colur
     
     def checkImg(self, ctx, img):
         pattern = 'http(s?):\/\/www\.(.*)(png|jpg|jpeg|gif|gifv|)'
@@ -75,7 +75,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
     @commands.command(aliases=['tick'], name="Ticket", brief="Débute la configuration des tickets", help="Permet de créer la configuration des tickets avec divers paramètres, notamment ceux le numéros dans le nom, ainsi que le moment où ce numéros va se reset. Les tickets sont des channels dont le nom est fixé.", description="Configuration pour une seule catégorie.")
     async def ticket(self, ctx):
         def checkValid(reaction, user):
-            return ctx.message.author == user and question.id == reaction.message.id and (
+            return ctx.message.author == user and q.id == reaction.message.id and (
                 str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
         def checkRep(message):
             return message.author == ctx.message.author and ctx.message.channel == message.channel
@@ -113,7 +113,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             if ticket_chan_content.isnumeric():
                 ticket_chan_content = int(ticket_chan_content)
                 cat_name = get(guild.categories, id=ticket_chan_content)
-                if cat_name == "None":
+                if cat_name == "None" or cat_name is None:
                     await ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
                     await q.delete()
                     return
@@ -137,8 +137,10 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         elif col == "0":
             col = Colour.random()
         else:
-            col=self.convertColor(col)
-        print(type(col))
+            try:
+                col= await ColourConverter.convert(self, ctx, col)
+            except CommandError:
+                col = Colour.blurple()
         await color.delete()
         q.edit(content="Voulez-vous ajouter une image ?")
         await q.add_reaction("✅")
@@ -309,7 +311,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             if ticket_chan_content.isnumeric():
                 ticket_chan_content = int(ticket_chan_content)
                 cat_name = get(guild.categories, id=ticket_chan_content)
-                if ticket_chan_content == "None":
+                if ticket_chan_content == "None" or ticket_chan_content is None:
                     await ctx.send("Erreur : Cette catégorie n'existe pas !",delete_after=30)
                     await q.delete()
                     await rep.delete()
@@ -335,7 +337,10 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         elif col == 0:
             col = await Colour.random()
         else:
-            col=self.convertColor(col)
+            try:
+                co = await ColourConverter.convert(self, ctx, col)
+            except CommandError:
+                col = Colour.random()
         await rep.delete()
         await q.edit(content="Voulez-vous ajouter une image ?")
         await q.add_reaction("✅")
@@ -410,6 +415,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
     @commands.has_permissions(administrator=True)
     @commands.command(aliases=['cat', 'categories'], brief="Configuration d'un créateur pour plusieurs catégorie", help="Permet de créer divers channels dans plusieurs catégories qui seront recherchées sur le serveur. La configuration offre une option pour autoriser ou nom le nommage automatique des channels.", description="Pour plusieurs catégories, 9 au maximum.")
     async def category(self, ctx):
+        await ctx.message.delete()
         def checkValid(reaction, user):
             return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
         def checkRep(message):
@@ -423,23 +429,35 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         )
         while True:
             channels = await self.bot.wait_for("message", timeout=300, check=checkRep)
-            await channels.add_reaction("✅")
-            if channels.content.lower() == 'stop':
-                await channels.delete()
+            chan_search = channels.content
+            if chan_search.lower() == 'stop':
                 await ctx.send("Validation en cours !", delete_after=5)
                 break
-            elif channels.content.lower() == 'cancel':
+            elif chan_search.lower() == 'cancel':
                 await channels.delete()
                 await ctx.send("Annulation !", delete_after=30)
                 await q.delete()
                 return
             else:
-                chan_search = channels.content
+                await channels.add_reaction("✅")
                 if chan_search.isnumeric():
                     chan_search = int(chan_search)
+                    check_id=get(guild.categories, id=chan_search)
+                    if check_id is None or check_id=="None":
+                        await ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
+                        await q.delete()
+                        await channels.delete()
+                    else:
+                        chan.append(str(chan_search))
                 else:
                     chan_search = await self.search_cat_name(ctx, chan_search)
-            chan.append(str(chan_search))
+                    if chan_search == 12:
+                        await ctx.send("Aucune catégorie portant un nom similaire existe, vérifier votre frappe.", delete_after=30)
+                        await q.delete()
+                        await channels.delete()
+                        return
+                    else:
+                        chan.append(str(chan_search))
             await channels.delete(delay=10)
         if len(chan) >= 10:
             await ctx.send("Erreur ! Vous ne pouvez pas mettre plus de 9 catégories !",delete_after=30)
@@ -450,7 +468,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         for i in range(0, len(chan)):
             number = int(chan[i])
             cat = get(guild.categories, id=number)
-            if cat == "None":
+            if cat == "None" or cat is None:
                 await ctx.send("Erreur : Cette catégorie n'existe pas !",delete_after=30)
                 await q.delete()
                 return
@@ -458,7 +476,8 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             namelist.append(phrase)
         msg = "\n".join(namelist)
         await q.delete()
-        parameters_save = f"Votre channel sera donc créé dans une des catégories suivantes: \n {msg} \n\n Le choix final de la catégories se fait lors des réactions."
+        parameters_save = f"Votre channel sera donc créé dans une des catégories suivantes:\n{msg}\n\nLe choix final de la catégories se fait lors des réactions."
+        print(parameters_save)
         q=await ctx.send("Voulez-vous pouvoir nommer librement les channels créées ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
@@ -479,7 +498,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         else:
             titre=rep.content
             await rep.add_reaction("✅")
-            await rep.delete(delay=30)
+            await rep.delete(delay=5)
         await q.edit(content="Quelle couleur voulez vous utiliser ?\n 0 donnera une couleur aléatoire")
         rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
         col = rep.content
@@ -491,8 +510,10 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         elif col == "0":
             col = Colour.random()
         else:
-            col=self.convertColor(col)
-            print(col)
+            try:
+                col = await ColourConverter.convert(self, ctx, col)
+            except CommandError:
+                col = Colour.random()
         print(type(col))
         print(col)
         await q.edit(content="Voulez-vous utiliser une image ?")
