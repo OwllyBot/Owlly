@@ -217,7 +217,9 @@ async def on_raw_reaction_add(payload):
 					c.execute(sql, var)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : CATEGORY  ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			elif typecreation == "Category":
-				category_name=get(payload.guild.categories, id=chan_create)
+				guild_id=payload.guild_id
+				guild = discord.utils.find(lambda g: g.id == guild_id, bot.guilds)
+				category_name=get(guild.categories, id=chan_create)
 				if name_creat == 1:
 					question = await channel.send(f"Catégorie {category_name} sélectionnée. \n Merci d'indiquer le nom de la pièce")
 					chan_rep = await bot.wait_for("message",timeout=300,check=checkRep)
