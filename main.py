@@ -89,7 +89,7 @@ bot.help_command = PrettyHelp(
 
 @bot.event
 async def on_raw_reaction_add(payload):
-	emoji_cat = ["1⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
+	emoji_cat = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 	db = sqlite3.connect("owlly.db", timeout=3000)
 	c = db.cursor()
 	c.execute("SELECT idS FROM TICKET")
@@ -112,6 +112,7 @@ async def on_raw_reaction_add(payload):
 	if (len(msg.embeds) != 0) and (user.bot is False):
 		if (serv_here in serv_ticket) or (serv_here in serv_cat) :
 			action = str(payload.emoji.name)
+			choice =""
 			await msg.remove_reaction(action, user)
 			typecreation = "stop"
 			chan_create = "stop"
@@ -128,9 +129,11 @@ async def on_raw_reaction_add(payload):
 				extra = {appart[i][0]: appart[i][1]}
 				appartDict.update(extra)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT CATEGORY ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-			for i in range(0, len(emoji_cat)):
-				if str(emoji_cat[i]) == action:
-					choice = i
+			try:
+				choice = emoji_cat.index(action)
+			except ValueError:
+				await channel.send("Il y a eu une erreur ! Merci de contacter le créateur du bot.", delete_after=60)
+				return
 			sql = "SELECT idM, category_list FROM CATEGORY WHERE idS = ?"
 			c.execute(sql, (serv_here, ))
 			room = c.fetchall()
@@ -153,7 +156,7 @@ async def on_raw_reaction_add(payload):
 						sql = "SELECT config_name FROM CATEGORY WHERE (idM = ? AND idS = ?)"
 						var = (mid, serv_here,)
 						c.execute(sql, var)
-						name_creat = c.fetchone()
+						name_creat = c.fetchone()[0]
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : TICKET ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			if typecreation == "Ticket":
 				sql="SELECT num FROM TICKET WHERE idM=?"
@@ -207,7 +210,9 @@ async def on_raw_reaction_add(payload):
 					c.execute(sql, var)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : CATEGORY  ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			elif typecreation == "Category":
-				category_name=get(payload.guild.categories, id=chan_create)
+				guild_id=payload.guild_id
+				guild = discord.utils.find(lambda g: g.id == guild_id, bot.guilds)
+				category_name=get(guild.categories, id=chan_create)
 				if name_creat == 1:
 					question = await channel.send(f"Catégorie {category_name} sélectionnée. \n Merci d'indiquer le nom de la pièce")
 					chan_rep = await bot.wait_for("message",timeout=300,check=checkRep)
@@ -217,10 +222,13 @@ async def on_raw_reaction_add(payload):
 						channel.send("Annulation de la création.", delete_after=10)
 						await chan_rep.delete()
 						return
-					chan_name = f"{chan_name}"
-					chan_name = chan_name.replace(" ", "")
+					else:
+						chan_name = f"{chan_name}"
+						chan_name = chan_name.replace(" ", "")
+						await chan_rep.delete()
 				else:
 					chan_name=f"{payload.member.nick}"
+				
 				await channel.send(f"Création du channel {chan_name} dans {category_name}.", delete_after=30)
 
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATION▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
