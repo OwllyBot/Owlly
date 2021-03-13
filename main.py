@@ -163,7 +163,7 @@ async def on_raw_reaction_add(payload):
 						sql = "SELECT config_name FROM CATEGORY WHERE (idM = ? AND idS = ?)"
 						var = (mid, serv_here,)
 						c.execute(sql, var)
-						name_creat = c.fetchone()
+						name_creat = c.fetchone()[0]
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : TICKET ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			if typecreation == "Ticket":
 				sql="SELECT num FROM TICKET WHERE idM=?"
