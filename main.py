@@ -94,7 +94,7 @@ bot.help_command = PrettyHelp(
 
 @bot.event
 async def on_raw_reaction_add(payload):
-	emoji_cat = ["1⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
+	emoji_cat = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 	db = sqlite3.connect("owlly.db", timeout=3000)
 	c = db.cursor()
 	c.execute("SELECT idS FROM TICKET")
@@ -117,6 +117,8 @@ async def on_raw_reaction_add(payload):
 	if (len(msg.embeds) != 0) and (user.bot is False):
 		if (serv_here in serv_ticket) or (serv_here in serv_cat) :
 			action = str(payload.emoji.name)
+			print(action)
+			print(emoji_cat)
 			choice =""
 			await msg.remove_reaction(action, user)
 			typecreation = "stop"
@@ -137,7 +139,7 @@ async def on_raw_reaction_add(payload):
 			try:
 				choice = emoji_cat.index(action)
 			except ValueError:
-				await channel.send("Il y a eu une erreur ! Merci de contacter le créateur du bot.")
+				await channel.send("Il y a eu une erreur ! Merci de contacter le créateur du bot.", delete_after=60)
 				return
 			sql = "SELECT idM, category_list FROM CATEGORY WHERE idS = ?"
 			c.execute(sql, (serv_here, ))
