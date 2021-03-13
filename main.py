@@ -161,22 +161,26 @@ async def on_raw_reaction_add(payload):
 						name_creat = c.fetchone()
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : TICKET ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			if typecreation == "Ticket":
-				sql = "SELECT num, modulo, limitation FROM TICKET WHERE idM= ?"
-				c.execute(sql, (mid, ))
-				limitation_options = c.fetchall()
-				limitation_options = list(sum(limitation_options, ()))
-				for i in range(0, len(limitation_options)):
-					nb = limitation_options[0]
-					mod = limitation_options[1]
-					limit = limitation_options[2]
-				nb += 1
-				if limit > 0:
-					if mod > 0:
-						if (nb % mod) > limit:
-							nb = (nb + mod) - limit
-					else:
-						if nb > limit:
-							nb = 0
+				sql="SELECT num FROM TICKET WHERE idM=?"
+				c.execute(sql,(mid,))
+				nb=c.fetchone()[0]
+				if nb != "Aucun" and nb.isnumeric():
+					nb = int(nb)	
+					sql = "SELECT modulo, limitation FROM TICKET WHERE idM= ?"
+					c.execute(sql, (mid, ))
+					limitation_options = c.fetchall()
+					limitation_options = list(sum(limitation_options, ()))
+					for i in range(0, len(limitation_options)):
+						mod = limitation_options[0]
+						limit = limitation_options[1]
+					nb += 1
+					if limit > 0:
+						if mod > 0:
+							if (nb % mod) > limit:
+								nb = (nb + mod) - limit
+						else:
+							if nb > limit:
+								nb = 0
 				sql = "SELECT name_auto FROM TICKET WHERE idM=?"
 				c.execute(sql, (mid,))
 				para_name = c.fetchone()[0]
@@ -189,28 +193,23 @@ async def on_raw_reaction_add(payload):
 						await channel.send("Annulation de la création.", delete_after=30)
 						await chan_rep.delete()
 					else:
-						chan_name = "f{chan_name}"
+						chan_name = f"{chan_name}"
 				elif para_name == "2":
 					perso = payload.member.nick
-					chan_name = f"{nb}{perso}"
+					if nb.isnumeric():
+						chan_name = f"{nb}{perso}"
+					else:
+						chan_name=f"{perso}"
 				else:
-					chan_name="f{para_name}{perso}"
-				sql = "UPDATE TICKET SET num = ? WHERE idM = ?"
-				var = (nb, mid)
-				c.execute(sql, var)
-# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : CHANNEL▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-			elif typecreation == "Channel":
-				question = await channel.send(
-				    f"Merci d'indiquer le nom de la pièce.")
-				chan_rep = await bot.wait_for("message", timeout=300,check=checkRep)
-				await question.delete()
-				chan_name = chan_rep.content
-				if chan_name == "stop":
-					await channel.send("Annulation de la création.", delete_after=10)
-					await chan_rep.delete()
-					return
-				chan_name = f"{chan_name}"
-				await channel.send(f"Création du channel {chan_name}",delete_after=30)
+					perso = payload.member.nick
+					if nb.ismeric():
+						chan_name=f"{nb}{para_name}{perso}"
+					else:
+						chan_name=f"{para_name}{perso}"
+				if nb.isnumeric():
+					sql = "UPDATE TICKET SET num = ? WHERE idM = ?"
+					var = (nb, mid)
+					c.execute(sql, var)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : CATEGORY  ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			elif typecreation == "Category":
 				category_name=get(payload.guild.categories, id=chan_create)

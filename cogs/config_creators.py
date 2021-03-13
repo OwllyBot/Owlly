@@ -168,63 +168,6 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
         else:
             await q.clear_reactions()
             img_content = "none"
-        await q.edit(content="Voulez-vous fixer un nombre de départ ?")
-        await q.add_reaction("✅")
-        await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
-        if reaction.emoji == "✅":
-            await q.clear_reactions()
-            await q.edit(content="Merci d'indiquer le nombre de départ.")
-            nb_dep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-            if nb_dep.content == "stop":
-                await q.delete()
-                await ctx.send("Annulation !", delete_after=10)
-                await nb_dep.delete()
-                return
-            else:
-                nb_dep_content = int(nb_dep.content)
-                await nb_dep.delete()
-        else:
-            nb_dep_content = 0
-        await q.edit(content="Voulez-vous fixer une limite ? C'est à dire que le ticket va se reset après ce nombre.")
-        await q.add_reaction("✅")
-        await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
-        if reaction.emoji == "✅":
-            await q.clear_reactions()
-            await q.edit(content="Merci d'indiquer la limite.")
-            limit = await self.bot.wait_for("message", timeout=300, check=checkRep)
-            if limit.content == "stop":
-                await ctx.send("Annulation !", delete_after=10)
-                await q.delete()
-                await limit.delete()
-                return
-            else:
-                limit_content = int(limit.content)
-                await limit.delete()
-                mod_content = 0
-                await q.edit(content="Voulez-vous, après la limite, augmenter d'un certain nombre le numéro ?")
-                await q.add_reaction("✅")
-                await q.add_reaction("❌")
-                reaction, user = await self.bot.wait_for("reaction_add",timeout=300,check=checkValid)
-                if reaction.emoji == "✅":
-                    await q.clear_reactions()
-                    await q.edit(content="Quel est donc ce nombre ?")
-                    mod = await self.bot.wait_for("message",timeout=300,check=checkRep)
-                    if mod.content == "stop":
-                        await ctx.send("Annulation !", delete_after=10)
-                        await mod.delete()
-                        await q.delete()
-                        return
-                    else:
-                        mod_content = int(mod.content)
-                        await mod.delete()
-                else:
-                    await q.clear_reactions()
-        else:
-            limit_content = 0
-            mod_content = 0
-            await q.clear_reactions()
         await q.edit(content="Voulez-vous donner la possibilité de nommer librement les channels ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
@@ -234,6 +177,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             name_para="1"
             phrase_para = "Nom libre"
         else:
+            name_para = "2"
             await q.clear_reactions()
             await q.edit(content="Dans ce cas, voulez-vous avoir une construction particulière du nom du channel ? Elle sera toujours suivi du nom du créateur.")
             await q.add_reaction("✅")
@@ -246,8 +190,75 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
                 name_para=rep.content
                 phrase_para=name_para
             else:
-                name_para="2"
-                phrase_para="Nom du personnage"
+                phrase_para = "Nom du personnage"
+            await q.edit(content="Voulez-vous que les tickets soient comptés ?")
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "✅":
+                await q.edit(content="Voulez-vous fixer un nombre de départ ?")
+                await q.add_reaction("✅")
+                await q.add_reaction("❌")
+                reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                if reaction.emoji == "✅":
+                    await q.clear_reactions()
+                    await q.edit(content="Merci d'indiquer le nombre de départ.")
+                    nb_dep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                    if nb_dep.content == "stop":
+                        await q.delete()
+                        await ctx.send("Annulation !", delete_after=10)
+                        await nb_dep.delete()
+                        return
+                    else:
+                        nb_dep_content = str(nb_dep.content)
+                        await nb_dep.delete()
+                else:
+                    nb_dep_content = "0"
+                await q.edit(content="Voulez-vous fixer une limite ? C'est à dire que le ticket va se reset après ce nombre.")
+                await q.add_reaction("✅")
+                await q.add_reaction("❌")
+                reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                if reaction.emoji == "✅":
+                    await q.clear_reactions()
+                    await q.edit(content="Merci d'indiquer la limite.")
+                    limit = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                    if limit.content == "stop":
+                        await ctx.send("Annulation !", delete_after=10)
+                        await q.delete()
+                        await limit.delete()
+                        return
+                    else:
+                        limit_content = int(limit.content)
+                        await limit.delete()
+                        mod_content = 0
+                        await q.edit(content="Voulez-vous, après la limite, augmenter d'un certain nombre le numéro ?")
+                        await q.add_reaction("✅")
+                        await q.add_reaction("❌")
+                        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                        if reaction.emoji == "✅":
+                            await q.clear_reactions()
+                            await q.edit(content="Quel est donc ce nombre ?")
+                            mod = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                            if mod.content == "stop":
+                                await ctx.send("Annulation !", delete_after=10)
+                                await mod.delete()
+                                await q.delete()
+                                return
+                            else:
+                                mod_content = int(mod.content)
+                                await mod.delete()
+                        else:
+                            await q.clear_reactions()
+                    
+                else:
+                    limit_content = 0
+                    mod_content = 0
+                    await q.clear_reactions()
+            else:
+                limit_content = 0
+                mod_content = 0
+                nb_dep_content = "Aucun"
+                await q.clear_reactions()
         guild = ctx.message.guild
         await q.edit(content=
             f"Vos paramètres sont : \n Titre : {typeM} \n Numéro de départ : {nb_dep_content} \n Intervalle entre les nombres (on se comprend, j'espère) : {mod_content} (0 => Pas d'intervalle) \n Limite : {limit_content} (0 => Pas de limite) \n Catégorie : {cat_name}.\n Nom par défaut : {phrase_para}\n Confirmez-vous ces paramètres ?"
