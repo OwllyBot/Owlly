@@ -229,10 +229,13 @@ async def on_raw_reaction_add(payload):
 						channel.send("Annulation de la création.", delete_after=10)
 						await chan_rep.delete()
 						return
-					chan_name = f"{chan_name}"
-					chan_name = chan_name.replace(" ", "")
+					else:
+						chan_name = f"{chan_name}"
+						chan_name = chan_name.replace(" ", "")
+						await chan_rep.delete()
 				else:
 					chan_name=f"{payload.member.nick}"
+				
 				await channel.send(f"Création du channel {chan_name} dans {category_name}.", delete_after=30)
 
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATION▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
