@@ -6,8 +6,6 @@ import sqlite3
 import re
 from discord import Colour
 from discord.ext.commands import ColourConverter
-intents = discord.Intents(messages=True, guilds=True,
-                          reactions=True, members=True)
 
 # ▬▬▬▬▬▬▬▬▬▬▬ SEARCH CAT NAME ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
