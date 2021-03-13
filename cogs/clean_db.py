@@ -31,21 +31,7 @@ class DB_utils(commands.Cog):
         for i in range(0, (len(category))):
             extra = {category[i][0]: category[i][1]}
             catDict.update(extra)
-        sql=("SELECT idM, channelM FROM SOLO_CATEGORY WHERE idS=?")
-        c.execute(sql, (idS,))
-        solo=c.fetchall()
-        soloDict={}
-        for i in range (0, (len(solo))):
-            estra={solo[i][0] : solo[i][1]}
-            soloDict.update(estra)
-        for k, v in soloDict.items():
-            chan = self.bot.get_channel(v)
-            print(chan)
-            try:
-                await chan.fetch_message(k)
-            except NotFound:
-                sql_solo="DELETE FROM SOLO_CATEGORY WHERE idM=?"
-                c.execute(sql_solo, (k,))
+        
         for k, v in ticketDict.items():
             chan = self.bot.get_channel(v)
             await chan.fetch_message(k)
@@ -54,6 +40,7 @@ class DB_utils(commands.Cog):
             except NotFound:
                 sql_solo="DELETE FROM SOLO_CATEGORY WHERE idM=?"
                 c.execute(sql_solo, (k,))
+        
         for k, v in catDict.items():
             chan = self.bot.get_channel(v)
             await chan.fetch_message(k)

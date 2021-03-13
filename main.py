@@ -248,10 +248,7 @@ async def on_raw_message_delete(payload):
 	c.execute(sql, (serv, ))
 	cat_list = c.fetchall()
 	cat_list = list(sum(cat_list, ()))
-	sql = "SELECT idM FROM SOLO_CATEGORY WHERE idS = ?"
-	c.execute(sql, (serv, ))
-	solo_list = c.fetchall()
-	solo_list = list(sum(solo_list, ()))
+	
 	for i in ticket_list:
 		if i == mid:
 			sql = "DELETE FROM TICKET WHERE idS=?"
@@ -260,10 +257,7 @@ async def on_raw_message_delete(payload):
 		if i == mid:
 			sql = "DELETE FROM CATEGORY WHERE idS = ?"
 			c.execute(sql, (serv, ))
-	for i in solo_list:
-		if i == mid:
-			sql = "DELETE FROM SOLO_CATEGORY WHERE idS=?"
-			c.execute(sql, (serv, ))
+	
 	db.commit()
 	c.close()
 	db.close()
