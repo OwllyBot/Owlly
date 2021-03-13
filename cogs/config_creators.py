@@ -100,16 +100,16 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             return
         await desc.delete()
         await q.edit(content="Dans quel catégorie voulez-vous créer vos tickets ? Rappel : Seul un modérateur pourra les supprimer, car ce sont des tickets permanent.\n Vous pouvez utiliser le nom ou l'ID de la catégorie !")
-        ticket_chan = await self.bot.wait_for("message", timeout=300, check=checkRep)
-        ticket_chan_content = ticket_chan.content
+        rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+        ticket_chan_content = rep.content
         cat_name = "none"
         if ticket_chan_content == "stop":
             await ctx.send("Annulation !", delete_after=10)
             await q.delete()
-            await ticket_chan.delete()
+            await rep.delete()
             return
         else:
-            await ticket_chan.delete()
+            await rep.delete()
             if ticket_chan_content.isnumeric():
                 ticket_chan_content = int(ticket_chan_content)
                 cat_name = get(guild.categories, id=ticket_chan_content)
@@ -127,12 +127,12 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
                 else:
                     cat_name = get(guild.categories, id=ticket_chan_content)
         await q.edit(conten=f"Quelle couleur voulez vous utiliser ? \n 0 donne une couleur aléatoire.")
-        color = await self.bot.wait_for("message", timeout=300, check=checkRep)
-        col = color.content
+        rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+        col = rep.content
         if col == "stop":
             await ctx.send("Annulation !", delete_after=30)
             await q.delete()
-            await color.delete()
+            await rep.delete()
             return
         elif col == "0":
             col = Colour.random()
@@ -141,93 +141,127 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
                 col= await ColourConverter.convert(self, ctx, col)
             except CommandError:
                 col = Colour.blurple()
-        await color.delete()
+        await rep.delete()
         q.edit(content="Voulez-vous ajouter une image ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
         reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
         if reaction.emoji == "✅":
             await q.clear_reactions()
-            await q.edit(content="Merci d'envoyer l'image. \n**⚡ ATTENTION : LE MESSAGE EN REPONSE EST SUPPRIMÉ VOUS DEVEZ DONC UTILISER UN LIEN PERMANENT (hébergement sur un autre channel/serveur, imgur, lien google...)**")
-            img = await self.bot.wait_for("message", timeout=300, check=checkRep)
-            img_content = img.content
+            await q.edit(content="Merci d'envoyer l'image. \n**⚡ ATTENTION : Le message sera supprimé après la configuration, vous devez donc utiliser un lien permanent (hébergement sur un autre channel/serveur, imgur, lien google...)**")
+            rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+            img_content = rep.content
             if img_content == "stop":
                 await ctx.send("Annulation !", delete_after=10)
                 await q.delete()
-                await img.delete()
+                await rep.delete()
                 return
             else:
                 img_content=self.checkImg(ctx, img_content)
                 if img_content=="Error":
                     await ctx.send("Erreur ! Votre lien n'est pas une image valide.", delete_after=60)
                     await q.delete()
-                    await img.delete()
+                    await rep.delete()
                     return
                 else:
-                    img.delete()
+                    rep.delete()
         else:
             await q.clear_reactions()
             img_content = "none"
-        await q.edit(content="Voulez-vous fixer un nombre de départ ?")
+        await q.edit(content="Voulez-vous donner la possibilité de nommer librement les channels ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
         reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
         if reaction.emoji == "✅":
             await q.clear_reactions()
-            await q.edit(content="Merci d'indiquer le nombre de départ.")
-            nb_dep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-            if nb_dep.content == "stop":
-                await q.delete()
-                await ctx.send("Annulation !", delete_after=10)
-                await nb_dep.delete()
-                return
-            else:
-                nb_dep_content = int(nb_dep.content)
-                await nb_dep.delete()
+            name_para="1"
+            phrase_para = "Nom libre"
         else:
-            nb_dep_content = 0
-        await q.edit(content="Voulez-vous fixer une limite ? C'est à dire que le ticket va se reset après ce nombre.")
-        await q.add_reaction("✅")
-        await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
-        if reaction.emoji == "✅":
+            name_para = "2"
             await q.clear_reactions()
-            await q.edit(content="Merci d'indiquer la limite.")
-            limit = await self.bot.wait_for("message", timeout=300, check=checkRep)
-            if limit.content == "stop":
-                await ctx.send("Annulation !", delete_after=10)
-                await q.delete()
-                await limit.delete()
-                return
+            await q.edit(content="Dans ce cas, voulez-vous avoir une construction particulière du nom du channel ? Elle sera toujours suivi du nom du créateur.")
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "✅":
+                await q.clear_reactions()
+                await q.edit("Quel est le nom que vous voulez utiliser ?")
+                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                name_para=rep.content
+                phrase_para=name_para
             else:
-                limit_content = int(limit.content)
-                await limit.delete()
-                mod_content = 0
-                await q.edit(content="Voulez-vous, après la limite, augmenter d'un certain nombre le numéro ?")
+                phrase_para = "Nom du personnage"
+            await q.edit(content="Voulez-vous que les tickets soient comptés ?")
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "✅":
+                await q.edit(content="Voulez-vous fixer un nombre de départ ?")
                 await q.add_reaction("✅")
                 await q.add_reaction("❌")
-                reaction, user = await self.bot.wait_for("reaction_add",timeout=300,check=checkValid)
+                reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
                 if reaction.emoji == "✅":
                     await q.clear_reactions()
-                    await q.edit(content="Quel est donc ce nombre ?")
-                    mod = await self.bot.wait_for("message",timeout=300,check=checkRep)
-                    if mod.content == "stop":
-                        await ctx.send("Annulation !", delete_after=10)
-                        await mod.delete()
+                    await q.edit(content="Merci d'indiquer le nombre de départ.")
+                    nb_dep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                    if nb_dep.content == "stop":
                         await q.delete()
+                        await ctx.send("Annulation !", delete_after=10)
+                        await nb_dep.delete()
                         return
                     else:
-                        mod_content = int(mod.content)
-                        await mod.delete()
+                        nb_dep_content = str(nb_dep.content)
+                        await nb_dep.delete()
                 else:
+                    nb_dep_content = "0"
+                await q.edit(content="Voulez-vous fixer une limite ? C'est à dire que le ticket va se reset après ce nombre.")
+                await q.add_reaction("✅")
+                await q.add_reaction("❌")
+                reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                if reaction.emoji == "✅":
                     await q.clear_reactions()
-        else:
-            limit_content = 0
-            mod_content = 0
-            await q.clear_reactions()
+                    await q.edit(content="Merci d'indiquer la limite.")
+                    limit = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                    if limit.content == "stop":
+                        await ctx.send("Annulation !", delete_after=10)
+                        await q.delete()
+                        await limit.delete()
+                        return
+                    else:
+                        limit_content = int(limit.content)
+                        await limit.delete()
+                        mod_content = 0
+                        await q.edit(content="Voulez-vous, après la limite, augmenter d'un certain nombre le numéro ?")
+                        await q.add_reaction("✅")
+                        await q.add_reaction("❌")
+                        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                        if reaction.emoji == "✅":
+                            await q.clear_reactions()
+                            await q.edit(content="Quel est donc ce nombre ?")
+                            mod = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                            if mod.content == "stop":
+                                await ctx.send("Annulation !", delete_after=10)
+                                await mod.delete()
+                                await q.delete()
+                                return
+                            else:
+                                mod_content = int(mod.content)
+                                await mod.delete()
+                        else:
+                            await q.clear_reactions()
+                    
+                else:
+                    limit_content = 0
+                    mod_content = 0
+                    await q.clear_reactions()
+            else:
+                limit_content = 0
+                mod_content = 0
+                nb_dep_content = "Aucun"
+                await q.clear_reactions()
         guild = ctx.message.guild
         await q.edit(content=
-            f"Vos paramètres sont : \n Titre : {typeM} \n Numéro de départ : {nb_dep_content} \n Intervalle entre les nombres (on se comprend, j'espère) : {mod_content} (0 => Pas d'intervalle) \n Limite : {limit_content} (0 => Pas de limite) \n Catégorie : {cat_name}. \n\n Confirmez-vous ces paramètres ?"
+            f"Vos paramètres sont : \n Titre : {typeM} \n Numéro de départ : {nb_dep_content} \n Intervalle entre les nombres (on se comprend, j'espère) : {mod_content} (0 => Pas d'intervalle) \n Limite : {limit_content} (0 => Pas de limite) \n Catégorie : {cat_name}.\n Nom par défaut : {phrase_para}\n Confirmez-vous ces paramètres ?"
         )
         await q.add_reaction("✅")
         await q.add_reaction("❌")
@@ -253,156 +287,11 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
             await q.delete()
             react = await ctx.send(embed=embed)
             await react.add_reaction(symbole)
-            sql = "INSERT INTO TICKET (idM, channelM, channel, num, modulo, limitation, emote, idS) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            sql = "INSERT INTO TICKET (idM, channelM, channel, num, modulo, limitation, emote, idS, name_auto) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)"
             id_serveur = ctx.message.guild.id
             id_message = react.id
             chanM = ctx.channel.id
-            var = (id_message, chanM, ticket_chan_content, nb_dep_content,mod_content, limit_content, symbole, id_serveur)
-            c.execute(sql, var)
-            db.commit()
-            c.close()
-            db.close()
-        else:
-            await ctx.send("Annulation !", delete_after=30)
-            await q.delete()
-            return
-
-    @commands.has_permissions(administrator=True)
-    @commands.command(aliases=['chan, Channel'], name="Channel", help="Permet de créer un message de création de channels dans une seule catégorie, à l'instar des tickets, sans les paramètres. En outre, les créateurs peuvent nommer leur channel, contrairement aux tickets.", brief="Similaire aux tickets, mais permettant de nommer le channel.", description="Configuration pour une seule catégorie.")
-    async def channel(self, ctx):
-        def checkValid(reaction, user):
-            return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
-        def checkRep(message):
-            return message.author == ctx.message.author and ctx.message.channel == message.channel
-        guild = ctx.message.guild
-        await ctx.message.delete()
-        db = sqlite3.connect("owlly.db", timeout=3000)
-        c = db.cursor()
-        q = await ctx.send(f"Quel est le titre de l'embed ?")
-        rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-        typeM = rep.content
-        if typeM == "stop":
-            await ctx.send("Annulation !", delete_after=10)
-            await rep.delete()
-            await q.delete()
-            return
-        await q.edit(content="Quelle est sa description ?")
-        rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-        if rep.content == "stop":
-            await ctx.send("Annulation !", delete_after=10)
-            await rep.delete()
-            await q.delete()
-            return
-        else:
-            desc=rep.content
-        await rep.delete()
-        await q.edit(content=
-            "Dans quel catégorie voulez-vous créer vos channels ? Rappel : Seul un modérateur pourra les supprimer, car ce sont des channels permanents.\n Vous pouvez utiliser le nom ou l'ID de la catégorie !"
-        )
-        rep = await self.bot.wait_for("message",timeout=300,check=checkRep)
-        ticket_chan_content = rep.content
-        cat_name = "none"
-        if ticket_chan_content == "stop":
-            await ctx.send("Annulation !", delete_after=10)
-            await q.delete()
-            await rep.delete()
-            return
-        else:
-            if ticket_chan_content.isnumeric():
-                ticket_chan_content = int(ticket_chan_content)
-                cat_name = get(guild.categories, id=ticket_chan_content)
-                if ticket_chan_content == "None" or ticket_chan_content is None:
-                    await ctx.send("Erreur : Cette catégorie n'existe pas !",delete_after=30)
-                    await q.delete()
-                    await rep.delete()
-                    return
-            else:
-                ticket_chan_content = await self.search_cat_name(ctx, ticket_chan_content)
-                if ticket_chan_content == 12:
-                    await ctx.send("Aucune catégorie portant un nom similaire existe, vérifier votre frappe.",delete_after=30)
-                    await q.delete()
-                    await rep.delete()
-                    return
-                else:
-                    cat_name = get(guild.categories, id=ticket_chan_content)
-                    await rep.delete()
-        await q.edit(conten=f"Quelle couleur voulez vous utiliser ? \n 0 donne une couleur aléatoire.")
-        rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-        col = rep.content
-        if col == "stop":
-            await ctx.send("Annulation !", delete_after=30)
-            await q.delete()
-            await rep.delete()
-            return
-        elif col == 0:
-            col = await Colour.random()
-        else:
-            try:
-                co = await ColourConverter.convert(self, ctx, col)
-            except CommandError:
-                col = Colour.random()
-        await rep.delete()
-        await q.edit(content="Voulez-vous ajouter une image ?")
-        await q.add_reaction("✅")
-        await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add",timeout=300,check=checkValid)
-        if reaction.emoji == "✅":
-            await q.clear_reactions()
-            await q.edit(content=
-                "Merci d'envoyer l'image. \n**⚡ ATTENTION : Le message sera supprimé après la configuration, vous devez donc utiliser un lien permanent (hébergement sur un autre channel/serveur, imgur, lien google...)**"
-            )
-            rep = await self.bot.wait_for("message",timeout=300,check=checkRep)
-            img_content = rep.content
-            if img_content == "stop":
-                await ctx.send("Annulation !", delete_after=10)
-                await q.delete()
-                await rep.delete()
-                return
-            else:
-                img_content = self.checkImg(ctx, img_content)
-                if img_content=="Error":
-                    await ctx.send("Erreur ! Votre lien n'est pas une image valide.", delete_after=60)
-                    await q.delete()
-                    await rep.delete()
-                    return
-                else:
-                    await rep.delete()
-        else:
-            await q.clear_reactions()
-            img_content = "none"
-        guild = ctx.message.guild
-        await q.edit(content=
-            f"Vos paramètres sont : \n Titre : {typeM} \n Catégorie : {cat_name}. \n\n Confirmez-vous ces paramètres ?"
-        )
-        await q.add_reaction("✅")
-        await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add",timeout=300,check=checkValid)
-        if reaction.emoji == "✅":
-            await q.clear_reactions()
-            embed = discord.Embed(title=typeM,description=desc,color=col)
-            if img_content != "none":
-                embed.set_image(url=img_content)
-            await q.edit(content=
-                "Vous pouvez choisir l'émoji de réaction en réagissant à ce message. Il sera sauvegardé et mis sur l'embed. Par défaut, l'émoji est : 🗒"
-            )
-            symb, user = await self.bot.wait_for("reaction_add", timeout=300)
-            if symb.custom_emoji:
-                if symb.emoji in guild.emojis:
-                    symbole = str(symb.emoji)
-                else:
-                    symbole = "🗒"
-            elif symb.emoji != "🗒":
-                symbole = str(symb.emoji)
-            else:
-                symbole = "🗒"
-            await q.delete()
-            react = await ctx.send(embed=embed)
-            await react.add_reaction(symbole)
-            sql = "INSERT INTO SOLO_CATEGORY (idM, channelM, category, idS, emote) VALUES (?, ?, ?, ?, ?)"
-            id_serveur = ctx.message.guild.id
-            id_message = react.id
-            chanM = ctx.channel.id
-            var = (id_message, chanM, ticket_chan_content, id_serveur, symbole)
+            var = (id_message, chanM, ticket_chan_content, nb_dep_content,mod_content, limit_content, symbole, id_serveur, name_para)
             c.execute(sql, var)
             db.commit()
             c.close()
@@ -442,7 +331,7 @@ class config(commands.Cog, name="Créateurs", description="Permet de créer les 
                 await channels.add_reaction("✅")
                 if chan_search.isnumeric():
                     chan_search = int(chan_search)
-                    check_id=get(guild.categories, id=chan_search)
+                    check_id=get(ctx.guild.categories, id=chan_search)
                     if check_id is None or check_id=="None":
                         await ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
                         await q.delete()

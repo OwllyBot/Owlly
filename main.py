@@ -1,6 +1,7 @@
 from typing import ContextManager
 import discord
 from discord.ext import commands, tasks
+from discord.ext.commands.core import check
 from discord.ext.commands.help import HelpCommand
 from discord.utils import get
 import os
@@ -11,9 +12,11 @@ import keep_alive
 from pretty_help import PrettyHelp
 from discord.ext.commands.help import HelpCommand
 from pygit2 import Repository
-intents = discord.Intents(messages=True,guilds=True,reactions=True,members=True)
+intents = discord.Intents(messages=True, guilds=True,
+                          reactions=True, members=True)
 
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
 
 def getprefix(bot, message):
 	db = sqlite3.connect("owlly.db", timeout=3000)
@@ -35,9 +38,16 @@ def getprefix(bot, message):
 
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
-initial_extensions = ['cogs.clean_db', 'cogs.utils', 'cogs.config_creators', 'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
+
+initial_extensions = ['cogs.clean_db', 'cogs.utils', 'cogs.config_creators',
+    'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
 repo_name = Repository('.').head.shorthand
-bot = commands.Bot(command_prefix=getprefix,intents=intents)
+if repo_name == "main":
+    	token = os.environ.get('DISCORD_BOT_TOKEN')
+else:
+    token = os.environ.get('DISCORD_BOT_TOKEN_TESTING')
+prefix = "x"
+bot = commands.Bot(command_prefix=getprefix, intents=intents)
 if __name__ == '__main__':
 	for extension in initial_extensions:
 		try:
@@ -50,13 +60,13 @@ if __name__ == '__main__':
 async def on_command_error(ctx, error):
   if hasattr(ctx.command, 'on_error'):
     return
-  cog=ctx.cog
+  cog = ctx.cog
   if cog:
     if cog._get_overridden_method(cog.cog_command_error) is not None:
       return
-    ignored=(commands.CommandNotFound,)
-    error=getattr(error,'original',error)
-  if isinstance(error,commands.CommandNotFound,):
+    ignored = (commands.CommandNotFound,)
+    error = getattr(error, 'original', error)
+  if isinstance(error, commands.CommandNotFound,):
     return
   if isinstance(error, commands.DisabledCommand):
     await ctx.send(f'{ctx.command} has been disabled.')
@@ -71,12 +81,15 @@ async def on_command_error(ctx, error):
       await ctx.send('I could not find that member. Please try again.')
   else:
       # All other Errors not returned come here. And we can just print the default TraceBack.
-    print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
-    traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+    print('Ignoring exception in command {}:'.format(
+        ctx.command), file=sys.stderr)
+    traceback.print_exception(
+        type(error), error, error.__traceback__, file=sys.stderr)
 
 color = discord.Color.blurple()
 ending = "Si vous trouverez un bug, contactez @Mara#3000 !"
-bot.help_command = PrettyHelp(color=color, index_title="Owlly - Aide", ending_note=ending, active_time=300)
+bot.help_command = PrettyHelp(
+    color=color, index_title="Owlly - Aide", ending_note=ending, active_time=300)
 
 
 @bot.event
@@ -87,12 +100,11 @@ async def on_raw_reaction_add(payload):
 	c.execute("SELECT idS FROM TICKET")
 	serv_ticket = c.fetchall()
 	serv_ticket = list(sum(serv_ticket, ()))
+
 	c.execute("SELECT idS FROM CATEGORY")
 	serv_cat = c.fetchall()
 	serv_cat = list(sum(serv_cat, ()))
-	c.execute("SELECT idS FROM SOLO_CATEGORY")
-	serv_chan = c.fetchall()
-	serv_chan = list(sum(serv_chan, ()))
+
 	serv_here = payload.guild_id
 	mid = payload.message_id
 	channel = bot.get_channel(payload.channel_id)
@@ -103,7 +115,7 @@ async def on_raw_reaction_add(payload):
 		return message.author == user and channel == message.channel
 
 	if (len(msg.embeds) != 0) and (user.bot is False):
-		if (serv_here in serv_ticket) or (serv_here in serv_cat) or (serv_here in serv_chan):
+		if (serv_here in serv_ticket) or (serv_here in serv_cat) :
 			action = str(payload.emoji.name)
 			await msg.remove_reaction(action, user)
 			typecreation = "stop"
@@ -120,18 +132,6 @@ async def on_raw_reaction_add(payload):
 			for i in range(0, len(appart)):
 				extra = {appart[i][0]: appart[i][1]}
 				appartDict.update(extra)
-# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : SOLO CATEGORY ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-			sql = "SELECT emote FROM SOLO_CATEGORY WHERE idS=?"
-			c.execute(sql, (serv_here, ))
-			emoji_chan = c.fetchall()
-			emoji_chan = list(sum(emoji_chan, ()))
-			sql = "SELECT idM, category FROM SOLO_CATEGORY WHERE idS = ?"
-			c.execute(sql, (serv_here, ))
-			mono = c.fetchall()
-			monoDict = {}
-			for i in range(0, (len(mono))):
-				extra = {mono[i][0]: mono[i][1]}
-				monoDict.update(extra)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT CATEGORY ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			for i in range(0, len(emoji_cat)):
 				if str(emoji_cat[i]) == action:
@@ -150,57 +150,66 @@ async def on_raw_reaction_add(payload):
 					if k == mid:
 						chan_create = int(v)
 						typecreation = "Ticket"
-			elif action in emoji_chan:
-				for k, v in monoDict.items():
-					if k == mid:
-						print("here")
-						chan_create = int(v)
-						typecreation = "Channel"
 			else:
 				for k, v in roomDict.items():
 					if k == mid:
 						chan_create = int(v[choice])
 						typecreation = "Category"
-						sql="SELECT config_name FROM CATEGORY WHERE (idM = ? AND idS = ?)"
-						var=(mid, serv_here,)
+						sql = "SELECT config_name FROM CATEGORY WHERE (idM = ? AND idS = ?)"
+						var = (mid, serv_here,)
 						c.execute(sql, var)
-						name_creat=c.fetchone()
+						name_creat = c.fetchone()
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : TICKET ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			if typecreation == "Ticket":
-				sql = "SELECT num, modulo, limitation FROM TICKET WHERE idM= ?"
-				c.execute(sql, (mid, ))
-				limitation_options = c.fetchall()
-				limitation_options = list(sum(limitation_options, ()))
-				for i in range(0, len(limitation_options)):
-					nb = limitation_options[0]
-					mod = limitation_options[1]
-					limit = limitation_options[2]
-				nb += 1
-				if limit > 0:
-					if mod > 0:
-						if (nb % mod) > limit:
-							nb = (nb + mod) - limit
+				sql="SELECT num FROM TICKET WHERE idM=?"
+				c.execute(sql,(mid,))
+				nb=c.fetchone()[0]
+				if nb != "Aucun" and nb.isnumeric():
+					nb = int(nb)	
+					sql = "SELECT modulo, limitation FROM TICKET WHERE idM= ?"
+					c.execute(sql, (mid, ))
+					limitation_options = c.fetchall()
+					limitation_options = list(sum(limitation_options, ()))
+					for i in range(0, len(limitation_options)):
+						mod = limitation_options[0]
+						limit = limitation_options[1]
+					nb += 1
+					if limit > 0:
+						if mod > 0:
+							if (nb % mod) > limit:
+								nb = (nb + mod) - limit
+						else:
+							if nb > limit:
+								nb = 0
+				sql = "SELECT name_auto FROM TICKET WHERE idM=?"
+				c.execute(sql, (mid,))
+				para_name = c.fetchone()[0]
+				if para_name == "1":
+					q = await channel.send("Merci d'indiquer le nom de la pièce")
+					chan_rep = await bot.wait_for("message", timeout=300, check=checkRep)
+					await q.delete()
+					chan_name = chan_rep.content
+					if chan_name == "stop":
+						await channel.send("Annulation de la création.", delete_after=30)
+						await chan_rep.delete()
 					else:
-						if nb > limit:
-							nb = 0
-				perso = payload.member.nick
-				chan_name = f"{nb} {perso}"
-				sql = "UPDATE TICKET SET num = ? WHERE idM = ?"
-				var = (nb, mid)
-				c.execute(sql, var)
-# ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : CHANNEL▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-			elif typecreation == "Channel":
-				question = await channel.send(
-				    f"Merci d'indiquer le nom de la pièce.")
-				chan_rep = await bot.wait_for("message", timeout=300,check=checkRep)
-				await question.delete()
-				chan_name = chan_rep.content
-				if chan_name == "stop":
-					channel.send("Annulation de la création.", delete_after=10)
-					await chan_rep.delete()
-					return
-				chan_name = f"{chan_name}"
-				await channel.send(f"Création du channel {chan_name}",delete_after=30)
+						chan_name = f"{chan_name}"
+				elif para_name == "2":
+					perso = payload.member.nick
+					if nb.isnumeric():
+						chan_name = f"{nb}{perso}"
+					else:
+						chan_name=f"{perso}"
+				else:
+					perso = payload.member.nick
+					if nb.ismeric():
+						chan_name=f"{nb}{para_name}{perso}"
+					else:
+						chan_name=f"{para_name}{perso}"
+				if nb.isnumeric():
+					sql = "UPDATE TICKET SET num = ? WHERE idM = ?"
+					var = (nb, mid)
+					c.execute(sql, var)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT : CATEGORY  ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			elif typecreation == "Category":
 				category_name=get(payload.guild.categories, id=chan_create)
@@ -273,9 +282,6 @@ async def on_guild_channel_delete(channel):
 	sql = "SELECT created_by FROM AUTHOR WHERE created_by =?"
 	c.execute(sql, (delete, ))
 	verif_ticket = c.fetchone()
-	print(verif_ticket)
-	if verif_ticket == None:
-	  print("coucou")
 	if verif_ticket != None :
 		sql = "SELECT num FROM TICKET WHERE idM = ?"
 		c.execute(sql, verif_ticket)
@@ -323,6 +329,7 @@ async def on_guild_remove(guild):
 	db.commit()
 	c.close()
 	db.close()
+
 if repo_name=="main":
 	token = os.environ.get('DISCORD_BOT_TOKEN')
 	keep_alive.keep_alive()
