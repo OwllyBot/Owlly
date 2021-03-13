@@ -117,8 +117,6 @@ async def on_raw_reaction_add(payload):
 	if (len(msg.embeds) != 0) and (user.bot is False):
 		if (serv_here in serv_ticket) or (serv_here in serv_cat) :
 			action = str(payload.emoji.name)
-			print(action)
-			print(emoji_cat)
 			choice =""
 			await msg.remove_reaction(action, user)
 			typecreation = "stop"
