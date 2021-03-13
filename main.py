@@ -117,6 +117,7 @@ async def on_raw_reaction_add(payload):
 	if (len(msg.embeds) != 0) and (user.bot is False):
 		if (serv_here in serv_ticket) or (serv_here in serv_cat) :
 			action = str(payload.emoji.name)
+			choice =""
 			await msg.remove_reaction(action, user)
 			typecreation = "stop"
 			chan_create = "stop"
@@ -133,9 +134,11 @@ async def on_raw_reaction_add(payload):
 				extra = {appart[i][0]: appart[i][1]}
 				appartDict.update(extra)
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT CATEGORY ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-			for i in range(0, len(emoji_cat)):
-				if str(emoji_cat[i]) == action:
-					choice = i
+			try:
+				choice = emoji_cat.index(action)
+			except ValueError:
+				await channel.send("Il y a eu une erreur ! Merci de contacter le créateur du bot.")
+				return
 			sql = "SELECT idM, category_list FROM CATEGORY WHERE idS = ?"
 			c.execute(sql, (serv_here, ))
 			room = c.fetchall()
