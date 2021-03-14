@@ -6,31 +6,7 @@ import sqlite3
 import re
 from discord import Colour
 from discord.ext.commands import ColourConverter
-
-
-def bot():
-    def getprefix(bot, message):
-        db = sqlite3.connect("owlly.db", timeout=3000)
-        c = db.cursor()
-        prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-        c.execute(prefix, (int(message.guild.id), ))
-        prefix = c.fetchone()
-        if prefix is None:
-            prefix = "?"
-            sql = "INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
-            var = ("?", message.guild.id)
-            c.execute(sql, var)
-            db.commit()
-        else:
-            prefix = prefix[0]
-        c.close()
-        db.close()
-        return prefix
-    intents = discord.Intents(
-        messages=True, guilds=True, reactions=True, members=True)
-    bot = commands.bot(command_prefix=getprefix, intents=intents)
-    return bot
-
+import unidecode as uni
 
 async def convertColor(ctx, color: Optional[discord.Color] = None):
     if color is None:
@@ -49,29 +25,39 @@ def checkImg(ctx, img):
         return "error"
 
 
-async def search_cat_name(ctx, name):
-    bot = bot()
+async def search_cat_name(ctx, name, bot):
     emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 
     def checkValid(reaction, user):
         return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
     cat_list = []
+    cat_uni = []
     for cat in ctx.guild.categories:
         cat_list.append(cat.name)
-    w = re.compile(f".*{name}.*", re.IGNORECASE, re.UNICODE)
-    search = list(filter(w.match, cat_list))
+        cat_uni.append(uni.unidecode(cat.name))
+    w = re.compile(f".*{uni.unidecode(name)}|{name}.*", flags=re.IGNORECASE)
+    search = list(filter(w.match, cat_uni))
     search_list = []
     lg = len(search)
     if lg == 0:
         return 12
     elif lg == 1:
         name = search[0]
+        for cat in cat_list:
+            if name == uni.unidecode(cat):
+                name = cat
         name = get(ctx.guild.categories, name=name)
         number = name.id
         return number
     elif lg > 1 and lg < 10:
+        search_name = []
         for i in range(0, lg):
-            phrase = f"{emoji[i]} : {search[i]}"
+            for cat in cat_list:
+                if search[i] == uni.unidecode(cat):
+                    search_name.append(cat)
+                else:
+                    search_name.append(search[i])
+            phrase = f"{emoji[i]} : {search_name[i]}"
             search_list.append(phrase)
         search_question = "\n".join(search_list)
         q = await ctx.send(f"Plusieurs catégories correspondent à ce nom. Pour choisir celle que vous souhaitez, cliquez sur le numéro correspondant :\n {search_question}")
@@ -80,8 +66,8 @@ async def search_cat_name(ctx, name):
         select, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
         for i in range(0, lg):
             if str(select) == str(emoji[i]):
-                name = search[i]
-                mot = search[i]
+                name = search_name[i]
+                mot = search_name[i]
         name = get(ctx.guild.categories, name=name)
         number = name.id
         await q.delete()
@@ -92,9 +78,7 @@ async def search_cat_name(ctx, name):
         return
 
 
-async def create_ticket(ctx):
-    bot = bot()
-
+async def create_ticket(ctx, bot):
     def checkValid(reaction, user):
         return ctx.message.author == user and q.id == reaction.message.id and (
             str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
@@ -141,7 +125,7 @@ async def create_ticket(ctx):
                 await q.delete()
                 return
         else:
-            ticket_chan_content = await search_cat_name(ctx, ticket_chan_content)
+            ticket_chan_content = await search_cat_name(ctx, ticket_chan_content, bot)
             if ticket_chan_content == 12:
                 await ctx.send("Aucune catégorie portant un nom similaire existe, vérifier votre frappe.", delete_after=30)
                 await q.delete()
@@ -324,9 +308,7 @@ async def create_ticket(ctx):
         return
 
 
-async def create_category(ctx):
-    bot = bot()
-
+async def create_category(ctx, bot):
     def checkValid(reaction, user):
         return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
 
@@ -362,7 +344,7 @@ async def create_category(ctx):
                 else:
                     chan.append(str(chan_search))
             else:
-                chan_search = await search_cat_name(ctx, chan_search)
+                chan_search = await search_cat_name(ctx, chan_search, bot)
                 if chan_search == 12:
                     await ctx.send("Aucune catégorie portant un nom similaire existe, vérifier votre frappe.", delete_after=30)
                     await q.delete()

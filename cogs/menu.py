@@ -1,4 +1,5 @@
 import discord
+from discord.colour import Color
 from discord.ext import commands, tasks
 from discord.utils import get
 from typing import Optional
@@ -15,17 +16,17 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
         self.bot = bot
     
     @commands.has_permissions(administrator=True)
-    @commands.command(aliases=['tick'], name="Ticket", brief="Débute la configuration des tickets", help="Permet de créer la configuration des tickets avec divers paramètres, notamment ceux le numéros dans le nom, ainsi que le moment où ce numéros va se reset.", description="Configuration pour une seule catégorie.")
+    @commands.command(aliases=['tick'], brief="Débute la configuration des tickets", help="Permet de créer la configuration des tickets avec divers paramètres, notamment ceux le numéros dans le nom, ainsi que le moment où ce numéros va se reset.", description="Configuration pour une seule catégorie.")
     async def ticket(self, ctx):
         emoji = ["1️⃣", "2️⃣", "3️⃣", "❌"]
         def checkValid(reaction, user):
             return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
         def checkRep(message):
             return message.author == ctx.message.author and ctx.message.channel == message.channel
-        embed=discord.Embed(title="Menu des tickets", color=Colour.Blurple())
-        embed.add_field(name="1️⃣", value="Créer un nouveau créateur de ticket.")
-        embed.add_field(name="2️⃣", value="Modifier un créateur de ticket.")
-        embed.add_field(name="3️⃣", value="Afficher la liste des paramètres d'un ticket.")
+        embed=discord.Embed(title="Menu des tickets", color=Color.blurple())
+        embed.add_field(name="1️⃣", value="Créer un nouveau créateur de ticket.", inline=False)
+        embed.add_field(name="2️⃣", value="Modifier un créateur de ticket.", inline=False)
+        embed.add_field(name="3️⃣", value="Afficher la liste des paramètres d'un ticket.",inline=False)
         q=await ctx.send(embed=embed)
         await q.add_reaction("1️⃣")
         await q.add_reaction("2️⃣")
@@ -34,10 +35,10 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
         reaction, user=await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
         if reaction.emoji == "1️⃣":
             await q.delete()
-            await cfg.create_ticket(ctx)
+            await cfg.create_ticket(ctx, self.bot)
         elif reaction.emoji == "2️⃣":
             await q.clear_reactions()
-            await q.edit(content="Merci de donner l'ID du créateur à modifier.")
+            await q.edit(content="Merci de donner l'ID du créateur à modifier.", embed="")
             rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
             if rep.content == "stop":
                 await q.delete()
@@ -52,7 +53,7 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
                 c.execute(sql, (idM,))
                 check=c.fetchone()[0]
                 if check is not None:
-                    await edit.edit_ticket(ctx, idM)
+                    await edit.edit_ticket(ctx, idM, self.bot)
                 else:
                     await q.delete()
                     await rep.delete()
@@ -65,7 +66,7 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
                 return
         elif reaction.emoji == "3️⃣":
             await q.delete()
-            affichage=await listing.list_ticket(ctx)
+            affichage=listing.list_ticket(ctx)
             await ctx.send(affichage)
         elif reaction.emoji =="❌":
             await q.delete()

@@ -38,8 +38,7 @@ def getprefix(bot, message):
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 
-initial_extensions = ['cogs.clean_db', 'cogs.utils', 'cogs.config_creators',
-    'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
+initial_extensions = ['cogs.clean_db', 'cogs.utils', 'cogs.menu','cogs.author_cmd', 'cogs.member', 'cogs.config_general']
 repo_name = Repository('.').head.shorthand
 bot = commands.Bot(command_prefix=getprefix, intents=intents)
 if __name__ == '__main__':
@@ -91,15 +90,17 @@ async def on_raw_reaction_add(payload):
 	emoji_cat = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 	db = sqlite3.connect("owlly.db", timeout=3000)
 	c = db.cursor()
-	c.execute("SELECT idS FROM TICKET")
+	idS = payload.guild_id
+	sql="SELECT idM FROM TICKET WHERE idS=?"
+	c.execute(sql, (idS,))
 	serv_ticket = c.fetchall()
 	serv_ticket = list(sum(serv_ticket, ()))
 
-	c.execute("SELECT idS FROM CATEGORY")
+	sql="SELECT idM FROM CATEGORY WHERE idS=?"
+	c.execute(sql, (idS,))
 	serv_cat = c.fetchall()
 	serv_cat = list(sum(serv_cat, ()))
 
-	serv_here = payload.guild_id
 	mid = payload.message_id
 	channel = bot.get_channel(payload.channel_id)
 	msg = await channel.fetch_message(mid)
@@ -109,7 +110,7 @@ async def on_raw_reaction_add(payload):
 		return message.author == user and channel == message.channel
 
 	if (len(msg.embeds) != 0) and (user.bot is False):
-		if (serv_here in serv_ticket) or (serv_here in serv_cat) :
+		if (mid in serv_ticket) or (mid in serv_cat):
 			action = str(payload.emoji.name)
 			choice =""
 			await msg.remove_reaction(action, user)
@@ -117,11 +118,11 @@ async def on_raw_reaction_add(payload):
 			chan_create = "stop"
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬SELECT  TICKET ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 			sql = "SELECT emote FROM TICKET WHERE idS = ?"
-			c.execute(sql, (serv_here, ))
+			c.execute(sql, (idS, ))
 			emoji_ticket = c.fetchall()
 			emoji_ticket = list(sum(emoji_ticket, ()))
 			sql = "SELECT idM, channel FROM TICKET WHERE idS = ?"
-			c.execute(sql, (serv_here, ))
+			c.execute(sql, (idS, ))
 			appart = c.fetchall()
 			appartDict = {}
 			for i in range(0, len(appart)):
@@ -134,7 +135,7 @@ async def on_raw_reaction_add(payload):
 				await channel.send("Il y a eu une erreur ! Merci de contacter le créateur du bot.", delete_after=60)
 				return
 			sql = "SELECT idM, category_list FROM CATEGORY WHERE idS = ?"
-			c.execute(sql, (serv_here, ))
+			c.execute(sql, (idS, ))
 			room = c.fetchall()
 			roomDict = {}
 			for i in range(0, len(room)):
@@ -153,7 +154,7 @@ async def on_raw_reaction_add(payload):
 						chan_create = int(v[choice])
 						typecreation = "Category"
 						sql = "SELECT config_name FROM CATEGORY WHERE (idM = ? AND idS = ?)"
-						var = (mid, serv_here,)
+						var = (mid, idS,)
 						c.execute(sql, var)
 						name_creat = c.fetchone()[0]
 # ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬CREATE : TICKET ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
@@ -234,7 +235,7 @@ async def on_raw_reaction_add(payload):
 			category = bot.get_channel(chan_create)
 			new_chan = await category.create_text_channel(chan_name)
 			sql = "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
-			var = (new_chan.id, payload.user_id, serv_here, payload.message_id)
+			var = (new_chan.id, payload.user_id, idS, payload.message_id)
 			c.execute(sql, var)
 			db.commit()
 			c.close()
