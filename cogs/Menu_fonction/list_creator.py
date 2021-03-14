@@ -38,11 +38,22 @@ def list_ticket(ctx):
     c.execute(sql, (idS,))
     info=c.fetchall()
     for i in info:
-        msg=f"{i[0]} dans <#{i[1]}> :\n"
+        msg=f"▫ {i[0]} dans <#{i[1]}> :\n"
         cat_name=get(ctx.guild.categories, id=i[2])
         msg=msg+f" Catégorie : {cat_name}"
         if i[8] == "1":
             chan_name="Nom libre"
         else:
+            if i[8] =="2":
+                chan_name="Nom du personnage"
+            else:
+                chan_name=i[8]
             nb = i[3]
-            if 
+            if nb.isnumeric():
+                limit=i[5]
+                modulo= i[4]
+                msg=msg+f"\nNom : {nb} : {chan_name}\n Limitation : {limit}\n Augmentation : {modulo}"
+            else:
+                msg=msg+f"\nNom : {nb} : {chan_name}"
+        msg=msg+"\n\n"
+    return msg

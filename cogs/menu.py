@@ -10,7 +10,7 @@ from cogs.Menu_fonction import config_creators as cfg
 from cogs.Menu_fonction import edit_creator as edit
 from cogs.Menu_fonction import list_creator as listing
 
-class menu(commands.Cog, name="Créateur", description="Permet de créer les messages pour créer des channels dans les catégories."):
+class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de permettre la création, l'édition mais aussi lister les créateurs de tickets."):
     def __init__(self, bot):
         self.bot = bot
     
@@ -65,11 +65,15 @@ class menu(commands.Cog, name="Créateur", description="Permet de créer les mes
                 return
         elif reaction.emoji == "3️⃣":
             await q.delete()
-            await listing.list_ticket(ctx)
+            affichage=await listing.list_ticket(ctx)
+            await ctx.send(affichage)
         elif reaction.emoji =="❌":
             await q.delete()
             await ctx.send("Annulation", delete_after=30)
             return
-
+    @commands.has_permissions(administrator=True)
+    @commands.command(aliases=["cat, categories"], brief="Configuration d'un créateur pour plusieurs catégorie", help="Permet de créer divers channels dans plusieurs catégories qui seront recherchées sur le serveur. La configuration offre une option pour autoriser ou nom le nommage automatique des channels.", description="Pour plusieurs catégories, 9 au maximum.")
+    async def category(self, ctx):
+        pass
 def setup(bot):
     bot.add_cog(menu(bot))

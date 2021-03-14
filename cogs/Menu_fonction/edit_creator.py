@@ -108,7 +108,7 @@ async def edit_ticket(ctx, idM):
             sql="SELECT num FROM TICKET WHERE idM=?"
             c.execute(sql, (int(idM),))
             num=c.fetchone()[0]
-            if num == 0:
+            if num == "Aucun":
                 msg = "Actuellement, il n'y a pas de nombre de départ. Par-quoi voulez-vous le changer ?\n `0`: Aucun changement."
             else:
                 msg = f"Actuellement, le numéro est {num}.  Par-quoi voulez-vous le changer ?\n `0`: Suppression de la numérotation."
@@ -119,8 +119,11 @@ async def edit_ticket(ctx, idM):
                 await q.delete()
                 await rep.delete()
                 return
-            elif rep.content.isnumeric():
-                num=int(rep.content)
+            else:
+                if rep.content == "0":
+                    num = "Aucun"
+                else:
+                    num = str(rep.content)
                 await rep.add_reaction('✅')
                 await rep.delete(delay=30)
                 sql="UPDATE TICKET SET num=? WHERE idM=?"
@@ -132,18 +135,13 @@ async def edit_ticket(ctx, idM):
                     var=(name, idM)
                     c.execute(sql, var)
                 await q.edit("Paramètre changé.", delete_after=30)
-            else:
-                await ctx.send ("Ce n'est pas un nombre !\nAnnulation", delete_after=30)
-                await q.delete()
-                await rep.delete()
-                return
         elif reaction.emoji=="2️⃣":
             await q.clear_reactions()
             sql = "SELECT modulo FROM TICKET WHERE idM=?"
             c.execute(sql, (int(idM),))
             modulo = c.fetchone()[0]
             if modulo == 0:
-                msg = "Actuellement, le comptage n'est pas augmenter après la limite. Par-quoi voulez-vous changer ce paramètre ?\n `0` : Aucun changement."
+                msg = "Actuellement, le comptage n'est pas augmenté après la limite. Par-quoi voulez-vous changer ce paramètre ?\n `0` : Aucun changement."
             else:
                 msg = f"Actuellement, l'augmentation est de : {modulo}.Par-quoi voulez-vous changer ce paramètre ?\n `0` : Suppression."
             rep = await bot.wait_for("message", timeout=300, check=checkRep)
@@ -230,7 +228,7 @@ async def edit_ticket(ctx, idM):
             await q.edit("Paramètre changé.", delete_after=30)
     elif reaction.emoji == "3️⃣":
         await q.clear_reactions()
-        await q.edit(content="De la même manière dont vous l'avez enregistrer, vous pouvez indiquer un nom, ou un ID de catégorie.")
+        await q.edit(content="De la même manière dont vous l'avez enregistré, vous pouvez indiquer un nom, ou un ID de catégorie.")
         rep=await bot.wait_for("message", timeout=300, check=checkRep)
         if rep.content == "stop":
             await q.delete()
