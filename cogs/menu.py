@@ -22,7 +22,6 @@ class menu(commands.Cog, name="Créateur", description="Permet de créer les mes
             return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
         def checkRep(message):
             return message.author == ctx.message.author and ctx.message.channel == message.channel
-        q = await ctx.send("Merci de choisir le paramètre à éditer :\n 1️⃣ : Nom du channel \n 2️⃣ : Numéros, modulo, limitation")
         embed=discord.Embed(title="Menu des tickets", color=Colour.Blurple())
         embed.add_field(name="1️⃣", value="Créer un nouveau créateur de ticket.")
         embed.add_field(name="2️⃣", value="Modifier un créateur de ticket.")

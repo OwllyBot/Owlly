@@ -58,7 +58,7 @@ async def search_cat_name(ctx, name):
     cat_list = []
     for cat in ctx.guild.categories:
         cat_list.append(cat.name)
-    w = re.compile(f".*{name}.*", re.IGNORECASE)
+    w = re.compile(f".*{name}.*", re.IGNORECASE, re.UNICODE)
     search = list(filter(w.match, cat_list))
     search_list = []
     lg = len(search)
@@ -142,7 +142,6 @@ async def create_ticket(ctx):
                 return
         else:
             ticket_chan_content = await search_cat_name(ctx, ticket_chan_content)
-            cat_name = get(guild.categories, id=ticket_chan_content)
             if ticket_chan_content == 12:
                 await ctx.send("Aucune catégorie portant un nom similaire existe, vérifier votre frappe.", delete_after=30)
                 await q.delete()

@@ -6,6 +6,7 @@ from typing import Optional, Union
 from discord import Colour
 from discord.ext.commands import ColourConverter
 import asyncio
+import unidecode
 
 from discord.ext.commands.errors import CommandError
 intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
@@ -116,7 +117,7 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
             msg_content=[]
             for i in messages:
                 msg_content.append(i.content)
-            w = re.compile(f"(.*)?{word}(.*)?(\W+)?:", re.IGNORECASE)
+            w = re.compile(f"(.*)?{word}(.*)?(\W+)?:", re.IGNORECASE, re.UNICODE)
             search=list(filter(w.match,msg_content))
             lg=len(search)
             if lg == 0:
