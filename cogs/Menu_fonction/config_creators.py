@@ -101,6 +101,7 @@ async def create_ticket(ctx):
 
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
+    
     guild = ctx.message.guild
     await ctx.message.delete()
     db = sqlite3.connect("owlly.db", timeout=3000)
