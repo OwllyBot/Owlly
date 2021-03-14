@@ -12,8 +12,7 @@ import keep_alive
 from pretty_help import PrettyHelp
 from discord.ext.commands.help import HelpCommand
 from pygit2 import Repository
-intents = discord.Intents(messages=True, guilds=True,
-                          reactions=True, members=True)
+intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
 
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
