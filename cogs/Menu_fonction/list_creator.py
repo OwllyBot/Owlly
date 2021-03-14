@@ -33,4 +33,16 @@ def bot():
 def list_ticket(ctx):
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
-    
+    idS=ctx.guild.id
+    sql="SELECT * FROM TICKET WHERE idS=?"
+    c.execute(sql, (idS,))
+    info=c.fetchall()
+    for i in info:
+        msg=f"{i[0]} dans <#{i[1]}> :\n"
+        cat_name=get(ctx.guild.categories, id=i[2])
+        msg=msg+f" Catégorie : {cat_name}"
+        if i[8] == "1":
+            chan_name="Nom libre"
+        else:
+            nb = i[3]
+            if 
