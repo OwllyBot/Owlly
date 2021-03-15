@@ -309,7 +309,7 @@ async def create_ticket(self,ctx, bot):
         return
 
 
-async def create_category(ctx, bot):
+async def create_category(self,ctx, bot):
     def checkValid(reaction, user):
         return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
 
@@ -406,7 +406,7 @@ async def create_category(ctx, bot):
         col = Colour.random()
     else:
         try:
-            col = await ColourConverter.convert(ctx, col)
+            col = await ColourConverter.convert(self,ctx, col)
         except CommandError:
             col = Colour.random()
     await q.edit(content="Voulez-vous utiliser une image ?")
