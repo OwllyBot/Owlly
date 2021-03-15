@@ -5,7 +5,7 @@ from typing import Optional
 import sqlite3
 import re
 from discord import Colour
-from discord.ext.commands import ColourConverter
+from discord.ext.commands import ColourConverter,CommandError
 import unidecode as uni
 
 async def convertColor(ctx, color: Optional[discord.Color] = None):
@@ -29,7 +29,7 @@ async def search_cat_name(ctx, name, bot):
     emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 
     def checkValid(reaction, user):
-        return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
+        return ctx.message.author == user and info.id == reaction.message.id and str(reaction.emoji) in emoji
     cat_list = []
     cat_uni = []
     for cat in ctx.guild.categories:
@@ -60,9 +60,9 @@ async def search_cat_name(ctx, name, bot):
             phrase = f"{emoji[i]} : {search_name[i]}"
             search_list.append(phrase)
         search_question = "\n".join(search_list)
-        q = await ctx.send(f"Plusieurs catégories correspondent à ce nom. Pour choisir celle que vous souhaitez, cliquez sur le numéro correspondant :\n {search_question}")
+        info = await ctx.send(f"Plusieurs catégories correspondent à ce nom. Pour choisir celle que vous souhaitez, cliquez sur le numéro correspondant :\n {search_question}")
         for i in range(0, lg):
-            await q.add_reaction(emoji[i])
+            await info.add_reaction(emoji[i])
         select, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
         for i in range(0, lg):
             if str(select) == str(emoji[i]):
@@ -70,7 +70,7 @@ async def search_cat_name(ctx, name, bot):
                 mot = search_name[i]
         name = get(ctx.guild.categories, name=name)
         number = name.id
-        await q.delete()
+        await info.delete()
         await ctx.send(f"Catégorie : {mot} ✅ \n > Vous pouvez continuer l'inscription des channels. ", delete_after=30)
         return number
     else:
@@ -78,7 +78,7 @@ async def search_cat_name(ctx, name, bot):
         return
 
 
-async def create_ticket(ctx, bot):
+async def create_ticket(self,ctx, bot):
     def checkValid(reaction, user):
         return ctx.message.author == user and q.id == reaction.message.id and (
             str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
@@ -87,7 +87,6 @@ async def create_ticket(ctx, bot):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
     
     guild = ctx.message.guild
-    await ctx.message.delete()
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     q = await ctx.send(f"Quel est le titre de l'embed ?")
@@ -97,7 +96,10 @@ async def create_ticket(ctx, bot):
         await ctx.send("Annulation !", delete_after=10)
         await titre.delete()
         await q.delete()
+        await titre.delete()
         return
+    else:
+        await titre.delete()
     await q.edit(content=f"Quelle est sa description ?")
     desc = await bot.wait_for("message", timeout=300, check=checkRep)
     if desc.content == "stop":
@@ -106,7 +108,7 @@ async def create_ticket(ctx, bot):
         await q.delete()
         return
     await desc.delete()
-    await q.edit(content="Dans quel catégorie voulez-vous créer vos tickets ? Rappel : Seul un modérateur pourra les supprimer, car ce sont des tickets permanent.\n Vous pouvez utiliser le nom ou l'ID de la catégorie !")
+    await q.edit(content="Dans quelle catégorie voulez-vous créer vos tickets ? Rappel : Seul un modérateur pourra les supprimer, car ce sont des tickets permanent.\n Vous pouvez utiliser le nom ou l'ID de la catégorie !")
     rep = await bot.wait_for("message", timeout=300, check=checkRep)
     ticket_chan_content = rep.content
     cat_name = "none"
@@ -132,7 +134,7 @@ async def create_ticket(ctx, bot):
                 return
             else:
                 cat_name = get(guild.categories, id=ticket_chan_content)
-    await q.edit(conten=f"Quelle couleur voulez vous utiliser ? \n 0 donne une couleur aléatoire.")
+    await q.edit(content=f"Votre ticket sera créée dans {cat_name}.\n\nQuelle couleur voulez vous utiliser ? \n 0 donne une couleur aléatoire.")
     rep = await bot.wait_for("message", timeout=300, check=checkRep)
     col = rep.content
     if col == "stop":
@@ -144,11 +146,11 @@ async def create_ticket(ctx, bot):
         col = Colour.random()
     else:
         try:
-            col = await ColourConverter.convert(ctx, col)
+            col = await ColourConverter.convert(self,ctx=ctx, argument=rep.content)
         except CommandError:
             col = Colour.blurple()
     await rep.delete()
-    q.edit(content="Voulez-vous ajouter une image ?")
+    await q.edit(content="Voulez-vous ajouter une image ?")
     await q.add_reaction("✅")
     await q.add_reaction("❌")
     reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
@@ -170,7 +172,7 @@ async def create_ticket(ctx, bot):
                 await rep.delete()
                 return
             else:
-                rep.delete()
+                await rep.delete()
     else:
         await q.clear_reactions()
         img_content = "none"
@@ -201,6 +203,9 @@ async def create_ticket(ctx, bot):
         await q.add_reaction("✅")
         await q.add_reaction("❌")
         reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        limit_content = 0
+        mod_content = 0
+        nb_dep_content = "Aucun"
         if reaction.emoji == "✅":
             await q.edit(content="Voulez-vous fixer un nombre de départ ?")
             await q.add_reaction("✅")
@@ -262,20 +267,15 @@ async def create_ticket(ctx, bot):
                 mod_content = 0
                 await q.clear_reactions()
         else:
-            limit_content = 0
-            mod_content = 0
-            nb_dep_content = "Aucun"
             await q.clear_reactions()
     guild = ctx.message.guild
-    await q.edit(content=f"Vos paramètres sont : \n Titre : {typeM} \n Numéro de départ : {nb_dep_content} \n Intervalle entre les nombres (on se comprend, j'espère) : {mod_content} (0 => Pas d'intervalle) \n Limite : {limit_content} (0 => Pas de limite) \n Catégorie : {cat_name}.\n Nom par défaut : {phrase_para}\n Confirmez-vous ces paramètres ?"
-                 )
+    await q.edit(content=f"Vos paramètres sont : \n Titre : {typeM} \n Numéro de départ : {nb_dep_content} \n Intervalle entre les nombres (on se comprend, j'espère) : {mod_content} (0 => Pas d'intervalle) \n Limite : {limit_content} (0 => Pas de limite) \n Catégorie : {cat_name}.\n Nom par défaut : {phrase_para}\n Confirmez-vous ces paramètres ?")
     await q.add_reaction("✅")
     await q.add_reaction("❌")
     reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
     if reaction.emoji == "✅":
         await q.clear_reactions()
-        embed = discord.Embed(title=titre.content,
-                              description=desc.content, color=col)
+        embed = discord.Embed(title=titre.content,description=desc.content, color=col)
         if img_content != "none":
             embed.set_image(url=img_content)
         await q.edit(content="Vous pouvez choisir l'émoji de réaction en réagissant à ce message. Il sera sauvegardé et mis sur l'embed. Par défaut, l'émoji est : 🗒"
