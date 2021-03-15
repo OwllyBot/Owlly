@@ -24,9 +24,10 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
         def checkRep(message):
             return message.author == ctx.message.author and ctx.message.channel == message.channel
         embed=discord.Embed(title="Menu des tickets", color=Color.blurple())
-        embed.add_field(name="1️⃣", value="Créer un nouveau créateur de ticket.", inline=False)
-        embed.add_field(name="2️⃣", value="Modifier un créateur de ticket.", inline=False)
-        embed.add_field(name="3️⃣", value="Afficher la liste des paramètres d'un ticket.",inline=False)
+        embed.add_field(name="1️⃣ - Création", value="Créer un nouveau créateur de ticket.", inline=False)
+        embed.add_field(name="2️⃣ - Modification", value="Modifier un créateur de ticket.", inline=False)
+        embed.add_field(name="3️⃣ - Liste", value="Afficher la liste des paramètres d'un ticket.",inline=False)
+        embed.set_footer(text="Cliquez sur la réaction pour choisir !\n❌ Permet de quitter le menu.")
         q=await ctx.send(embed=embed)
         await q.add_reaction("1️⃣")
         await q.add_reaction("2️⃣")
@@ -35,7 +36,7 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
         reaction, user=await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
         if reaction.emoji == "1️⃣":
             await q.delete()
-            await cfg.create_ticket(ctx, self.bot)
+            await cfg.create_ticket(self,ctx, self.bot)
         elif reaction.emoji == "2️⃣":
             await q.clear_reactions()
             await q.edit(content="Merci de donner l'ID du créateur à modifier.", embed="")
