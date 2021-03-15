@@ -255,6 +255,7 @@ async def create_ticket(ctx, bot):
                             await mod.delete()
                     else:
                         await q.clear_reactions()
+                        mod_content=0
 
             else:
                 limit_content = 0

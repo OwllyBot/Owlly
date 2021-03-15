@@ -128,9 +128,9 @@ async def edit_ticket(ctx, idM, bot):
             c.execute(sql, (int(idM),))
             modulo = c.fetchone()[0]
             if modulo == 0:
-                msg = "Actuellement, le comptage n'est pas augmenté après la limite. Par-quoi voulez-vous changer ce paramètre ?\n `0` : Aucun changement."
+                msg = "Actuellement, le comptage n'est pas augmenté après la limite. Par-quoi voulez-vous changer ce paramètre ?\n `0` : Aucun changement.\n En cas de fixation de modulo, une limite sera fixée à 100."
             else:
-                msg = f"Actuellement, l'augmentation est de : {modulo}.Par-quoi voulez-vous changer ce paramètre ?\n `0` : Suppression."
+                msg = f"Actuellement, l'augmentation est de : {modulo}.Par-quoi voulez-vous changer ce paramètre ? \n `0` : Suppression."
             rep = await bot.wait_for("message", timeout=300, check=checkRep)
             if rep.content=="stop":
                 await ctx.send("Annulation !", delete_after=30)
@@ -144,6 +144,22 @@ async def edit_ticket(ctx, idM, bot):
                 sql = "UPDATE TICKET SET modulo=? WHERE idM=?"
                 var = (modulo, idM)
                 c.execute(sql, var)
+                sql="SELECT num FROM TICKET WHERE idM=?"
+                c.execute(sql,(idM,))
+                nb=c.fetchone()[0]
+                if not nb.isnumeric():
+                    nb="0"
+                    sql="UPDATE TICKET SET num=? WHERE idM=?"
+                    var=(nb, idM)
+                    c.execute(sql,var)
+                sql="SELECT limitation FROM TICKET WHERE idM=?"
+                c.execute(sql,(idM,))
+                limit=c.fetchone()[0]
+                if int(limit) == 0 and modulo != 0:
+                    limit=100
+                    sql="UPDATE TICKET SET limitation=? WHERE idM=?"
+                    var=(limit, idM)
+                    c.execute(sql,var)
                 if name == "1":
                     sql="UPDATE TICKET SET name_auto=? WHERE idM=?"
                     name="2"
