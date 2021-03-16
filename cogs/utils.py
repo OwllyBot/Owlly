@@ -100,7 +100,7 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
         embed = discord.Embed(description="Test", color=0x61c98b)
         msg = await ctx.send(embed=embed)
         await asyncio.sleep(7)
-        embed2 = discord.Embed(description="Edited", title=embed.author, color=embed.color)
+        embed2 = discord.Embed(description="Edited", color=embed.color)
         await msg.edit(embed=embed2)
 
 
