@@ -6,6 +6,7 @@ import sqlite3
 import re
 from discord import Colour
 from discord.ext.commands import ColourConverter
+from discord.ext.commands import CommandError
 
 # ▬▬▬▬▬▬▬▬▬▬▬ SEARCH CAT NAME ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
