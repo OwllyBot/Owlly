@@ -61,20 +61,22 @@ async def search_cat_name(ctx, name,bot):
         await ctx.send("Il y a trop de correspondance ! Merci de recommencer la commande.", delete_after=30)
         return
 
-async def editEmbed(ctx, bot, channel: discord.TextChannel, idM):
+async def editEmbed(ctx, bot, idM):
     emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
     for channel in bot.get_all_channels():
         try:
             msg = await channel.get_message(idM)
+            msg=msg.embeds
+            await msg.clear_reactions()
         except NotFound:
-            return "Error"
+            return
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     sql="SELECT category_list FROM CATEGORY WHERE idM=?"
     c.execute(sql,(idM,))
     cat_list=c.fetchone()[0]
     if cat_list is None:
-        return "Error"
+        return
     cat=cat_list.split(",")
     namelist=[]
     for i in range(0,len(cat)):
@@ -83,8 +85,10 @@ async def editEmbed(ctx, bot, channel: discord.TextChannel, idM):
         phrase = f"{emoji[i]} : {cat}"
         namelist.append(phrase)
     name_str = "\n".join(namelist)
-    embed=discord.Embed(description=name_str)
+    embed=discord.Embed(description=name_str, color=msg.color, title=msg.title)
     await msg.edit(embed=embed)
+    for i in range(0,len(cat)):
+        await msg.add_reaction(emoji[i])
         
 
 async def edit_ticket(ctx, idM, bot):
@@ -393,6 +397,7 @@ async def edit_category (ctx, idM, bot):
             sql="UPDATE CATEGORY SET category_list = ? WHERE idM=?"
             var=(cat_sql,idM)
             c.execute(sql,var)
+            await editEmbed(ctx, bot, idM)
         elif reaction.emoji == "2️⃣":
             await q.clear_reactions()
             await q.edit(content="Merci de joindre l'ID ou le nom de la catégorie que vous voulez supprimer.")
@@ -431,7 +436,8 @@ async def edit_category (ctx, idM, bot):
             cat_sql=",".join(cat)
             sql="UPDATE CATEGORY SET category_list = ? WHERE idM=?"
             var=(cat_sql,idM)
-            c.execute(sql,var)    
+            c.execute(sql,var)
+            await editEmbed(ctx, bot, idM)
         elif reaction.emoji=="3️⃣":
             chan=[]
             await q.edit(content="Début de l'enregistrement des channels. Vous pouvez joindre un ID ou un nom de catégorie.")
@@ -486,6 +492,7 @@ async def edit_category (ctx, idM, bot):
             sql="UPDATE CATEGORY SET category_list = ? WHERE idM=?"
             var=(chan,idM)
             c.execute(sql, var)
+            await editEmbed(ctx, bot, idM)
         else:
             await q.delete()
             await ctx.send("Annulation !", delete_after=30)
