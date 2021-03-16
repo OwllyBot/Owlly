@@ -15,7 +15,6 @@ async def convertColor(ctx, color: Optional[discord.Color] = None):
         colur = await ColourConverter.convert(ctx, color)
         return colur
 
-
 def checkImg(ctx, img):
     pattern = 'http(s?):\/\/www\.(.*)(png|jpg|jpeg|gif|gifv|)'
     result = re.match(pattern, img)
@@ -31,7 +30,7 @@ async def search_cat_name(ctx, name, bot):
         return ctx.message.author == user and info.id == reaction.message.id and str(reaction.emoji) in emoji
     cat_list = []
     cat_uni = []
-    for cat in ctx.guild.categories:
+    for cat in ctx.message.guild.categories:
         cat_list.append(cat.name)
         cat_uni.append(uni.unidecode(cat.name))
     w = re.compile(f".*{uni.unidecode(name)}|{name}.*", flags=re.IGNORECASE)
@@ -45,7 +44,7 @@ async def search_cat_name(ctx, name, bot):
         for cat in cat_list:
             if name == uni.unidecode(cat):
                 name = cat
-        name = get(ctx.guild.categories, name=name)
+        name = get(ctx.message.guild.categories, name=name)
         number = name.id
         return number
     elif lg > 1 and lg < 10:
@@ -67,7 +66,7 @@ async def search_cat_name(ctx, name, bot):
             if str(select) == str(emoji[i]):
                 name = search_name[i]
                 mot = search_name[i]
-        name = get(ctx.guild.categories, name=name)
+        name = get(ctx.message.guild.categories, name=name)
         number = name.id
         await info.delete()
         await ctx.send(f"Catégorie : {mot} ✅ \n > Vous pouvez continuer l'inscription des channels. ", delete_after=30)
@@ -336,7 +335,7 @@ async def create_category(self,ctx, bot):
             await channels.add_reaction("✅")
             if chan_search.isnumeric():
                 chan_search = int(chan_search)
-                check_id = get(ctx.guild.categories, id=chan_search)
+                check_id = get(ctx.message.guild.categories, id=chan_search)
                 if check_id is None or check_id == "None":
                     await ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
                     await q.delete()
@@ -362,16 +361,12 @@ async def create_category(self,ctx, bot):
     for i in range(0, len(chan)):
         number = int(chan[i])
         cat = get(guild.categories, id=number)
-        if cat == "None" or cat is None:
-            await ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
-            await q.delete()
-            return
         phrase = f"{emoji[i]} : {cat}"
         namelist.append(phrase)
     msg = "\n".join(namelist)
     await q.delete()
     parameters_save = f"Votre channel sera donc créé dans une des catégories suivantes:\n{msg}\n\nLe choix final de la catégories se fait lors des réactions."
-    q = await ctx.send("Voulez-vous pouvoir nommer librement les channels créées ?")
+    q = await ctx.send("{parameters_save}\nVoulez-vous pouvoir nommer librement les channels créées ?")
     await q.add_reaction("✅")
     await q.add_reaction("❌")
     reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
