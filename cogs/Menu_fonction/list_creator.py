@@ -34,3 +34,9 @@ def list_ticket(ctx):
     else:
         msg = "Il n'y a pas de ticket dans ce serveur."
     return msg
+
+def list_category(ctx):
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    idS=ctx.guild.id
+    
