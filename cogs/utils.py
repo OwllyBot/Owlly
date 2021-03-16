@@ -95,6 +95,14 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
             colur=Colour.random()
             print(colur)
 
+    @commands.command()
+    async def embedtest(self, ctx):
+        embed = discord.Embed(description="Test", color=0x61c98b)
+        msg = await ctx.send(embed)
+        await asyncio.sleep(7)
+        embed2 = discord.Embed(description="Edited")
+        await msg.edit(embed=embed2)
+
 
     @commands.command(brief="Une recherche dans un channel", help="Permet de chercher un texte parmi le channel fixée", aliases=['search'])
     async def lexique(self, ctx, *, word:str):
