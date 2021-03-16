@@ -101,7 +101,7 @@ async def edit_ticket(ctx, idM, bot):
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
     
-    q = await ctx.send("Merci de choisir le paramètre à éditer :\n 1️⃣ : Nom du channel \n 2️⃣ : Numéros, modulo, limitation\n3️⃣: Catégorie de création.\n ❌ : Annulation")
+    q = await ctx.send("Merci de choisir le paramètre à éditer : \n1️⃣ : Nom du channel \n2️⃣ : Numéros, modulo, limitation \n3️⃣: Catégorie de création.\n ❌ : Annulation")
     await q.add_reaction("1️⃣")
     await q.add_reaction("2️⃣")
     await q.add_reaction("3️⃣")
@@ -116,7 +116,7 @@ async def edit_ticket(ctx, idM, bot):
             msg="\n⚠ Le nom est actuellement libre. En modifiant la numérotation, vous allez changer aussi la possibilité de nommer le channel à la création ! Le nom prendra la construction par défaut : [Numéro] [Nom du créateur]"
         else:
             msg=""
-        await q.edit(content=f"Merci de choisir le paramètre à éditer : 1️⃣ : Numéro de départ, ou en cours.\n2️⃣ : Augmentation après la limite. \n3️⃣: Limite{msg}")
+        await q.edit(content=f"Merci de choisir le paramètre à éditer : \n1️⃣ : Numéro de départ, ou en cours. \n2️⃣ : Augmentation après la limite. \n3️⃣: Limite{msg}")
         await q.add_reaction("1️⃣")
         await q.add_reaction("2️⃣")
         await q.add_reaction("3️⃣")
@@ -208,9 +208,9 @@ async def edit_ticket(ctx, idM, bot):
             c.execute(sql, (int(idM),))
             limitation = c.fetchone()[0]
             if limitation == 0:
-                msg = "Actuellement, il n'y a pas de limite. Par-quoi voulez-vous la changer ?\n `0`: Aucun changement."
+                msg = "Actuellement, il n'y a pas de limite. Par quoi voulez-vous la changer ?\n `0`: Aucun changement."
             else:
-                msg = f"Actuellement, la limite est : {limitation}.  Par-quoi voulez-vous la changer ?\n `0`: Suppression de la limite."
+                msg = f"Actuellement, la limite est : {limitation}.  Par quoi voulez-vous la changer ?\n `0`: Suppression de la limite."
             await q.edit(content=msg)
             rep = await bot.wait_for("message", timeout=300, check=checkRep)
             if rep.content.lower() == "stop":
@@ -242,14 +242,14 @@ async def edit_ticket(ctx, idM, bot):
         c.execute(sql, (int(idM),))
         name=c.fetchone()[0]
         if name == "1":
-            msg="Actuellement, le nom est libre. Par-quoi voulez-vous changer ce paramètre ?\n `1`: Ne pas changer\n`2`: Nom du personnage."
+            msg="Actuellement, le nom est libre. Par quoi voulez-vous changer ce paramètre ? \n `1`: Ne pas changer \n`2`: Nom du personnage."
         elif name=="2":
-            msg="Actuellement, le nom est basé sur le nom du personnage.\n`1`:Nom libre\n`2`: Ne pas changer."
+            msg="Actuellement, le nom est basé sur le nom du personnage. \n`1`:Nom libre \n`2`: Ne pas changer."
         else:
-            msg="Actuellement, le nom est : {name}. Par-quoi voulez-vous changer ce paramètre ?\n`1`: Nom libre.\n`2`: Nom du personnage."
+            msg="Actuellement, le nom est : {name}. Par quoi voulez-vous changer ce paramètre ?\n`1`: Nom libre.\n`2`: Nom du personnage."
         await q.edit(content=msg)
         rep = await bot.wait_for("message", timeout=300, check=checkRep)
-        if rep.lower() == "stop":
+        if rep.content.lower() == "stop":
             await ctx.send("Annulation !", delete_after=30)
             await q.delete()
             await rep.delete()

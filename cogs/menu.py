@@ -18,6 +18,7 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
     @commands.has_permissions(administrator=True)
     @commands.command(aliases=['tick'], brief="Débute la configuration des tickets", help="Permet de créer la configuration des tickets avec divers paramètres, notamment ceux le numéros dans le nom, ainsi que le moment où ce numéros va se reset.", description="Configuration pour une seule catégorie.")
     async def ticket(self, ctx):
+        await ctx.message.delete()
         emoji = ["1️⃣", "2️⃣", "3️⃣", "❌"]
         def checkValid(reaction, user):
             return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
@@ -39,7 +40,7 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
             await cfg.create_ticket(self,ctx, self.bot)
         elif reaction.emoji == "2️⃣":
             await q.clear_reactions()
-            await q.edit(content="Merci de donner l'ID du créateur à modifier.", embed="")
+            await q.edit(content="Merci de donner l'ID du créateur à modifier.", embed=None)
             rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
             if rep.content.lower() == "stop":
                 await q.delete()
@@ -77,6 +78,7 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
     @commands.command(aliases=["cat", "categories", "bill", "billet"], brief="Configuration d'un créateur pour plusieurs catégorie", help="Permet de créer divers channels dans plusieurs catégories qui seront recherchées sur le serveur. La configuration offre une option pour autoriser ou nom le nommage automatique des channels.", description="Pour plusieurs catégories, 9 au maximum.")
     async def category(self, ctx):
         emoji = ["1️⃣", "2️⃣", "3️⃣", "❌"]
+        await ctx.message.delete()
         def checkValid(reaction, user):
             return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
         def checkRep(message):
@@ -97,7 +99,7 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
             await cfg.create_category(self,ctx, self.bot)
         elif reaction.emoji == "2️⃣":
             await q.clear_reactions()
-            await q.edit(content="Merci de donner l'ID du créateur à modifier.", embed="")
+            await q.edit(content="Merci de donner l'ID du créateur à modifier.", embed=None)
             rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
             if rep.content.lower() == "stop":
                 await q.delete()

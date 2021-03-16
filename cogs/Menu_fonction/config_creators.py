@@ -182,6 +182,9 @@ async def create_ticket(self,ctx, bot):
         await q.clear_reactions()
         name_para = "1"
         phrase_para = "Nom libre"
+        nb_dep_content="Aucun"
+        limit_content=0
+        mod_content=0
     else:
         name_para = "2"
         await q.clear_reactions()
@@ -260,7 +263,6 @@ async def create_ticket(self,ctx, bot):
                     else:
                         await q.clear_reactions()
                         mod_content=0
-
             else:
                 limit_content = 0
                 mod_content = 0
