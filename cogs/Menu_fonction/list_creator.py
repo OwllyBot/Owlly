@@ -13,9 +13,9 @@ def list_ticket(ctx):
     msg=""
     if len(info) != 0:
         for i in info:
-            msg=f"▫ {i[0]} dans <#{i[1]}> :\n"
+            msg = f"⭐ {i[0]} dans <#{i[1]}> :\n"
             cat_name=get(ctx.guild.categories, id=i[2])
-            msg=msg+f" Catégorie : {cat_name}"
+            msg=msg+f"\tCatégorie : {cat_name}"
             if i[8] == "1":
                 chan_name="Nom libre"
             else:
@@ -27,9 +27,9 @@ def list_ticket(ctx):
                 if nb.isnumeric():
                     limit=i[5]
                     modulo= i[4]
-                    msg=msg+f"\nNom : {nb} : {chan_name}\n Limitation : {limit}\n Augmentation : {modulo}"
+                    msg=msg+f"\n\t◽ Nom : {nb} {chan_name}\n\t◽ Limitation : {limit}\n\t◽ Augmentation : {modulo}"
                 else:
-                    msg=msg+f"\nNom : {nb} : {chan_name}"
+                    msg = msg+f"\n\t◽ Nom : {nb} : {chan_name}"
             msg=msg+"\n\n"
     else:
         msg = "Il n'y a pas de ticket dans ce serveur."
@@ -51,15 +51,17 @@ def list_category(ctx):
             for i in cat_list:
                 cat_name=get(ctx.guild.categories, id=int(i))
                 msg_cat.append(cat_name)
-            msg_cat_str="       \n🔹".join(msg_cat)
-            msg=msg+f"\n    ◽ Catégories :\n{msg_cat_str}"
+            msg_cat_str="\n\t\t🔹".join(msg_cat)
+            msg=msg+f"\n\t◽ Catégories :\n{msg_cat_str}"
             config=i[4]
             if config==1:
-                para = "    ◽ Nom : Libre"
+                para = "\t◽ Nom : Libre"
             else:
-                para = "    ◽ Nom : Nom du personnage"
+                para = "\t◽ Nom : Nom du personnage"
+            msg = msg+f"\n{para}"
         msg=msg+"\n\n"
-
-
+    else:
+        msg= "Il n'y a pas de billet dans ce serveur."
+    return msg
 
     
