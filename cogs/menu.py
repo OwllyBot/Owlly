@@ -41,7 +41,7 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
             await q.clear_reactions()
             await q.edit(content="Merci de donner l'ID du créateur à modifier.", embed="")
             rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
-            if rep.content == "stop":
+            if rep.content.lower() == "stop":
                 await q.delete()
                 await ctx.send ("Annulation", delete_after=30)
                 await rep.delete()
@@ -99,7 +99,7 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
             await q.clear_reactions()
             await q.edit(content="Merci de donner l'ID du créateur à modifier.", embed="")
             rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
-            if rep.content == "stop":
+            if rep.content.lower() == "stop":
                 await q.delete()
                 await ctx.send ("Annulation", delete_after=30)
                 await rep.delete()
