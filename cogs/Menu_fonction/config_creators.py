@@ -27,7 +27,6 @@ def checkImg(ctx, img):
 
 async def search_cat_name(ctx, name, bot):
     emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-
     def checkValid(reaction, user):
         return ctx.message.author == user and info.id == reaction.message.id and str(reaction.emoji) in emoji
     cat_list = []
@@ -90,29 +89,29 @@ async def create_ticket(self,ctx, bot):
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     q = await ctx.send(f"Quel est le titre de l'embed ?")
-    titre = await bot.wait_for("message", timeout=300, check=checkRep)
-    typeM = titre.content
-    if typeM == "stop":
+    rep = await bot.wait_for("message", timeout=300, check=checkRep)
+    typeM = rep.content
+    if typeM.lower() == "stop":
         await ctx.send("Annulation !", delete_after=10)
-        await titre.delete()
+        await rep.delete()
         await q.delete()
-        await titre.delete()
         return
     else:
-        await titre.delete()
+        await rep.delete()
     await q.edit(content=f"Quelle est sa description ?")
-    desc = await bot.wait_for("message", timeout=300, check=checkRep)
-    if desc.content == "stop":
+    rep = await bot.wait_for("message", timeout=300, check=checkRep)
+    desc = rep.content
+    if rep.content.lower() == "stop":
         await ctx.send("Annulation !", delete_after=30)
-        await desc.delete()
+        await rep.delete()
         await q.delete()
         return
-    await desc.delete()
+    await rep.delete()
     await q.edit(content="Dans quelle catégorie voulez-vous créer vos tickets ? Rappel : Seul un modérateur pourra les supprimer, car ce sont des tickets permanent.\n Vous pouvez utiliser le nom ou l'ID de la catégorie !")
     rep = await bot.wait_for("message", timeout=300, check=checkRep)
     ticket_chan_content = rep.content
     cat_name = "none"
-    if ticket_chan_content == "stop":
+    if ticket_chan_content.lower() == "stop":
         await ctx.send("Annulation !", delete_after=10)
         await q.delete()
         await rep.delete()
@@ -137,7 +136,7 @@ async def create_ticket(self,ctx, bot):
     await q.edit(content=f"Votre ticket sera créée dans {cat_name}.\n\nQuelle couleur voulez vous utiliser ? \n 0 donne une couleur aléatoire.")
     rep = await bot.wait_for("message", timeout=300, check=checkRep)
     col = rep.content
-    if col == "stop":
+    if col.lower() == "stop":
         await ctx.send("Annulation !", delete_after=30)
         await q.delete()
         await rep.delete()
@@ -159,7 +158,7 @@ async def create_ticket(self,ctx, bot):
         await q.edit(content="Merci d'envoyer l'image. \n**⚡ ATTENTION : Le message sera supprimé après la configuration, vous devez donc utiliser un lien permanent (hébergement sur un autre channel/serveur, imgur, lien google...)**")
         rep = await bot.wait_for("message", timeout=300, check=checkRep)
         img_content = rep.content
-        if img_content == "stop":
+        if img_content.lower() == "stop":
             await ctx.send("Annulation !", delete_after=10)
             await q.delete()
             await rep.delete()
@@ -193,7 +192,7 @@ async def create_ticket(self,ctx, bot):
         reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
         if reaction.emoji == "✅":
             await q.clear_reactions()
-            await q.edit("Quel est le nom que vous voulez utiliser ?")
+            await q.edit(content="Quel est le nom que vous voulez utiliser ?")
             rep = await bot.wait_for("message", timeout=300, check=checkRep)
             name_para = rep.content
             phrase_para = name_para
@@ -214,15 +213,15 @@ async def create_ticket(self,ctx, bot):
             if reaction.emoji == "✅":
                 await q.clear_reactions()
                 await q.edit(content="Merci d'indiquer le nombre de départ.")
-                nb_dep = await bot.wait_for("message", timeout=300, check=checkRep)
-                if nb_dep.content == "stop":
+                rep = await bot.wait_for("message", timeout=300, check=checkRep)
+                if rep.content.lower() == "stop":
                     await q.delete()
                     await ctx.send("Annulation !", delete_after=10)
-                    await nb_dep.delete()
+                    await rep.delete()
                     return
                 else:
-                    nb_dep_content = str(nb_dep.content)
-                    await nb_dep.delete()
+                    nb_dep_content = str(rep.content)
+                    await rep.delete()
             else:
                 nb_dep_content = "0"
             await q.edit(content="Voulez-vous fixer une limite ? C'est à dire que le ticket va se reset après ce nombre.")
@@ -232,15 +231,16 @@ async def create_ticket(self,ctx, bot):
             if reaction.emoji == "✅":
                 await q.clear_reactions()
                 await q.edit(content="Merci d'indiquer la limite.")
-                limit = await bot.wait_for("message", timeout=300, check=checkRep)
-                if limit.content == "stop":
+                rep = await bot.wait_for("message", timeout=300, check=checkRep)
+                limit=rep.content
+                if limit.lower() == "stop":
                     await ctx.send("Annulation !", delete_after=10)
                     await q.delete()
-                    await limit.delete()
+                    await rep.delete()
                     return
                 else:
-                    limit_content = int(limit.content)
-                    await limit.delete()
+                    limit_content = int(limit)
+                    await rep.delete()
                     mod_content = 0
                     await q.edit(content="Voulez-vous, après la limite, augmenter d'un certain nombre le numéro ?")
                     await q.add_reaction("✅")
@@ -249,15 +249,15 @@ async def create_ticket(self,ctx, bot):
                     if reaction.emoji == "✅":
                         await q.clear_reactions()
                         await q.edit(content="Quel est donc ce nombre ?")
-                        mod = await bot.wait_for("message", timeout=300, check=checkRep)
-                        if mod.content == "stop":
+                        rep = await bot.wait_for("message", timeout=300, check=checkRep)
+                        if rep.content.lower() == "stop":
                             await ctx.send("Annulation !", delete_after=10)
-                            await mod.delete()
+                            await rep.delete()
                             await q.delete()
                             return
                         else:
-                            mod_content = int(mod.content)
-                            await mod.delete()
+                            mod_content = int(rep.content)
+                            await rep.delete()
                     else:
                         await q.clear_reactions()
                         mod_content=0
@@ -275,11 +275,10 @@ async def create_ticket(self,ctx, bot):
     reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
     if reaction.emoji == "✅":
         await q.clear_reactions()
-        embed = discord.Embed(title=titre.content,description=desc.content, color=col)
+        embed = discord.Embed(title=typeM,description=desc, color=col)
         if img_content != "none":
             embed.set_image(url=img_content)
-        await q.edit(content="Vous pouvez choisir l'émoji de réaction en réagissant à ce message. Il sera sauvegardé et mis sur l'embed. Par défaut, l'émoji est : 🗒"
-                     )
+        await q.edit(content="Vous pouvez choisir l'émoji de réaction en réagissant à ce message. Il sera sauvegardé et mis sur l'embed. Par défaut, l'émoji est : 🗒")
         symb, user = await bot.wait_for("reaction_add", timeout=300)
         if symb.custom_emoji:
             if symb.emoji in guild.emojis:
@@ -372,7 +371,6 @@ async def create_category(self,ctx, bot):
     msg = "\n".join(namelist)
     await q.delete()
     parameters_save = f"Votre channel sera donc créé dans une des catégories suivantes:\n{msg}\n\nLe choix final de la catégories se fait lors des réactions."
-    print(parameters_save)
     q = await ctx.send("Voulez-vous pouvoir nommer librement les channels créées ?")
     await q.add_reaction("✅")
     await q.add_reaction("❌")
@@ -385,7 +383,7 @@ async def create_category(self,ctx, bot):
     await q.clear_reactions()
     await q.edit(content="Quel est le titre de l'embed ?")
     rep = await bot.wait_for("message", timeout=300, check=checkRep)
-    if rep.content == "stop":
+    if rep.content.lower() == "stop":
         await ctx.send("Annulation !", delete_after=30)
         await q.delete()
         await rep.delete()
@@ -397,7 +395,7 @@ async def create_category(self,ctx, bot):
     await q.edit(content="Quelle couleur voulez vous utiliser ?\n 0 donnera une couleur aléatoire")
     rep = await bot.wait_for("message", timeout=300, check=checkRep)
     col = rep.content
-    if col == "stop":
+    if col.lower() == "stop":
         await ctx.send("Annulation !", delete_after=30)
         await q.delete()
         await rep.delete()
@@ -419,7 +417,7 @@ async def create_category(self,ctx, bot):
                      )
         rep = await bot.wait_for("message", timeout=300, check=checkRep)
         img_content = rep.content
-        if img_content == "stop":
+        if img_content.lower() == "stop":
             await ctx.send("Annulation !", delete_after=10)
             await q.delete()
             await rep.delete()
