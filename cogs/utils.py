@@ -18,7 +18,6 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
     @commands.Cog.listener()
     async def on_ready(self):
         print("[LOGS] ONLINE")
-        await self.bot.change_presence(activity=discord.Game("ouvrir des portes !"))
 
     @commands.Cog.listener()
     async def on_message(self, message):

@@ -42,7 +42,7 @@ def getprefix(bot, message):
 initial_extensions = ['cogs.clean_db', 'cogs.utils', 'cogs.menu',
 					  'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
 repo_name = Repository('.').head.shorthand
-bot = commands.Bot(command_prefix=getprefix, intents=intents)
+bot = commands.Bot(command_prefix=getprefix, intents=intents,activity=discord.Game("ouvrir des portes !"))
 if __name__ == '__main__':
 	for extension in initial_extensions:
 		try:
@@ -103,7 +103,7 @@ async def on_raw_reaction_add(payload):
 	def checkRep(message):
 		return message.author == user and channel == message.channel
 
-	# SELECT TICKET
+	
 	sql = "SELECT channel FROM TICKET WHERE (idS = ? AND idM=?)"
 	c.execute(sql, (idS, mid,))
 	emoji_ticket = c.fetchone()
@@ -111,7 +111,9 @@ async def on_raw_reaction_add(payload):
 	c.execute(sql, (idS, mid,))
 	catego = c.fetchone()
 	create = False
-	if emoji_ticket is not None:
+	
+	# SELECT TICKET
+	if (emoji_ticket is not None) and (user.bot is False) :
 		emoji_ticket = emoji_ticket[0]
 		chan_create = emoji_ticket
 		await msg.remove_reaction(action, user)
@@ -165,14 +167,15 @@ async def on_raw_reaction_add(payload):
 			var = (nb, mid)
 			c.execute(sql, var)
 		create = True
-	elif catego is not None:
-		catego = catego[0]
-		for i in catego:
-			cat = i[0].split(",")
-			config = i[1]
+
+# ========== SELECT CATEGORY ==============
+	elif (catego is not None) and (user.bot is False):
+		await msg.remove_reaction(action, user)
+		cat=catego[0].split(",")
+		config=catego[1]
 		for i in range(0, len(emoji_cat)):
 			if str(action) == emoji_cat[i]:
-				chan_create = cat[i]
+				chan_create = int(cat[i])
 		category_name = get(guild.categories, id=chan_create)
 		if config == 1:
 			question = await channel.send(f"Catégorie {category_name} sélectionnée. \n Merci d'indiquer le nom de la pièce")
@@ -180,7 +183,7 @@ async def on_raw_reaction_add(payload):
 			await question.delete()
 			chan_name = chan_rep.content
 			if chan_name == "stop":
-				channel.send("Annulation de la création.", delete_after=10)
+				await channel.send("Annulation de la création.", delete_after=10)
 				await chan_rep.delete()
 				return
 			else:
@@ -190,6 +193,7 @@ async def on_raw_reaction_add(payload):
 		else:
 			chan_name = f"{payload.member.nick}"
 		create = True
+# ===== CREATION ====
 	if create == True:
 		category_name = get(guild.categories, id=chan_create)
 		await channel.send(f"Création du channel {chan_name} dans {category_name}.", delete_after=30)

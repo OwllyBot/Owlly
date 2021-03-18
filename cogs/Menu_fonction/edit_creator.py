@@ -326,9 +326,11 @@ async def edit_category (ctx, idM, bot):
             await q.add_reaction("❌")
             reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
             if reaction.emoji == "✅":
+                await q.edit(content="Le nom des channels sera maintenant déterminé par le nom du personnage.")
                 await q.clear_reactions()
                 config=0
             else:
+                await q.edit(content="Aucun changement...")
                 await q.clear_reactions()
                 config=1
         elif reaction.emoji == "2️⃣":
@@ -340,9 +342,11 @@ async def edit_category (ctx, idM, bot):
             if reaction.emoji =="✅":
                 config=1
                 await q.clear_reactions()
+                await q.edit(content = "Le nom sera maintenant libre.")
             else:
                 config=0
                 await q.clear_reactions()
+                await q.edit(content="Aucun changement.")
         sql="UPDATE CATEGORY SET config_name = ? WHERE idM=?"
         var=(config, idM)
         c.execute(sql, var)
@@ -350,14 +354,13 @@ async def edit_category (ctx, idM, bot):
         await q.clear_reactions()
         sql="SELECT category_list FROM CATEGORY WHERE idM=?"
         c.execute(sql,(idM,))
-        cat=c.fetchone()[0]
-        cat=cat.split(",")
+        cat=c.fetchone()[0].split(",")
         cat_list=[]
         for i in cat:
-            name=get(ctx.message.guild.categories, id=i)
-            cat_list.append(name)
-        cat_str="\n ◽".join(cat_list)
-        await q.edit(content="Actuellement, la liste des catégories est : \n {cat_str}.\n\n 1️⃣ : Supprimer une catégorie \n 2️⃣ : Ajouter une catégorie\n 3️⃣: Recommencer l'enregistrement complet. \n ❌: Annulation")
+            name=get(ctx.guild.categories, id=int(i))
+            cat_list.append(name.name)
+        cat_str="\n ▫️".join(cat_list)
+        await q.edit(content=f"Actuellement, la liste des catégories est : \n ▫️ {cat_str}.\n\n 1️⃣ : Ajouter une catégorie  \n 2️⃣ : Supprimer une catégorie\n 3️⃣: Recommencer l'enregistrement complet. \n ❌: Annulation")
         await q.add_reaction("1️⃣")
         await q.add_reaction("2️⃣")
         await q.add_reaction("3️⃣")
@@ -365,7 +368,7 @@ async def edit_category (ctx, idM, bot):
         reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
         if reaction.emoji == "1️⃣":
             await q.clear_reactions()
-            await q.edit(content="Merci de donner l'ID ou le nom de la catégorie que vous voulez modifier.")
+            await q.edit(content="Merci de donner l'ID ou le nom de la catégorie que vous voulez ajouter.")
             rep = await bot.wait_for("message", timeout=300, check=checkRep)
             if rep.content.lower() == "stop":
                 await q.delete()
@@ -391,8 +394,8 @@ async def edit_category (ctx, idM, bot):
                     else:
                         cat_name=get(ctx.message.guild.categories, id=chan)
             await rep.delete()
-            await q.edit(content="{cat_name} sera ajouté à la liste.")
-            cat.append(chan)
+            await q.edit(content=f"{cat_name} sera ajouté à la liste.")
+            cat.append(str(chan))
             cat_sql=",".join(cat)
             sql="UPDATE CATEGORY SET category_list = ? WHERE idM=?"
             var=(cat_sql,idM)
@@ -432,7 +435,7 @@ async def edit_category (ctx, idM, bot):
                 await ctx.send("Cette catégorie n'existe pas dans la liste.", delete_after=30)
                 await q.delete()
                 return
-            await q.edit(content="La catégorie {cat_name} a été supprimé de la liste.")
+            await q.edit(content=f"La catégorie {cat_name} a été supprimé de la liste.")
             cat_sql=",".join(cat)
             sql="UPDATE CATEGORY SET category_list = ? WHERE idM=?"
             var=(cat_sql,idM)

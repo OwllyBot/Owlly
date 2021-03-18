@@ -327,6 +327,7 @@ async def create_category(self,ctx, bot):
         chan_search = channels.content
         if chan_search.lower() == 'stop':
             await ctx.send("Validation en cours !", delete_after=5)
+            await channels.delete()
             break
         elif chan_search.lower() == 'cancel':
             await channels.delete()
@@ -368,7 +369,7 @@ async def create_category(self,ctx, bot):
     msg = "\n".join(namelist)
     await q.delete()
     parameters_save = f"Votre channel sera donc créé dans une des catégories suivantes:\n{msg}\n\nLe choix final de la catégories se fait lors des réactions."
-    q = await ctx.send("{parameters_save}\nVoulez-vous pouvoir nommer librement les channels créées ?")
+    q = await ctx.send(f"{parameters_save}\nVoulez-vous pouvoir nommer librement les channels créées ?")
     await q.add_reaction("✅")
     await q.add_reaction("❌")
     reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)

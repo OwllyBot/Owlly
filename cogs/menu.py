@@ -39,8 +39,8 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
             await q.delete()
             await cfg.create_ticket(self,ctx, self.bot)
         elif reaction.emoji == "2️⃣":
-            await q.clear_reactions()
-            await q.edit(content="Merci de donner l'ID du créateur à modifier.", embed=None)
+            await q.delete()
+            q=await ctx.send("Merci de donner l'ID du créateur à modifier.")
             rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
             if rep.content.lower() == "stop":
                 await q.delete()
@@ -98,8 +98,8 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
             await q.delete()
             await cfg.create_category(self,ctx, self.bot)
         elif reaction.emoji == "2️⃣":
-            await q.clear_reactions()
-            await q.edit(content="Merci de donner l'ID du créateur à modifier.", embed=None)
+            await q.delete()
+            q= await ctx.send("Merci de donner l'ID du créateur à modifier.")
             rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
             if rep.content.lower() == "stop":
                 await q.delete()
