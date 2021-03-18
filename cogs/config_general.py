@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands, tasks
 import sqlite3
+import re
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
 class CogAdmins(commands.Cog, name="Configuration générale", description="Permet d'enregistrer quelques paramètres pour le bot."):

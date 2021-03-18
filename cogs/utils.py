@@ -5,7 +5,7 @@ import sqlite3
 from typing import Optional, Union
 from discord import Colour
 from discord.ext.commands import ColourConverter
-import asyncio
+import unidecode as uni
 
 from discord.ext.commands.errors import CommandError
 intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
@@ -18,7 +18,6 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
     @commands.Cog.listener()
     async def on_ready(self):
         print("[LOGS] ONLINE")
-        await self.bot.change_presence(activity=discord.Game("ouvrir des portes !"))
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -118,14 +117,15 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
             return
         else:
             chanID=chanID[0]
-            print(chanID)
             chan=self.bot.get_channel(chanID)
             messages=await chan.history(limit=300).flatten()
             msg_content=[]
+            msg_content_uni=[]
             for i in messages:
+                msg_content_uni.append(uni.unidecode(i.content))
                 msg_content.append(i.content)
-            w = re.compile(f"(.*)?{word}(.*)?(\W+)?:", re.IGNORECASE)
-            search=list(filter(w.match,msg_content))
+            w = re.compile(f"(.*)?{uni.unidecode(word)}(.*)?(\W+)?:",flags=re.IGNORECASE| re.UNICODE)
+            search=list(filter(w.match,msg_content_uni))
             lg=len(search)
             if lg == 0:
                 await ctx.send("Pas de résultat.")
@@ -133,7 +133,7 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
             elif lg==1:
                 found=search[0]
                 for msg in messages:
-                    if found in msg.content:
+                    if found in uni.unidecode(msg.content):
                         await ctx.send(f"{msg.content}")
                 await ctx.message.delete()
             else:
