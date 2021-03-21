@@ -16,10 +16,10 @@ async def convertColor(ctx, color: Optional[discord.Color] = None):
         return colur
 
 def checkImg(ctx, img):
-    pattern = 'http(s?):\/\/www\.(.*)(png|jpg|jpeg|gif|gifv|)'
+    pattern = 'https?:\/\/(.*)\.(png|jpg|jpeg|gif|gifv)'
     result = re.match(pattern, img)
     if result:
-        return (result.group(0))
+        return img
     else:
         return "error"
 
@@ -197,6 +197,7 @@ async def create_ticket(self,ctx, bot):
             await q.edit(content="Quel est le nom que vous voulez utiliser ?")
             rep = await bot.wait_for("message", timeout=300, check=checkRep)
             name_para = rep.content
+            await rep.delete()
             phrase_para = name_para
         else:
             phrase_para = "Nom du personnage"
