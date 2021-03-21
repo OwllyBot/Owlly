@@ -201,6 +201,7 @@ async def create_ticket(self,ctx, bot):
             phrase_para = name_para
         else:
             phrase_para = "Nom du personnage"
+            await q.clear_reactions()
         await q.edit(content="Voulez-vous que les tickets soient comptés ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
@@ -209,6 +210,7 @@ async def create_ticket(self,ctx, bot):
         mod_content = 0
         nb_dep_content = "Aucun"
         if reaction.emoji == "✅":
+            await q.clear_reactions()
             await q.edit(content="Voulez-vous fixer un nombre de départ ?")
             await q.add_reaction("✅")
             await q.add_reaction("❌")
@@ -223,9 +225,11 @@ async def create_ticket(self,ctx, bot):
                     await rep.delete()
                     return
                 else:
+                    await q.clear_reactions()
                     nb_dep_content = str(rep.content)
                     await rep.delete()
             else:
+                await q.clear_reactions()
                 nb_dep_content = "0"
             await q.edit(content="Voulez-vous fixer une limite ? C'est à dire que le ticket va se reset après ce nombre.")
             await q.add_reaction("✅")
