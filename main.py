@@ -12,8 +12,7 @@ import keep_alive
 from pretty_help import PrettyHelp
 from discord.ext.commands.help import HelpCommand
 from pygit2 import Repository
-intents = discord.Intents(messages=True, guilds=True,
-						  reactions=True, members=True)
+intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
 
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
@@ -82,7 +81,7 @@ async def on_command_error(ctx, error):
 			type(error), error, error.__traceback__, file=sys.stderr)
 
 color = discord.Color.blurple()
-ending = "Si vous trouverez un bug, contactez @Mara#3000 !"
+ending = "Pour voir l'aide sur une commande, utilisez {help.clean_prefix}command\n De même, pour une catégorie, utilisez {help.clean_prefix}categorie."
 bot.help_command = PrettyHelp(
 	color=color, index_title="Owlly - Aide", ending_note=ending, active_time=300)
 
