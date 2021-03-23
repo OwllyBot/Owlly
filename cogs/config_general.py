@@ -61,6 +61,10 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
     c.close()
     db.close()
 
+  @commands.has_permissions(administrator=True)
+  @commands.command(aliases=["chan_presentation", "validation", "fiche"], help="Permet de configurer le channel dans lequel sera envoyé les présentations des personnages.", brief="Insertion d'un channel pour envoyer les présentations validées.", usage="channel")
+  async def chan_fiche(self, ctx, chan : discord.TextChannel):
+    pass
 
   @commands.has_permissions(administrator=True)
   @commands.command(aliases=["count", "edit_count"], brief="Permet de changer le compteur des ticket", help="Permet de reset, ou changer manuellement le numéro d'un créateur de ticket.", usage="nombre id_message_createur")
