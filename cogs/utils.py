@@ -76,6 +76,31 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 	async def whoami(self, ctx):
 		await ctx.send(f"You are {ctx.message.author.name}")
 
+	@commands.command(name="info", help="Affiche des infos sur le bot.", brief="Informations sur le bot.")
+	async def info(self, ctx):
+		db = sqlite3.connect("owlly.db", timeout=3000)
+		c = db.cursor()
+		prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
+		c.execute(prefix, (int(ctx.guild.id),))
+		prefix = c.fetchone()
+		if prefix is not None:
+			prefix = prefix[0]
+		else:
+			prefix="?"
+		embed = discord.Embed(
+			title="Owlly", description=f"\n 🦉 **__Développeur__** : @Mara#3000 \n <:commandline:823856723441221692> **__Prefix__** : `{prefix}`\n 🏓 **__Latence__** : {str(round(self.bot.latency, 2))}\n <:python:823857333259730964> **__Language__** : Python \n<:git:823857771584684032> **__Github__** : [Github](https://github.com/OwllyBot/OwllyDocs)", color=0x438f8c)
+		await ctx.send(embed=embed)
+		await ctx.message.delete()
+	
+	@commands.command(name="bug", help="Permet d'afficher les infos afin de signaler un bug.", brief="Informations sur le signalement de bug.")
+	async def bug(self, ctx):
+		bloc="```\n# Commande : \n# Résultat : \n# Reproduction : \n# Description / autres informations : \n# Screenshot :\n```"
+		embed = discord.Embed(title="Signaler un bug",
+		                      description=f"Vous avez vu un bug et vous aimeriez le signaler ? Voici la marche à suivre : \n:white_small_square: Aller sur [Github](https://github.com/OwllyBot/OwllyDocs/issues)\n:white_small_square: Remplissez la template suivante en donnant le plus d'information possible :\n {bloc}\n\n N'oubliez pas de créer un compte Github. Vous pouvez aussi MP @Mara#3000 avec la description du bug.", color=0x438f8c)
+		await ctx.send(embed=embed)
+		await ctx.message.delete()
+	
+
 	@commands.command(aliases=["purge", "clean"], help="Permet de nettoyer un channel. Attention, nécessite d'être administrateur.", brief="Purge un channel.")
 	@commands.has_permissions(administrator=True)
 	async def clear(self, ctx, nombre: int):
