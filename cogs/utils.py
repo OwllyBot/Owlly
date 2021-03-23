@@ -99,9 +99,9 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 	
 	@commands.command(name="bug", help="Permet d'afficher les infos afin de signaler un bug.", brief="Informations sur le signalement de bug.")
 	async def bug(self, ctx):
-		bloc="```\n	# Commande : \n # Résultat : \n # Reproduction : \n # Description / autres informations : \n # Screenshot :\n```"
+		bloc="```\n# Commande : \n# Résultat : \n# Reproduction : \n# Description / autres informations : \n# Screenshot :\n```"
 		embed = discord.Embed(title="Signaler un bug",
-		                      description=f"Vous avez vu un bug et vous aimeriez le signaler ? Voici la marche à suivre : \n:white_small_square: Aller sur (le github)[https://github.com/OwllyBot/OwllyDocs/issues]\n:white_small_square: Remplissez la template suivante en donnant le plus d'information possible :\n {bloc}\n\n N'oubliez pas de créer un compte Github. Vous pouvez aussi MP @Mara#3000 avec la description du bug.", color=0x438f8c)
+		                      description=f"Vous avez vu un bug et vous aimeriez le signaler ? Voici la marche à suivre : \n:white_small_square: Aller sur (github)[https://github.com/OwllyBot/OwllyDocs/issues]\n:white_small_square: Remplissez la template suivante en donnant le plus d'information possible :\n {bloc}\n\n N'oubliez pas de créer un compte Github. Vous pouvez aussi MP @Mara#3000 avec la description du bug.", color=0x438f8c)
 		await ctx.send(embed=embed)
 	
 
