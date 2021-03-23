@@ -56,7 +56,7 @@ class CommandErrorHandler(commands.Cog):
 			await ctx.send('Mauvais argument !')
 
 		elif isinstance(error, commands.MissingRequiredArgument):
-			await ctx.send(f"{error.param.name} est absent !")
+			await ctx.send(f"Le paramètre `{error.param.name}` est absent !")
 
 		elif isinstance(error, asyncio.TimeoutError):
 			await ctx.send("Vous avez mis trop de temps à répondre, annulation...", delete_after=30)
