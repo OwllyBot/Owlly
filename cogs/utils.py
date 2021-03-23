@@ -94,7 +94,7 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 		else:
 			prefix="?"
 		embed = discord.Embed(
-			title="Owlly", description=f"\n 🦉 Développeur : @Mara#3000 \n <:commandline:823856723441221692> Prefix: `{prefix}`\n 🏓 Latence : {str(round(self.bot.latency, 2))}\n <:python:823857333259730964> Language : Python \n<:git:823857771584684032> Github : [Github](https://github.com/OwllyBot/OwllyDocs)", color=0x438f8c)
+			title="Owlly", description=f"\n 🦉 **__Développeur__** : @Mara#3000 \n <:commandline:823856723441221692> **__Prefix__** : `{prefix}`\n 🏓 **__Latence__** : {str(round(self.bot.latency, 2))}\n <:python:823857333259730964> **__Language__** : Python \n<:git:823857771584684032> **__Github__** : [Github](https://github.com/OwllyBot/OwllyDocs)", color=0x438f8c)
 		await ctx.send(embed=embed)
 	
 	@commands.command(name="bug", help="Permet d'afficher les infos afin de signaler un bug.", brief="Informations sur le signalement de bug.")
