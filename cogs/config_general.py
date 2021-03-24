@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 import sqlite3
 import re
 from typing import Optional
-from discord.ext.commands import TextChannelConverter, CommandError
+from discord.ext.commands import CommandError
 
 class CogAdmins(commands.Cog, name="Configuration générale", description="Permet d'enregistrer quelques paramètres pour le bot."):
 	def __init__(self, bot):
