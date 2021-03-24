@@ -1,13 +1,8 @@
-from typing import ContextManager
 import discord
-from discord.ext import commands, tasks
-from discord.ext.commands.core import check
-from discord.ext.commands.help import HelpCommand
+from discord.ext import commands
 from discord.utils import get
 import os
 import sqlite3
-import sys
-import traceback
 import keep_alive
 from pretty_help import PrettyHelp
 from discord.ext.commands.help import HelpCommand
