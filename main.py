@@ -12,35 +12,37 @@ import keep_alive
 from pretty_help import PrettyHelp
 from discord.ext.commands.help import HelpCommand
 from pygit2 import Repository
-intents = discord.Intents(messages=True, guilds=True,
-						  reactions=True, members=True)
+intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
 
 # ▬▬▬▬▬▬▬▬▬▬▬ PREFIX ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 
 def getprefix(bot, message):
-	db = sqlite3.connect("owlly.db", timeout=3000)
-	c = db.cursor()
-	prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-	c.execute(prefix, (int(message.guild.id), ))
-	prefix = c.fetchone()
-	if prefix is None:
-		prefix = "?"
-		sql = "INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
-		var = ("?", message.guild.id)
-		c.execute(sql, var)
-		db.commit()
+	if message.guild is not None:
+		db = sqlite3.connect("owlly.db", timeout=3000)
+		c = db.cursor()
+		prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
+		c.execute(prefix, (int(message.guild.id), ))
+		prefix = c.fetchone()
+		if prefix is None:
+			prefix = "?"
+			sql = "INSERT INTO SERVEUR (prefix, idS) VALUES (?,?)"
+			var = ("?", message.guild.id)
+			c.execute(sql, var)
+			db.commit()
+		else:
+			prefix = prefix[0]
+		c.close()
+		db.close()
+		return prefix
 	else:
-		prefix = prefix[0]
-	c.close()
-	db.close()
-	return prefix
-
+		prefix = "?"
+		return prefix
 # ▬▬▬▬▬▬▬▬▬▬▬ COGS ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 
 initial_extensions = ['cogs.clean_db', 'cogs.utils', 'cogs.menu',
-					  'cogs.author_cmd', 'cogs.member', 'cogs.config_general']
+					  'cogs.author_cmd', 'cogs.member', 'cogs.config_general', 'cogs.error_handler', ]
 repo_name = Repository('.').head.shorthand
 bot = commands.Bot(command_prefix=getprefix, intents=intents,activity=discord.Game("ouvrir des portes !"))
 if __name__ == '__main__':
