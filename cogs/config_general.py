@@ -2,14 +2,20 @@ import discord
 from discord.ext import commands, tasks
 import sqlite3
 import re
-from discord.ext.commands import TextChannelConverter as tcc
-from discord.ext.commands.errors import CommandError
-
-
+from typing import Optional
+from discord.ext.commands import TextChannelConverter, CommandError
 
 class CogAdmins(commands.Cog, name="Configuration générale", description="Permet d'enregistrer quelques paramètres pour le bot."):
 	def __init__(self, bot):
 		self.bot = bot
+
+	async def search_chan(self, ctx, chan):
+		try:
+			chan = await commands.TextChannelConverter().convert(ctx, chan)
+			return chan
+		except CommandError:
+			chan = "Error"
+			return chan 
 
 	@commands.command(name="set_prefix", help="Permet de changer le prefix du bot.", brief="Changement du prefix.")
 	@commands.has_permissions(administrator=True)
@@ -24,8 +30,8 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		c.close()
 		db.close()
 
-  	@commands.command(aliases=['lexique_config'], help="Permet de configurer le channel dans lequel la commande `search` va faire ses recherches.", brief="Configuration de la recherche de message dans un channel.")
-  	@commands.has_permissions(administrator=True)
+	@commands.command(aliases=['lexique_config'], help="Permet de configurer le channel dans lequel la commande `search` va faire ses recherches.", brief="Configuration de la recherche de message dans un channel.")
+	@commands.has_permissions(administrator=True)
 	async def notes_config(self, ctx, chan: discord.TextChannel):
 		server = ctx.guild.id
 		db = sqlite3.connect("owlly.db", timeout=3000)
@@ -65,8 +71,8 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		db.close()
 
 	@commands.has_permissions(administrator=True)
-  	@commands.command(aliases=["chan_presentation", "validation", "fiche"], help="Permet de configurer le channel dans lequel sera envoyé les présentations des personnages.", brief="Insertion d'un channel pour envoyer les présentations validées.", usage="channel")
-  	async def chan_fiche(self, ctx):
+	@commands.command(aliases=["fiche_chan"], help="Permet de configurer le channel dans lequel sera envoyé les présentations des personnages.", brief="Insertion d'un channel pour envoyer les présentations validées.", usage="channel")
+	async def chan_fiche(self, ctx):
 		def checkRep(message):
 			return message.author == ctx.message.author and ctx.message.channel == message.channel
 		def checkValid(reaction, user):
@@ -82,27 +88,21 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			await rep.delete()
 			await ctx.send("Annulation", delete_after=30)
 			return
-		try:
-			fiche_validation = await tcc.convert(self, ctx, rep.content)
-		except CommandError:
-			fiche_validation = "Error"
+		fiche_validation = await self.search_chan(ctx, rep.content)
 		if fiche_validation == "Error":
 			await ctx.send("Erreur dans le channel.", delete_after=30)
 			await q.delete()
 			await rep.delete()
 			return
 		await rep.delete()
-		q= await q.edit(content="Dans quel channel voulez-vous envoyer la présentation des personnages validés ?")
+		await q.edit(content="Dans quel channel voulez-vous envoyer la présentation des PJ validés ?")
 		rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
 		if rep.content.lower()=="stop":
 			await q.delete()
 			await rep.delete()
 			await ctx.send("Annulation", delete_after=30)
 			return
-		try:
-			fiche_pj=await tcc.convert(self, ctx, rep.content)
-		except CommandError:
-			fiche_pj="Error"
+		fiche_pj = await self.search_chan(ctx, rep.content)
 		if fiche_pj == "Error":
 			await ctx.send("Erreur dans le channel.", delete_after=30)
 			await q.delete()
@@ -117,11 +117,8 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			await q.clear_reactions()
 			await q.edit(content="Dans quel channel voulez-vous que soit envoyé les fiches des PNJ ?")
 			rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
-			try:
-				fiche_pnj=tcc.convert(self, ctx, rep.content)
-				fiche_pnj=fiche_pnj.id
-			except CommandError:
-				fiche_pnj="Error"
+			fiche_pnj = await self.search_chan(ctx, rep.content)
+			fiche_pnj=fiche_pnj.id
 			if fiche_pnj=="Error":
 				await ctx.send("Erreur dans le channel.", delete_after=30)
 				await q.delete()
@@ -136,6 +133,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		db.commit()
 		c.close()
 		db.close()
+		await q.edit(content="Modification validée !")
 
 
 	@commands.has_permissions(administrator=True)
