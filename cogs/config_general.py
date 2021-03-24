@@ -72,11 +72,28 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		def checkValid(reaction, user):
 			return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
 		cl=ctx.guild.id
-		await ctx.message.delete()
-		q= await ctx.send("Dans quel channel voulez-vous envoyer la présentation des personnages validés ?")
-		rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
+		await ctx.message.delete()
+		q= await ctx.send("Dans quel channel voulez-vous que soit envoyé les fiches à valider ?")
+		rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+		if rep.content.lower() == "stop":
+			await q.delete()
+			await rep.delete()
+			await ctx.send("Annulation", delete_after=30)
+			return
+		try:
+			fiche_validation = await tcc.convert(self, ctx, rep.content)
+		except CommandError:
+			fiche_validation = "Error"
+		if fiche_validation == "Error":
+			await ctx.send("Erreur dans le channel.", delete_after=30)
+			await q.delete()
+			await rep.delete()
+			return
+		await rep.delete()
+		q= await q.edit(content="Dans quel channel voulez-vous envoyer la présentation des personnages validés ?")
+		rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
 		if rep.content.lower()=="stop":
 			await q.delete()
 			await rep.delete()
@@ -113,11 +130,8 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		else:
 			fiche_pnj=0
 		await q.edit(content="Validation des modification....")
-		sql = "UPDATE SERVEUR SET fiche_pj = ? WHERE idS=?"
-		var=(fiche_pj.id, cl)
-		c.execute(sql, var)
-		sql="UPDATE SERVER SET fiche_pnj =? WHERE idS=?"
-		var=(fiche_pnj, cl)
+		sql = "UPDATE SERVEUR SET fiche_validation=?, fiche_pj = ?, fiche_pnj=? WHERE idS=?"
+		var=(fiche_validation.id, fiche_pj.id,fiche_pnj, cl)
 		c.execute(sql, var)
 		db.commit()
 		c.close()
