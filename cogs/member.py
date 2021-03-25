@@ -289,12 +289,13 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				os.remove("fiche/{chartype}_{member.name}_{idS}.txt")
 				await ctx.send(f"La présentation de {member.name} a été supprimé.")
 
-
-
 	@commands.command(aliases=["pres"], brief="Commandes pour modifier une présentation en cours.", usage="fiche (pnj?) -(reprise|delete|edit champs)", help="`fiche -delete` permet de supprimer la présentation en cours. \n `fiche -edit champs` permet d'éditer un champ d'une présentation en cours. \n `fiche -reprise` permet de reprendre l'écriture d'une présentation en cours. \n Par défaut, les fiches sont des fiches de PJ, donc si vous faites un PNJ, n'oublier pas de le préciser après le nom de la commande !")
-	async def fiche(self, ctx, chartype="pj", arg="0", value="0"):
+	async def fiche(self, ctx, chartype="pj"):
 		member = ctx.message.author
 		idS=ctx.guild.id
+		emoji= ["1️⃣", "2️⃣", "3️⃣", "❌"]
+		def checkValid(reaction, user):
+			return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
 		def checkRep(message):
 			return message.author == member and isinstance(message.channel, discord.DMChannel)
 		db = sqlite3.connect("owlly.db", timeout=3000)
@@ -304,6 +305,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		channel = c.fetchone()
 		if (channel[0] is not None) and (channel[1] is not None) and (channel[0] != 0) and (channel[1] != 0):
 			if os.path.isfile(f"fiche/{chartype}_{member.name}_{idS}.txt"):
+				#tructructruc
 				if arg.lower() == "-edit" and value != "0":
 					f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 					data = f.readlines()

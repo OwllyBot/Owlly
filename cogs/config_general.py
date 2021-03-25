@@ -4,6 +4,7 @@ import sqlite3
 import re
 from typing import Optional
 from discord.ext.commands import CommandError
+import unidecode
 
 class CogAdmins(commands.Cog, name="Configuration générale", description="Permet d'enregistrer quelques paramètres pour le bot."):
 	def __init__(self, bot):
@@ -182,16 +183,24 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 
 	@commands.command(brief="Permet de choisir les champs de la présentation des personnages.", help="Cette commande permet de choisir les champs de présentation générale et du physique.",usage="-(create|add champ|remove champ)")
 	@commands.has_permissions(administrator=True)
-	async def admin_fiche (self, ctx, arg, champ="0"):
+	async def admin_fiche (self, ctx):
+		emoji=["1️⃣","2️⃣","3️⃣", "4️⃣", "❌"]
 		def checkValid(reaction, user):
-			return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+			return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
 		def checkRep(message):
 			return message.author == ctx.message.author and ctx.message.channel == message.channel
 		cl = ctx.guild.id
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
 		await ctx.message.delete()
-		if arg == "-create":
+		menu = discord.Embed(title="Menu de gestion des fiches",
+		                     description="1️⃣ - Création \n 2️⃣ - Suppression \n 3️⃣ - Edition \n 4️⃣ - Ajout")
+		menu.set_footer(text="❌ pour annuler.")
+		q=await ctx.send(embed=menu)
+		for i in emoji:
+			q.add_reaction(i)
+		reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+		if reaction.emoji=="1️⃣":
 			sql="SELECT fiche_pj, fiche_validation, fiche_pnj FROM SERVEUR WHERE idS=?"
 			c.execute(sql, (cl,))
 			channels=c.fetchone()
@@ -249,22 +258,157 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			else:
 				await q.delete()
 				await ctx.send("Annulation", delete_after=30)
-		elif arg == "-remove":
-			if champ != "0":
-				sql="SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+		elif reaction.emoji =="2️⃣":
+			await q.delete()
+			q=await ctx.send("Quel champ voulez-vous supprimer ?")
+			rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+			if rep.content.lower() == "stop":
+				await q.delete()
+				await rep.delete()
+				await ctx.send("Annulation", delete_after=30)
+				return
+			else:
+				champ=unidecode.unidecode(rep.content.lower())
+			sql="SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+			c.execute(sql, (cl,))
+			champs=c.fetchone()
+			if champs[0] is not None:
+				champ_general=champs[0].split(",")
+				champ_physique=champs[1].split(",")
+			else:
+				await ctx.send("Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.", delete_after=30)
+				return
+			if champ in champ_general:
+				champ_general=list(filter(lambda w: unidecode.unidecode(w.lower()) not in champ, champ_general))
+			elif champ in champ_physique:
+				champ_physique = list(
+					filter(lambda w: unidecode.unidecode(w.lower()) not in champ, champ_physique))
+			else:
+				await ctx.send("Ce champ n'existe pas !", delete_after=30)
+				return
+			champ_general=",".join(champ_general)
+			champ_physique=",".join(champ_physique)
+			sql="UPDATE SERVEUR SET champ_general = ?, champ_physique = ? WHERE idS=?"
+			var=(champ_general,champ_physique, cl)
+			c.execute(sql, var)
+			db.commit()
+		elif reaction.emoji == "3️⃣": 
+			await q.delete()
+			q = await ctx.send("Quel champ voulez-vous éditer ?")
+			rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+			if rep.content.lower() == "stop":
+				await q.delete()
+				await rep.delete()
+				await ctx.send("Annulation", delete_after=30)
+				return
+			else:
+				champ = unidecode.unidecode(rep.content.lower())
+			sql = "SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+			c.execute(sql, (cl,))
+			champs = c.fetchone()
+			if champs[0] is not None:
+				champ_general = champs[0].split(",")
+				champ_physique = champs[1].split(",")
+			else:
+				await ctx.send("Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.", delete_after=30)
+				return
+			if champ in [unidecode.unidecode(i.lower()) for i in champ_general]:
+				q=await q.edit(content=f"Par quoi voulez-vous modifier {champ} ?")
+				rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+				if rep.content.lower() =="stop":
+					await q.delete()
+					await rep.delete()
+					await ctx.send("Annulation", delete_after=30)
+					return
+				champ_general=[rep.content.capitalize() if champ == unidecode.unidecode(x.lower()) else x for x in champ_general]
+			elif champ in [unidecode.delete(i.lower()) for i in champ_physique]:
+				if rep.content.lower() == "stop":
+					await q.delete()
+					await rep.delete()
+					await ctx.send("Annulation", delete_after=30)
+					return
+				champ_physique=[rep.content.capitalize() if champ == unidecode.unidecode(x.lower()) else x for x in champ_physique]
+			else:
+				await q.delete()
+				await rep.delete()
+				await ctx.send("Erreur ! Ce champ n'existe pas.", delete_after=30)
+				return
+			champ_general=",".join(champ_general)
+			champ_physique=",".join(champ_physique)
+			sql="UPDATE SERVEUR SET champ_general = ?, champ_physique = ? WHERE idS=?"
+			var=(champ_general,champ_physique, cl)
+			c.execute(sql, var)
+			db.commit()
+		elif reaction.emoji == "4️⃣":
+			await q.delete()
+			q=await ctx.send("Dans quel partie voulez-vous ajouter votre champ ? \n 1️⃣ : GÉNÉRALE \n 2️⃣: PHYSIQUE")
+			await q.add_reaction("1️⃣")
+			await q.add_reaction("2️⃣")
+			await q.add_reaction("❌")
+			reaction, user=await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+			if reaction.emoji == "1️⃣":
+				sql="SELECT champ_general FROM SERVEUR WHERE idS=?"
 				c.execute(sql, (cl,))
-				champs=c.fetchone()
-				if champs[0] is not None:
-					champ_general=champs[0].split(",")
-					champ_physique=champs[1].split(",")
-				else:
+				champ_general = c.fetchone()[0]
+				if champ_general is None:
 					await ctx.send("Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.", delete_after=30)
 					return
-				for i in champ_general:
-					if champ == i:
-						
-		elif arg == "-edit":
-			pass		
+				champ_general=champ_general.split(",")
+				await q.delete()
+				q=await ctx.send("Quel est le champ à ajouter ?")
+				rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+				if rep.content.lower() == "stop":
+					await q.delete()
+					await rep.delete()
+					await ctx.send("Annulation", delete_after=30)
+					return
+				new=rep.content.capitalize()
+				if new not in champ_general:
+					champ_general=champ_general.append(new)
+				else:
+					await q.delete()
+					await rep.delete()
+					await ctx.send("Ce champ existe déjà !", delete_after=30)
+					return
+				champ_general=",".join(champ_general)
+				sql="UPDATE SERVEUR SET champ_general = ? WHERE idS=?"
+				var=(champ_general, cl)
+				c.execute(sql, var)
+			elif reaction.emoji == "2️⃣":
+				sql="SELECT champ_physique FROM SERVEUR WHERE idS=?"
+				c.execute(sql,(cl,))
+				champ_physique=c.fetchone()[0]
+				if champ_physique is None:
+					await ctx.send("Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.", delete_after=30)
+					return
+				champ_physique=champ_physique.split(",")
+				await q.delete()
+				q = await ctx.send("Quel est le champ à ajouter ?")
+				rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+				if rep.content.lower() == "stop":
+					await q.delete()
+					await rep.delete()
+					await ctx.send("Annulation", delete_after=30)
+					return
+				new = rep.content.capitalize()
+				if new not in champ_physique:
+					champ_physique = champ_physique.append(new)
+				else:
+					await q.delete()
+					await rep.delete()
+					await ctx.send("Ce champ existe déjà !", delete_after=30)
+					return
+				champ_physique = ",".join(champ_physique)
+				sql = "UPDATE SERVEUR SET champ_physique = ? WHERE idS=?"
+				var = (champ_physique, cl)
+				c.execute(sql, var)
+				db.commit()
+		else:
+			await q.delete()
+			await ctx.send("Annulation", delete_after=30)
+			c.close()
+			db.close()
+			return
 		c.close()
 		db.close()
 def setup(bot):
