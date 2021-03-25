@@ -205,12 +205,12 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		c = db.cursor()
 		sql = "SELECT roliste FROM SERVEUR WHERE idS=?"
 		c.execute(sql, (ctx.guild.id,))
-		defaut=c.fetchone()
-		rolelist=[]
-		defaut=','.join(defaut)
-		defaut=defaut.split(',')
+		defaut = c.fetchone()
+		rolelist = []
+		defaut = ','.join(defaut)
+		defaut = defaut.split(',')
 		for i in defaut:
-			i=get(ctx.guild.roles, id=int(i))
+			i = get(ctx.guild.roles, id=int(i))
 			await user.add_roles(i)
 		for i in role:
 			i = i.replace("<", "")
@@ -229,9 +229,9 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				infoNew.append(NewRole.name)
 			else:
 				if str(i).isnumeric():
-					i=get(ctx.guild.roles, id=i)
+					i = get(ctx.guild.roles, id=i)
 				else:
-					i=get(ctx.guild.roles,name=i)
+					i = get(ctx.guild.roles, name=i)
 				addRole.append(i)
 		roleInfo = []
 		for plus in addRole:
@@ -256,8 +256,43 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			fiche, img=await self.forme(member, chartype, idS=ctx.guild.id)
 			await self.validation(ctx, fiche, img, chartype, member)
 
-	@commands.command(aliases=["pres"], brief="Commandes pour modifier une présentation en cours.", usage="fiche -(reprise pnj/pj)|(delete pnj/pj)|(edit pj/pnj champ)", help="`fiche -delete` permet de supprimer la présentation en cours. \n `fiche -edit` permet d'éditer un champ d'une présentation en cours. \n `fiche -reprise` permet de reprendre l'écriture d'une présentation en cours. \n Par défaut, les fiches sont des fiches de PJ, donc si vous faites un PNJ, n'oublier pas de le préciser après le nom de la commande !")
-	async def fiche(self, ctx, arg, chartype="pj", value="0"):
+	@commands.command(usage="@mention (pnj?) -(delete|edit champs)", brief="Permet d'éditer une présentation non validé ou en cours.", help="Permet à un administrateur de modifier ou supprimer une fiche en cours de validation, ou en cours d'écriture.")
+	@commands.has_permissions(administrator=True):
+	async def admin_edit(self, ctx, member:discord.Member, chartype="pj", arg="0", value="0"):
+		idS=ctx.guild.id
+		def checkRep(message): 
+			return message.author == member and ctx.message.channel == message.channel
+		if os.path.isfile(f"fiche/{chartype}_{member.name}_{idS}.txt"):
+			if arg.lower() == "-edit" and value != "0":
+				f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
+				data = f.readlines()
+				f.close()
+				f = open(f"fiche/{chartype}_{member.name}_{idS}.txt","w", encoding="utf-8")
+				if (len(data) > 0):
+					data = "".join(data)
+					data = data.replace("\'", "\"")
+					perso = json.loads(data)
+					for k in perso.keys():
+						if unidecode.unidecode(k.lower()) == unidecode.unidecode(value.lower()):
+							q=await ctx.send(f"Par quoi voulez-vous modifier {value.capitalize()} ? \n Actuellement, sa valeur est {perso.get(unidecode.unidecode(k.lower()))}")
+							rep = self.bot.wait_for("message", timeout=300, check=checkRep)
+							if rep.content.lower()=="stop":
+								await ctx.send("Annulation", delete_after=30)
+								await q.delete()
+								await rep.delete()
+								return
+							else:
+								perso[k]=rep.content
+								f.write(str(perso))
+				f.close()
+			elif arg.lower() == "-delete":
+				os.remove("fiche/{chartype}_{member.name}_{idS}.txt")
+				await ctx.send(f"La présentation de {member.name} a été supprimé.")
+
+
+
+	@commands.command(aliases=["pres"], brief="Commandes pour modifier une présentation en cours.", usage="fiche (pnj?) -(reprise|delete|edit champs)", help="`fiche -delete` permet de supprimer la présentation en cours. \n `fiche -edit champs` permet d'éditer un champ d'une présentation en cours. \n `fiche -reprise` permet de reprendre l'écriture d'une présentation en cours. \n Par défaut, les fiches sont des fiches de PJ, donc si vous faites un PNJ, n'oublier pas de le préciser après le nom de la commande !")
+	async def fiche(self, ctx, chartype="pj", arg="0", value="0"):
 		member = ctx.message.author
 		idS=ctx.guild.id
 		def checkRep(message):
@@ -278,22 +313,19 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						data = "".join(data)
 						data = data.replace("\'", "\"")
 						perso = json.loads(data)
-						if unidecode.unidecode(value.lower()) in perso.keys():
-							for k in perso.keys():
-								if k == unidecode.unidecode(value.lower()):
-									await ctx.send("Regardez vos DM ! 📨 !")
-									q = await member.send(f"Par quoi voulez-vous modifier {value.capitalize()} ?\n Actuellement, elle a pour valeur {perso.get(unidecode.unidecode(value.lower()))}.")
-									rep = self.bot.wait_for("message", timeout=300, check=checkRep)
-									if rep.content.lower() == "stop":
-										await q.delete()
-										await member.send("Annulation")
-										await rep.delete()
-										return
-									perso[unidecode.unidecode(value.lower())] = rep.content
-									f.write(perso)
-									q = await q.edit(content="{value.capitalize()} a bien été modifié !")
-						else:
-							q = await member.send(f"Je n'ai pas trouvé le champ {value.capitalize()}...")
+						for k in perso.keys():
+							if k == unidecode.unidecode(value.lower()):
+								await ctx.send("Regardez vos DM ! 📨 !")
+								q = await member.send(f"Par quoi voulez-vous modifier {value.capitalize()} ?\n Actuellement, elle a pour valeur {perso.get(unidecode.unidecode(value.lower()))}.")
+								rep = self.bot.wait_for("message", timeout=300, check=checkRep)
+								if rep.content.lower() == "stop":
+									await q.delete()
+									await member.send("Annulation")
+									await rep.delete()
+									return
+								perso[k] = rep.content
+								f.write(str(perso))
+								q = await q.edit(content="{value.capitalize()} a bien été modifié !")
 					f.close()
 				elif arg.lower() == "-delete":
 					os.remove("fiche/{chartype}_{member.name}_{idS}.txt")
@@ -308,6 +340,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				await ctx.send("Vous n'avez pas de présentation en cours !")
 		else:
 			await ctx.send("Impossible de faire une présentation : Les channels ne sont pas configuré !")
+
+
 def setup(bot):
 	bot.add_cog(memberUtils(bot))
 
