@@ -257,7 +257,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			await self.validation(ctx, fiche, img, chartype, member)
 
 	@commands.command(usage="@mention (pnj?) -(delete|edit champs)", brief="Permet d'éditer une présentation non validé ou en cours.", help="Permet à un administrateur de modifier ou supprimer une fiche en cours de validation, ou en cours d'écriture.")
-	@commands.has_permissions(administrator=True):
+	@commands.has_permissions(administrator=True)
 	async def admin_edit(self, ctx, member:discord.Member, chartype="pj", arg="0", value="0"):
 		idS=ctx.guild.id
 		def checkRep(message): 
