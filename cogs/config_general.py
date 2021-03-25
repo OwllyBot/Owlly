@@ -180,5 +180,75 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			db.close()
 			await ctx.send(f"Le compte a été fixé à : {arg}")
 
+	@commands.command(brief="Permet de choisir les champs de la présentation des personnages.", help="Cette commande permet de choisir les champs de présentation générale et du physique.")
+	@commands.has_permissions(administrator=True)
+	async def config_presentation (self, ctx):
+		def checkValid(reaction, user):
+			return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+		def checkRep(message):
+			return message.author == ctx.message.author and ctx.message.channel == message.channel
+		cl = ctx.guild.id
+		db = sqlite3.connect("owlly.db", timeout=3000)
+		c = db.cursor()
+		await ctx.message.delete()
+		sql="SELECT fiche_pj, fiche_validation, fiche_pnj FROM SERVEUR WHERE idS=?"
+		c.execute(sql, (cl,))
+		channels=c.fetchone()
+		if channels[0] is None:
+			await self.chan_fiche(ctx)
+		q=await ctx.send("Merci de rentrer les champs que vous souhaitez pour la partie présentation **générale**.\n `cancel` pour annuler et `stop` pour valider.")
+		general=[]
+		while True:
+			general_rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+			general_champ=general.content 
+			if general_champ.lower=='stop':
+				await ctx.send("Validation en cours !", delete_after=5)
+				await general_rep.delete()
+				break
+			elif general_champ.lower()=="cancel":
+				await general_rep.delete()
+				await ctx.send("Annulation !", delete_after=30)
+				await q.delete()
+				return
+			else:
+				await general_rep.add_reaction("✅")
+				general.append(general_champ.capitalize())
+			await general_rep.delete(delay=10)
+		general=",".join(general)
+		await q.delete()
+		q=await ctx.send("Maintenant, rentrer les champs pour la description physique.\n `stop` pour valider, `cancel` pour annuler.")
+		physique=[]
+		while True:
+			physique_rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+			physique_champ=physique_rep.content
+			if physique_champ.lower() == "stop":
+				await ctx.send("Validation en cours !", delete_after=5)
+				await general_rep.delete()
+				break
+			elif physique_champ.lower()=="cancel":
+				await general_rep.delete()
+				await ctx.send("Annulation !", delete_after=30)
+				await q.delete()
+				return
+			else:
+				await physique_rep.add_reaction("✅")
+				physique.append(physique_champ.capitalize())
+			await physique_rep.delete()
+		physique=",".join(physique)
+		await q.delete()
+		q=await ctx.send(f"Vos champs sont donc :\n __GÉNÉRAL__ :\n {general} \n\n __PHYSIQUE__ : {physique}\n\n Validez-vous ses paramètres ?")
+		await q.add_reaction("✅")
+		await q.add_reaction("❌")
+		reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+		if reaction.emoji == "✅":
+			sql="UPDATE SERVEUR SET champ_general = ?, champ_physique = ? WHERE idS=?"
+			var=(general, physique, cl)
+			c.execute(sql, var)
+			db.commit()
+		else:
+			await q.delete()
+			await ctx.send("Annulation", delete_after=30)
+		c.close()
+		db.close()
 def setup(bot):
   bot.add_cog(CogAdmins(bot))
