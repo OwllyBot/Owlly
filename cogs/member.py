@@ -5,6 +5,7 @@ import unicodedata
 import os
 import sqlite3
 from discord.ext.commands import TextChannelConverter as tcc
+from discord.ext.commands import CommandError
 import sqlite3
 import os.path
 import json
@@ -13,31 +14,27 @@ import unidecode
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
-class Personnage():
-	def __init__(self):
-		self.nom = "nom"
-		self.prenom = "prenom"
-		self.surnom = "surnom"
-		self.age = "age"
-		self.anniversaire = "birthday"
-		self.sexe = "sexe"
-		self.race = "race"
-		self.metier = "metier"
-		self.yeux = "yeux"
-		self.cheveux = "cheveux"
-		self.taille = "taille"
-		self.poids = "poids"
-		self.peau = "peau"
-		self.marques = "marques"
-		self.image = "link"
+class Personnage(object):
+	def __init__(self, champ):
+		self.champ=champ
+	def __str__(self):
+		return str(self.champ)
 
 class memberUtils(commands.Cog, name="Membre", description="Des commandes gérants les membres."):
 
 	def __init__(self, bot):
 		self.bot = bot
+	
+	async def search_chan(self, ctx, chan):
+		try:
+			chan = await commands.TextChannelConverter().convert(ctx, chan)
+			return chan
+		except CommandError:
+			chan = "Error"
+			return chan
 
-	async def forme(member: discord.Member, chartype):
-		f = open(f"fiche/{chartype}_{member.name}.txt", "r", encoding="utf-8")
+	async def forme(member: discord.Member, chartype, idS):
+		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 		data = f.readlines()
 		f.close()
 		msg = "error"
@@ -45,37 +42,50 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			data = "".join(data)
 			data = data.replace("\'", "\"")
 			perso = json.loads(data)
-			if "image" in perso.keys():
-				nom = perso.get("nom")
-				prenom = perso.get("prenom")
-				age = perso.get("age")
-				surnom = perso.get("surnom")
-				anniversaire = perso.get("anniversaire")
-				sexe = perso.get("sexe")
-				race = perso.get("race")
-				metier = perso.get("metier")
-				yeux = perso.get("yeux")
-				cheveux = perso.get("cheveux")
-				taille = perso.get("taille")
-				poids = perso.get("poids")
-				peau = perso.get("peau")
-				marque = perso.get("marques")
-				img = perso.get("image")
-				msg = f"─────༺ Présentation ༻─────\n**__Nom__** : {nom}\n**__Prénom__** : {prenom}\n**__Surnom__** : {surnom}\n**__Âge__** : {age} | {anniversaire}\n**__Sexe__** : {sexe}\n**__Race__** : {race}\n**__Métier__** : {metier}\n\n──────༺Physique༻──────\n**__Yeux__** : {yeux}\n**__Cheveux__** : {cheveux}\n**__Taille__** : {taille}\n**__Poids__** : {poids}\n**__Peau__** : {peau}\n**__Marques__** : {marque}\n\n⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n*Auteur* : {member.mention}\n{img}"
-		return msg
+			db = sqlite3.connect("owlly.db", timeout=3000)
+			c = db.cursor()
+			sql="SELECT champ_physique, champ_general FROM SERVEUR WHERE idS=?"
+			c.execute(sql, (idS,))
+			champ=c.fetchone()
+			general=champ[0].split(",")
+			physique=champ[1].split(",")
+			general_info={}
+			physique_info={}
+			for k, v in perso.items():
+				for i in general:
+					for j in physique:
+						if i == k:
+							general_info.update({k:v})
+						elif i == j:
+							physique_info.update({k:v})
+			general_msg = "─────༺ Présentation ༻─────\n"
+			physique_msg = "──────༺Physique༻──────\n "
+			img=""
+			for k, v in general_info:
+				if v.startswith("http"):
+					img=v
+				else:
+					general_msg = general_msg+f"**__{k}__** : {v}\n"
+			for k, v in physique_info:
+				if v.startswith("http"):
+					img=v
+				else:
+					physique_msg=physique_msg+f"**__{k}__** : {v}\n"
+			msg = general_msg+"\n\n"+physique_msg+"\n\n"+f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Auteur* : {member.mention}"
+		return msg, img
 
-	async def validation(self, ctx, msg, chartype, member: discord.Member):
+	async def validation(self, ctx, msg, img, chartype, member: discord.Member):
+		idS=ctx.guild.id
 		if msg != "error":
 			db = sqlite3.connect("owlly.db", timeout=3000)
 			c = db.cursor()
 			SQL = "SELECT fiche_pj, fiche_pnj, fiche_validation FROM SERVEUR WHERE idS=?"
 			c.execute(SQL, (ctx.guild.id))
 			channel = c.fetchone()
-
 			def checkValid(reaction, user):
 				return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
 			if (channel[0] is not None) and (channel[1] is not None) and (channel[0] != 0) and (channel[1] != 0):
-				chan = tcc.convert(self, ctx, channel[2])
+				chan = await self.search_chan(ctx, channel[2])
 				q = await chan.send(f"Il y a une présentation à valider ! Son contenu est :\n {msg}\n\n Validez-vous la fiche ? ")
 				q.add_reaction("✅")
 				q.add_reaction("❌")
@@ -83,28 +93,48 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				if reaction.emoji == "✅":
 					if chartype.lower() == "pnj":
 						if channel[1] != 0:
-							chan_send = tcc.convert(channel[1])
+							chan_send = await self.search_chan(ctx, channel[1])
 						else:
-							chan_send = tcc.convert(channel[0])
+							chan_send = await self.search_chan(ctx, channel[0])
 					else:
-						chan_send = tcc.convert(channel[0])
-					await chan_send.send(msg)
-					os.remove(f"fiche/{chartype}_{member.name}.txt")
+						chan_send = await self.search_chan(ctx, channel[0])
+					if img!="":
+						embed=discord.Embed()
+						embed.set_image(url=img)
+						await chan_send.send(content=msg, embed=embed)
+					else:
+						await chan_send.send(msg)
+					os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
 				else:
 					await member.send("Il y a un soucis avec votre fiche ! Rapprochez-vous des modérateurs pour voir le soucis.")
 			else:
 				await member.send("Huh, il y a eu un soucis avec l'envoie. Il semblerait que les channels ne soient pas configurés ! Rapproche toi du staff pour le prévenir. \n Note : Ce genre de chose n'est pas sensé arrivé, donc contacte aussi @Mara#3000 et fait un rapport de bug. ")
+
 	async def start_presentation(self, ctx, member: discord.Member, chartype):
-		template = vars(Personnage())
+		db = sqlite3.connect("owlly.db", timeout=3000)
+		c = db.cursor()
+		idS=ctx.guild.id
+		sql="SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+		c.execute(sql, (idS,))
+		champ_map=c.fetchone()
+		general=champ_map[0]
+		physique=champ_map[1]
+		if general is None or physique is None:
+			return "ERROR"
+		general=general.split(",")
+		physique=general.split(",")
+		champ=general+physique
+		template={i:str(Personnage(i)) for i in champ}
+		last=list(template)[-1]
 		def checkRep(message):
 			return message.author == member and isinstance(message.channel, discord.DMChannel)
 		emoji = ["✅", "❌"]
 		def checkValid(reaction, user):
 			return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
-		if not os.path.isfile(f'fiche/{chartype}_{member.name}.txt'):
+		if not os.path.isfile(f'fiche/{chartype}_{member.name}_{idS}.txt'):
 			perso = {}
 		else:
-			f = open(f"fiche/{chartype}_{member.name}.txt", "r", encoding="utf-8")
+			f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 			data = f.readlines()
 			f.close()
 			if (len(data) > 0):
@@ -113,21 +143,11 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				perso = json.loads(data)
 			else:
 				perso = {}
-		f = open(f"fiche/{chartype}_{member.name}.txt", "w", encoding="utf-8")
-		while "link" not in perso.keys():
+		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
+		while last not in perso.keys():
 			for t in template.keys():
 				if t not in perso.keys():
 					champ = t.capitalize()
-					if champ == "Desc":
-						champ = "Description physique"
-					elif champ == "Image":
-						champ = "Lien vers le faceclaim"
-					elif champ == "Prenom":
-						champ = "Prénom"
-					elif champ == "Anniversaire":
-						champ = "Date d'anniversaire"
-					elif champ == "Metier":
-						champ = "Métier"
 					q = await member.send(f"{champ} ?\n Si votre perso n'en a pas, merci de mettre `/` ou `NA`.")
 					rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 					try:
@@ -139,7 +159,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						elif rep.content.lower() == "cancel":
 							await member.send("Annulation de la présentation.")
 							f.close()
-							os.remove(f"fiche/{chartype}_{member.name}.txt")
+							os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
 							await q.delete()
 							await rep.delete()
 							return "delete"
@@ -152,9 +172,11 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						return "NOTdone"
 		f.write(str(perso))
 		f.close()
-		msg = await self.forme(member)
+		msg, img = await self.forme(member, chartype, idS)
+		if img != "":
+			msg = msg+"\n\n"+img
 		if msg != "error":
-			await q.edit(content="Votre présentation est donc : \n {msg}. Validez-vous ses paramètres ?")
+			await q.edit(content="Votre présentation est donc : \n {msg},. Validez-vous ses paramètres ?")
 			await q.add_reaction("✅")
 			await q.add_reaction("❌")
 			reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
@@ -223,21 +245,21 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		await ctx.message.delete()
 		pres = await self.start_presentation(ctx, user, chartype)
 		if pres == "done":
-			fiche = await self.forme(user, chartype)
-			await self.validation(ctx, fiche, chartype, user)
+			fiche, img = await self.forme(user, chartype, idS=ctx.guild.id)
+			await self.validation(ctx, fiche, img, chartype, user)
 
 	@commands.command(usage="@mention", brief="Lance la création d'une fiche", help="Permet à un joueur ayant sa fiche valider de faire sa présentation.", aliases=["add_pres"])
 	@commands.has_permissions(administrator=True)
 	async def add_presentation(self, ctx, member: discord.Member, chartype="pj"):
-		print("prout")
 		pres=await self.start_presentation(ctx, member, chartype)
 		if pres == "done":
-			fiche=await self.forme(member, chartype)
-			await self.validation(ctx, fiche, chartype, member)
+			fiche, img=await self.forme(member, chartype, idS=ctx.guild.id)
+			await self.validation(ctx, fiche, img, chartype, member)
 
 	@commands.command(aliases=["pres"], brief="Commandes pour modifier une présentation en cours.", usage="fiche -(reprise pnj/pj)|(delete pnj/pj)|(edit pj/pnj champ)", help="`fiche -delete` permet de supprimer la présentation en cours. \n `fiche -edit` permet d'éditer un champ d'une présentation en cours. \n `fiche -reprise` permet de reprendre l'écriture d'une présentation en cours. \n Par défaut, les fiches sont des fiches de PJ, donc si vous faites un PNJ, n'oublier pas de le préciser après le nom de la commande !")
 	async def fiche(self, ctx, arg, chartype="pj", value="0"):
 		member = ctx.message.author
+		idS=ctx.guild.id
 		def checkRep(message):
 			return message.author == member and isinstance(message.channel, discord.DMChannel)
 		db = sqlite3.connect("owlly.db", timeout=3000)
@@ -246,12 +268,12 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		c.execute(SQL, (ctx.guild.id,))
 		channel = c.fetchone()
 		if (channel[0] is not None) and (channel[1] is not None) and (channel[0] != 0) and (channel[1] != 0):
-			if os.path.isfile(f"fiche/{chartype}_{member.name}.txt"):
+			if os.path.isfile(f"fiche/{chartype}_{member.name}_{idS}.txt"):
 				if arg.lower() == "-edit" and value != "0":
-					f = open(f"fiche/{chartype}_{member.name}.txt", "r", encoding="utf-8")
+					f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 					data = f.readlines()
 					f.close()
-					f = open(f"fiche/{chartype}_{member.name}.txt", "w", encoding="utf-8")
+					f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
 					if (len(data) > 0):
 						data = "".join(data)
 						data = data.replace("\'", "\"")
@@ -274,14 +296,14 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							q = await member.send(f"Je n'ai pas trouvé le champ {value.capitalize()}...")
 					f.close()
 				elif arg.lower() == "-delete":
-					os.remove("fiche/{chartype}_{member.name}.txt")
+					os.remove("fiche/{chartype}_{member.name}_{idS}.txt")
 					await ctx.send("Votre présentation a été supprimé.")
 				elif arg.lower() == "-reprise":
 					await ctx.send("Regardez vos DM 📨 !")
 					step = await self.start_presentation(ctx, member, chartype)
 					if step == "done":
-						msg = self.forme(chartype)
-						await self.validation(ctx, msg, chartype, member)
+						msg, img = self.forme(chartype, idS)
+						await self.validation(ctx, msg, img, chartype, member)
 			else:
 				await ctx.send("Vous n'avez pas de présentation en cours !")
 		else:
