@@ -289,7 +289,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				os.remove("fiche/{chartype}_{member.name}_{idS}.txt")
 				await ctx.send(f"La présentation de {member.name} a été supprimé.")
 
-	@commands.command(aliases=["pres"], brief="Commandes pour modifier une présentation en cours.", usage="fiche (pnj?) -(reprise|delete|edit champs)", help="`fiche -delete` permet de supprimer la présentation en cours. \n `fiche -edit champs` permet d'éditer un champ d'une présentation en cours. \n `fiche -reprise` permet de reprendre l'écriture d'une présentation en cours. \n Par défaut, les fiches sont des fiches de PJ, donc si vous faites un PNJ, n'oublier pas de le préciser après le nom de la commande !")
+	@commands.command(aliases=["pres"], brief="Commandes pour modifier une présentation en cours.", usage="(pnj?)", help="Le champ PNJ est à indiquer pour les fiches lorsque celles-ci sont pour les PNJ. Autrement, par défaut, les fiches PJ sont sélectionnées. \n Cette commande permet la reprise, modification ou suppression d'une présentation.")
 	async def fiche(self, ctx, chartype="pj"):
 		member = ctx.message.author
 		idS=ctx.guild.id
@@ -305,8 +305,21 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		channel = c.fetchone()
 		if (channel[0] is not None) and (channel[1] is not None) and (channel[0] != 0) and (channel[1] != 0):
 			if os.path.isfile(f"fiche/{chartype}_{member.name}_{idS}.txt"):
-				#tructructruc
-				if arg.lower() == "-edit" and value != "0":
+				menu=discord.Embed(title="Menu", description="1️⃣ - Edition\n 2️⃣ - Suppression\n 3️⃣ - Reprise")
+				q=await ctx.send(embed=menu)
+				for i in emoji:
+					await q.add_reaction(i)
+				reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+				if reaction.emoji=="1️⃣":
+					await q.delete()
+					q=await ctx.send("Quel est le champ que vous voulez modifier ?")
+					rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+					if rep.content.lower() == "stop":
+						await q.delete()
+						await rep.delete()
+						await ctx.send("Annulation", delete_after=30)
+						return
+					value=rep.content
 					f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 					data = f.readlines()
 					f.close()
@@ -329,10 +342,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 								f.write(str(perso))
 								q = await q.edit(content="{value.capitalize()} a bien été modifié !")
 					f.close()
-				elif arg.lower() == "-delete":
+				elif reaction.emoji == "2️⃣":
 					os.remove("fiche/{chartype}_{member.name}_{idS}.txt")
 					await ctx.send("Votre présentation a été supprimé.")
-				elif arg.lower() == "-reprise":
+				elif reaction.emoji == "3️⃣":
 					await ctx.send("Regardez vos DM 📨 !")
 					step = await self.start_presentation(ctx, member, chartype)
 					if step == "done":
