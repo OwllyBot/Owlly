@@ -50,8 +50,6 @@ class CommandErrorHandler(commands.Cog):
 				await ctx.author.send(f'{ctx.command} ne peut pas être utilisé dans des messages privés.')
 			except discord.HTTPException:
 				pass
-
-		# For this error example we check to see where it came from...
 		elif isinstance(error, commands.BadArgument):
 			await ctx.send('Mauvais argument !')
 
