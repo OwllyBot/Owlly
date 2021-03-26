@@ -136,55 +136,10 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		db.close()
 		await q.edit(content="Modification validée !")
 
-
-	@commands.has_permissions(administrator=True)
-	@commands.command(aliases=["count", "edit_count"], brief="Permet de changer le compteur des ticket", help="Permet de reset, ou changer manuellement le numéro d'un créateur de ticket.", usage="nombre id_message_createur")
-	async def recount(self, ctx, arg, ticket_id):
-		await ctx.message.delete()
-		db = sqlite3.connect("owlly.db", timeout=3000)
-		c = db.cursor()
-		search_db = "SELECT num FROM TICKET WHERE idM=?"
-		sql = "UPDATE TICKET SET num = ? WHERE idM=?"
-		search_regex_arg = re.search(
-			'(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$',
-			str(arg))
-		if search_regex_arg is None:
-			search_regex_arg = re.search(
-				'(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$',
-				str(ticket_id))
-			if search_regex_arg is None:
-				await ctx.send(
-					"Aucun de vos arguments ne correspond à l'ID du message du créateur de ticket...",
-					delete_after=30)
-				c.close()
-				db.close()
-				return
-			else:
-				arg = int(arg)
-				ticket_id = int(ticket_id)
-		else:
-			silent = int(ticket_id)
-			ticket_id = int(arg)
-			arg = silent
-		c.execute(search_db, (ticket_id, ))
-		search = c.fetchone()
-		if search is None:
-			await ctx.send("Aucun ne ticket ne possède ce numéro.")
-			c.close()
-			db.close()
-			return
-		else:
-			var = (arg, (ticket_id))
-			c.execute(sql, var)
-			db.commit()
-			c.close()
-			db.close()
-			await ctx.send(f"Le compte a été fixé à : {arg}")
-
-	@commands.command(brief="Permet de choisir les champs de la présentation des personnages.", help="Cette commande permet de choisir les champs de présentation générale et du physique.",usage="-(create|add champ|remove champ)")
+	@commands.command(brief="Permet de choisir les champs de la présentation des personnages.", help="Cette commande permet de choisir les champs de présentation générale et du physique, de les éditer, supprimer mais aussi en ajouter.")
 	@commands.has_permissions(administrator=True)
 	async def admin_fiche (self, ctx):
-		emoji=["1️⃣","2️⃣","3️⃣", "4️⃣", "❌"]
+		emoji=["1️⃣","2️⃣","3️⃣", "4️⃣", "❌", "✅"]
 		def checkValid(reaction, user):
 			return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
 		def checkRep(message):
@@ -198,9 +153,11 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		menu.set_footer(text="❌ pour annuler.")
 		q=await ctx.send(embed=menu)
 		for i in emoji:
-			q.add_reaction(i)
+			if i != "✅":
+				await q.add_reaction(i)
 		reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
 		if reaction.emoji=="1️⃣":
+			await q.delete()
 			sql="SELECT fiche_pj, fiche_validation, fiche_pnj FROM SERVEUR WHERE idS=?"
 			c.execute(sql, (cl,))
 			channels=c.fetchone()
@@ -210,8 +167,8 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			general=[]
 			while True:
 				general_rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
-				general_champ=general.content 
-				if general_champ.lower=='stop':
+				general_champ=general_rep.content 
+				if general_champ.lower()=='stop':
 					await ctx.send("Validation en cours !", delete_after=5)
 					await general_rep.delete()
 					break
@@ -233,17 +190,17 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				physique_champ=physique_rep.content
 				if physique_champ.lower() == "stop":
 					await ctx.send("Validation en cours !", delete_after=5)
-					await general_rep.delete()
+					await physique_rep.delete()
 					break
 				elif physique_champ.lower()=="cancel":
-					await general_rep.delete()
+					await physique_rep.delete()
 					await ctx.send("Annulation !", delete_after=30)
 					await q.delete()
 					return
 				else:
 					await physique_rep.add_reaction("✅")
 					physique.append(physique_champ.capitalize())
-				await physique_rep.delete()
+				await physique_rep.delete(delay=10)
 			physique=",".join(physique)
 			await q.delete()
 			q=await ctx.send(f"Vos champs sont donc :\n __GÉNÉRAL__ :\n {general} \n\n __PHYSIQUE__ : {physique}\n\n Validez-vous ses paramètres ?")
@@ -255,9 +212,13 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				var=(general, physique, cl)
 				c.execute(sql, var)
 				db.commit()
+				await ctx.send("Enregistré !")
+				await q.delete()
+				return
 			else:
 				await q.delete()
 				await ctx.send("Annulation", delete_after=30)
+				return
 		elif reaction.emoji =="2️⃣":
 			await q.delete()
 			q=await ctx.send("Quel champ voulez-vous supprimer ?")
@@ -277,10 +238,12 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				champ_physique=champs[1].split(",")
 			else:
 				await ctx.send("Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.", delete_after=30)
+				await q.delete()
+				await rep.delete()
 				return
-			if champ in champ_general:
+			if champ in [unidecode.unidecode(i.lower()) for i in champ_general]:
 				champ_general=list(filter(lambda w: unidecode.unidecode(w.lower()) not in champ, champ_general))
-			elif champ in champ_physique:
+			elif champ in [unidecode.unidecode(i.lower()) for i in champ_physique]:
 				champ_physique = list(
 					filter(lambda w: unidecode.unidecode(w.lower()) not in champ, champ_physique))
 			else:
@@ -292,6 +255,9 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			var=(champ_general,champ_physique, cl)
 			c.execute(sql, var)
 			db.commit()
+			await rep.delete()
+			await q.delete()
+			await ctx.send(f"Le Champ : {champ} a bien été supprimé !")
 		elif reaction.emoji == "3️⃣": 
 			await q.delete()
 			q = await ctx.send("Quel champ voulez-vous éditer ?")
@@ -313,15 +279,17 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				await ctx.send("Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.", delete_after=30)
 				return
 			if champ in [unidecode.unidecode(i.lower()) for i in champ_general]:
-				q=await q.edit(content=f"Par quoi voulez-vous modifier {champ} ?")
+				await rep.delete()
+				await q.edit(content=f"Par quoi voulez-vous modifier {champ} ?")
 				rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+				save=rep.content
 				if rep.content.lower() =="stop":
 					await q.delete()
 					await rep.delete()
 					await ctx.send("Annulation", delete_after=30)
 					return
 				champ_general=[rep.content.capitalize() if champ == unidecode.unidecode(x.lower()) else x for x in champ_general]
-			elif champ in [unidecode.delete(i.lower()) for i in champ_physique]:
+			elif champ in [unidecode.unidecode(i.lower()) for i in champ_physique]:
 				if rep.content.lower() == "stop":
 					await q.delete()
 					await rep.delete()
@@ -339,6 +307,12 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			var=(champ_general,champ_physique, cl)
 			c.execute(sql, var)
 			db.commit()
+			c.close()
+			db.close()
+			await q.delete()
+			await rep.delete()
+			await ctx.send("Le champ : {champ} a bien été édité par {save}.")
+			return
 		elif reaction.emoji == "4️⃣":
 			await q.delete()
 			q=await ctx.send("Dans quel partie voulez-vous ajouter votre champ ? \n 1️⃣ : GÉNÉRALE \n 2️⃣: PHYSIQUE")
@@ -364,7 +338,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					return
 				new=rep.content.capitalize()
 				if new not in champ_general:
-					champ_general=champ_general.append(new)
+					champ_general.append(new)
 				else:
 					await q.delete()
 					await rep.delete()
@@ -374,6 +348,13 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				sql="UPDATE SERVEUR SET champ_general = ? WHERE idS=?"
 				var=(champ_general, cl)
 				c.execute(sql, var)
+				db.commit()
+				c.close()
+				db.close()
+				await ctx.send(f"Le champ {new} a bien été ajouté !")
+				await q.delete()
+				await rep.delete()
+				return
 			elif reaction.emoji == "2️⃣":
 				sql="SELECT champ_physique FROM SERVEUR WHERE idS=?"
 				c.execute(sql,(cl,))
@@ -392,7 +373,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					return
 				new = rep.content.capitalize()
 				if new not in champ_physique:
-					champ_physique = champ_physique.append(new)
+					champ_physique.append(new)
 				else:
 					await q.delete()
 					await rep.delete()
@@ -403,6 +384,18 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				var = (champ_physique, cl)
 				c.execute(sql, var)
 				db.commit()
+				c.close()
+				db.close()
+				await rep.delete()
+				await q.delete()
+				await ctx.send(f"Le champ {new} a bien été ajouté !")
+				return
+			else:
+				await q.delete()
+				await ctx.send("Annulation", delete_after=30)
+				c.close()
+				db.close()
+				return
 		else:
 			await q.delete()
 			await ctx.send("Annulation", delete_after=30)
@@ -411,5 +404,52 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			return
 		c.close()
 		db.close()
+
+
+	@commands.has_permissions(administrator=True)
+	@commands.command(aliases=["count", "edit_count"], brief="Permet de changer le compteur des ticket", help="Permet de reset, ou changer manuellement le numéro d'un créateur de ticket.", usage="nombre id_message_createur")
+	async def recount(self, ctx, arg, ticket_id):
+		await ctx.message.delete()
+		db = sqlite3.connect("owlly.db", timeout=3000)
+		c = db.cursor()
+		search_db = "SELECT num FROM TICKET WHERE idM=?"
+		sql = "UPDATE TICKET SET num = ? WHERE idM=?"
+		search_regex_arg = re.search(
+	            '(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$',
+				str(arg))
+		if search_regex_arg is None:
+				search_regex_arg = re.search(
+					'(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$',
+					str(ticket_id))
+				if search_regex_arg is None:
+					await ctx.send(
+						"Aucun de vos arguments ne correspond à l'ID du message du créateur de ticket...",
+						delete_after=30)
+					c.close()
+					db.close()
+					return
+				else:
+					arg = int(arg)
+					ticket_id = int(ticket_id)
+		else:
+			silent = int(ticket_id)
+			ticket_id = int(arg)
+			arg = silent
+			c.execute(search_db, (ticket_id, ))
+			search = c.fetchone()
+			if search is None:
+				await ctx.send("Aucun ne ticket ne possède ce numéro.")
+				c.close()
+				db.close()
+				return
+			else:
+				var = (arg, (ticket_id))
+				c.execute(sql, var)
+				db.commit()
+				c.close()
+				db.close()
+				await ctx.send(f"Le compte a été fixé à : {arg}")
+
+
 def setup(bot):
   bot.add_cog(CogAdmins(bot))
