@@ -257,13 +257,13 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 	@commands.has_permissions(administrator=True)
 	async def admin_edit(self, ctx, member:discord.Member):
 		idS=ctx.guild.id
-		emoji = ["1️⃣", "2️⃣", "❌"]
+		emoji = ["1️⃣", "2️⃣", "3️⃣", "❌"]
 		def checkRep(message): 
 			return message.author == member and ctx.message.channel == message.channel
 		def checkValid(reaction, user):
 			return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
 		if os.path.isfile(f"fiche/pj_{member.name}_{idS}.txt") and os.path.isfile(f"fiche/pnj_{member.name}_{idS}.txt"):
-			q = await ctx.send("Voulez-vous modifier la fiche de votre PNJ ou PJ ?\n 1️⃣ : PJ\n 2️⃣ : PNJ")
+			q = await ctx.send("Voulez-vous modifier la fiche du PNJ ou PJ ?\n 1️⃣ : PJ\n 2️⃣ : PNJ")
 			await q.add_reaction("1️⃣")
 			await q.add_reaction("2️⃣")
 			await q.add_reaction("❌")
@@ -283,57 +283,71 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		else:
 			chartype = "ERROR"
 		if chartype != "ERROR":
-			menu=discord.Embed(title=f"MENU {chartype} EDITION ADMIN", description="1️⃣ - EDITION\n 2️⃣ - SUPPRESSION")
+			menu=discord.Embed(title=f"MENU {chartype} EDITION ADMIN", description="1️⃣ - EDITION\n 2️⃣ - SUPPRESSION \n 3️⃣ - VOIR LA FICHE")
 			q=await ctx.send(embed=menu)
 			for i in emoji:
 				q.add_reaction(i)
 			reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
 			if reaction.user=="1️⃣":
 				await q.delete()
-				q=await ctx.send("Quel champ voulez-vous éditer ?")
-				rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
-				if rep.content.lower() == "stop":
-					await q.delete()
-					await rep.delete()
-					await ctx.send("Annulation", delete_after=30)
-					return
-				value=rep.content
-				await rep.delete()
 				f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 				data = f.readlines()
 				f.close()
-				f = open(f"fiche/{chartype}_{member.name}_{idS}.txt","w", encoding="utf-8")
 				if (len(data) > 0):
 					data = "".join(data)
 					data = data.replace("\'", "\"")
 					perso = json.loads(data)
+					msg, img=await self.forme(ctx, member, chartype, idS)
+					q = await ctx.send(f"Actuellement, la fiche ressemble à ça : {msg} \n Quel champ voulez-vous éditer ?")
+					rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+					if rep.content.lower() == "stop":
+						await q.delete()
+						await rep.delete()
+						await ctx.send("Annulation", delete_after=30)
+						return
+					value = rep.content
+					await rep.delete()
+					found="not"
 					for k in perso.keys():
 						if unidecode.unidecode(k.lower()) == unidecode.unidecode(value.lower()):
-							q=await ctx.send(f"Par quoi voulez-vous modifier {value.capitalize()} ? \n Actuellement, sa valeur est {perso.get(unidecode.unidecode(k.lower()))}")
+							q=await ctx.send(f"Par quoi voulez-vous modifier {value.capitalize()} ? \n Actuellement, sa valeur est {perso.get(k)}")
 							rep = self.bot.wait_for("message", timeout=300, check=checkRep)
 							if rep.content.lower()=="stop":
 								await ctx.send("Annulation", delete_after=30)
 								await q.delete()
 								await rep.delete()
 								return
-							else:
-								perso[k]=rep.content
-								f.write(str(perso))
-				f.close()
+							perso[k]=rep.content
+							f = open(f"fiche/{chartype}_{member.name}_{idS}.txt","w", encoding="utf-8")
+							f.write(str(perso))
+							f.close()
+							q=await q.edit(content=f"{value.capitalize()} a bien été modifié !")
+							found="yes"
+							break
+					if found =="not":
+						await ctx.send("Erreur ! {value} n'a pas été trouvé...")
+						await q.delete()
+						return
 			elif reaction.emoji == "2️⃣":
 				await q.delete()
 				os.remove("fiche/{chartype}_{member.name}_{idS}.txt")
 				await ctx.send(f"La présentation de {member.name} a été supprimé.")
+			elif reaction.emoji == "3️⃣":
+				msg, img=await self.forme(ctx, member, chartype, idS)
+				await ctx.send(f"{msg} \n {img}")
 			else:
 				await q.delete()
 				await ctx.send(f"Annulation", delete_after=30)
 				return
+		else:
+			await ctx.send("{member.name} n'a pas de présentation en cours...")
+			return
 
 	@commands.command(aliases=["pres"], brief="Commandes pour modifier une présentation en cours.", help="Le champ PNJ est à indiquer pour les fiches lorsque celles-ci sont pour les PNJ. Autrement, par défaut, les fiches PJ sont sélectionnées. \n Cette commande permet la reprise, modification ou suppression d'une présentation.")
 	async def fiche(self, ctx):
 		member = ctx.message.author
 		idS = ctx.guild.id
-		emoji = ["1️⃣", "2️⃣", "3️⃣", "❌"]
+		emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "❌"]
 		def checkValid(reaction, user):
 			return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
 		if os.path.isfile(f"fiche/pj_{member.name}_{idS}.txt") and os.path.isfile(f"fiche/pnj_{member.name}_{idS}.txt"):
@@ -367,7 +381,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		channel = c.fetchone()
 		if (channel[0] is not None) and (channel[1] is not None) and (channel[0] != 0) and (channel[1] != 0):
 			if chartype != "ERROR":
-				menu=discord.Embed(title=f"Menu ({chartype})", description="1️⃣ - Edition\n 2️⃣ - Suppression\n 3️⃣ - Reprise")
+				menu=discord.Embed(title=f"Menu ({chartype})", description="1️⃣ - Edition\n 2️⃣ - Suppression\n 3️⃣ - Reprise \n 4️⃣ - Voir la fiche en cours")
 				q=await ctx.send(embed=menu)
 				for i in emoji:
 					await q.add_reaction(i)
@@ -383,19 +397,21 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						data = data.replace("\'", "\"")
 						perso = json.loads(data)
 						msg, img= await self.forme(ctx, member, chartype, idS)
-						await member.send("Actuellement, votre fiche ressemble à ceci :\n {msg}")
+						await member.send(f"Actuellement, votre fiche ressemble à ceci :\n {msg}")
 						q=await member.send("Quel est le champ que vous voulez modifier ?")
-						rep=await self.bot.wait_for("message", timeout=300, check=checkRepChan)
+						rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+						print(rep.content)
 						if rep.content.lower() == "stop":
 							await q.delete()
 							await rep.delete()
 							await ctx.send("Annulation", delete_after=30)
 							return
 						value=rep.content
+						found="not"
 						for k in perso.keys():
 							if unidecode.unidecode(k.lower()) == unidecode.unidecode(value.lower()):
-								q = await member.send(f"Par quoi voulez-vous modifier {value.capitalize()} ?\n Actuellement, elle a pour valeur {perso.get(unidecode.unidecode(value.lower()))}.")
-								rep = self.bot.wait_for("message", timeout=300, check=checkRep)
+								q = await member.send(f"Par quoi voulez-vous modifier {value.capitalize()} ?\n Actuellement, elle a pour valeur {perso.get(k)}.")
+								rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 								if rep.content.lower() == "stop":
 									await q.delete()
 									await member.send("Annulation")
@@ -405,14 +421,15 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 								f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
 								f.write(str(perso))
 								f.close()
-								q = await q.edit(content="{value.capitalize()} a bien été modifié !")
-							else:
-								await ctx.send("Ce champ n'est pas reconnu !", delete_after=30)
-								return
+								q = await q.edit(content=f"{value.capitalize()} a bien été modifié !")
+								found="yes"
+								break
+						if found == "not":
+							await ctx.send(f"{value} n'a pas été trouvé dans votre fiche...")
+							return	
 					else:
 						await ctx.send("Erreur ! Votre présentation n'existe pas.")
 						await q.delete()
-						await rep.delete()
 						return
 					f.close()
 				elif reaction.emoji == "2️⃣":
@@ -422,8 +439,11 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					await ctx.send("Regardez vos DM 📨 !")
 					step = await self.start_presentation(ctx, member, chartype)
 					if step == "done":
-						msg, img = self.forme(chartype, idS)
+						msg, img = self.forme(ctx, member, chartype, idS)
 						await self.validation(ctx, msg, img, chartype, member)
+				elif reaction.emoji == "4️⃣":
+					msg, img = await self.forme(ctx, member, chartype, idS)
+					await member.send(f"{msg} \n {img}")
 			else:
 				await ctx.send("Vous n'avez pas de présentation en cours !")
 		else:
