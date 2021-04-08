@@ -10,7 +10,7 @@ import unidecode as uni
 
 from discord.ext.commands.errors import CommandError
 intents = discord.Intents(messages=True, guilds=True,
-						  reactions=True, members=True)
+                          reactions=True, members=True)
 
 
 class CogUtils(commands.Cog, name="Utilitaire", description="Une série de commande permettant notamment le débug, mais donnant aussi des informations."):
@@ -33,6 +33,9 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 			prefix = prefix[0]
 		if self.bot.user.mentioned_in(message) and 'prefix' in message.content:
 			await channel.send(f'Mon prefix est `{prefix}`')
+		else:
+			if message.type == discord.MessageType.pins_add:
+				await message.delete()
 
 	@commands.Cog.listener()
 	async def on_guild_join(self, guild):
@@ -61,12 +64,11 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 			if prefix is not None:
 				prefix = prefix[0]
 			else:
-				prefix="?"
+				prefix = "?"
 			await channel.send(f'Mon prefix est `{prefix}`')
 		else:
 			if message.type == discord.MessageType.pins_add:
 				await message.delete()
-
 
 	@commands.command(name="prefix", help="Affiche le prefix du bot. Il est possible de l'obtenir en le mentionnant simplement.", brief="Donne le préfix du bot. ")
 	async def prefix(self, ctx):
@@ -93,20 +95,19 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 		if prefix is not None:
 			prefix = prefix[0]
 		else:
-			prefix="?"
+			prefix = "?"
 		embed = discord.Embed(
 			title="Owlly", description=f"\n 🦉 **__Développeur__** : @Mara#3000 \n <:commandline:823856723441221692> **__Prefix__** : `{prefix}`\n 🏓 **__Latence__** : {str(round(self.bot.latency, 2))}\n <:python:823857333259730964> **__Language__** : Python \n<:git:823857771584684032> **__Github__** : [Github](https://github.com/OwllyBot/OwllyDocs)", color=0x438f8c)
 		await ctx.send(embed=embed)
 		await ctx.message.delete()
-	
+
 	@commands.command(name="bug", help="Permet d'afficher les infos afin de signaler un bug.", brief="Informations sur le signalement de bug.")
 	async def bug(self, ctx):
-		bloc="```\n# Commande : \n# Résultat : \n# Reproduction : \n# Description / autres informations : \n# Screenshot :\n```"
+		bloc = "```\n# Commande : \n# Résultat : \n# Reproduction : \n# Description / autres informations : \n# Screenshot :\n```"
 		embed = discord.Embed(title="Signaler un bug",
 		                      description=f"Vous avez vu un bug et vous aimeriez le signaler ? Voici la marche à suivre : \n:white_small_square: Aller sur [Github](https://github.com/OwllyBot/OwllyDocs/issues)\n:white_small_square: Remplissez la template suivante en donnant le plus d'information possible :\n {bloc}\n\n N'oubliez pas de créer un compte Github. Vous pouvez aussi MP @Mara#3000 avec la description du bug.", color=0x438f8c)
 		await ctx.send(embed=embed)
 		await ctx.message.delete()
-	
 
 	@commands.command(aliases=["purge", "clean"], help="Permet de nettoyer un channel. Attention, nécessite d'être administrateur.", brief="Purge un channel.")
 	@commands.has_permissions(administrator=True)
@@ -146,7 +147,7 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 		async def bug(self, ctx):
 			bloc = "```\n# Commande : \n# Résultat : \n# Reproduction : \n# Description / autres informations : \n# Screenshot :\n```"
 			embed = discord.Embed(title="Signaler un bug",
-								  description=f"Vous avez vu un bug et vous aimeriez le signaler ? Voici la marche à suivre : \n:white_small_square: Aller sur [Github](https://github.com/OwllyBot/OwllyDocs/issues)\n:white_small_square: Remplissez la template suivante en donnant le plus d'information possible :\n {bloc}\n\n N'oubliez pas de créer un compte Github. Vous pouvez aussi MP @Mara#3000 avec la description du bug.", color=0x438f8c)
+                         description=f"Vous avez vu un bug et vous aimeriez le signaler ? Voici la marche à suivre : \n:white_small_square: Aller sur [Github](https://github.com/OwllyBot/OwllyDocs/issues)\n:white_small_square: Remplissez la template suivante en donnant le plus d'information possible :\n {bloc}\n\n N'oubliez pas de créer un compte Github. Vous pouvez aussi MP @Mara#3000 avec la description du bug.", color=0x438f8c)
 			await ctx.send(embed=embed)
 
 	@commands.command(brief="Une recherche dans un channel", help="Permet de chercher un texte parmi le channel fixée", aliases=['search'])
