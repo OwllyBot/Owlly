@@ -52,24 +52,6 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 	async def ping(self, ctx):
 		await ctx.send(f"🏓 Pong with {str(round(self.bot.latency, 2))}")
 
-	@commands.Cog.listener()
-	async def on_message(self, message):
-		if message.guild is not None:
-			channel = message.channel
-			db = sqlite3.connect("owlly.db", timeout=3000)
-			c = db.cursor()
-			prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-			c.execute(prefix, (int(message.guild.id),))
-			prefix = c.fetchone()
-			if prefix is not None:
-				prefix = prefix[0]
-			else:
-				prefix = "?"
-			await channel.send(f'Mon prefix est `{prefix}`')
-		else:
-			if message.type == discord.MessageType.pins_add:
-				await message.delete()
-
 	@commands.command(name="prefix", help="Affiche le prefix du bot. Il est possible de l'obtenir en le mentionnant simplement.", brief="Donne le préfix du bot. ")
 	async def prefix(self, ctx):
 		server = ctx.guild.id
