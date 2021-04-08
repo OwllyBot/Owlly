@@ -4,11 +4,9 @@ from discord import NotFound
 import sqlite3
 intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
 
-
 class DB_utils(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
     async def clean_db(self, ctx):

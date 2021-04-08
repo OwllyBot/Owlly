@@ -314,7 +314,6 @@ async def create_ticket(self,ctx, bot):
         await q.delete()
         return
 
-
 async def create_category(self,ctx, bot):
     def checkValid(reaction, user):
         return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")

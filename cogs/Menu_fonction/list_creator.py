@@ -4,6 +4,7 @@ from discord.utils import get
 import sqlite3
 from discord import NotFound
 
+
 def list_ticket(ctx):
 	db = sqlite3.connect("owlly.db", timeout=3000)
 	c = db.cursor()

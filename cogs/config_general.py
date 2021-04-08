@@ -6,8 +6,7 @@ intents = discord.Intents(messages=True, guilds=True, reactions=True, members=Tr
 
 class CogAdmins(commands.Cog, name="Configuration générale", description="Permet d'enregistrer quelques paramètres pour le bot."):
   def __init__ (self, bot):
-    self.bot = bot
-    
+    self.bot = bot 
   @commands.command(name="set_prefix", help="Permet de changer le prefix du bot.", brief="Changement du prefix.")
   @commands.has_permissions(administrator=True)
   async def set_prefix(self, ctx, prefix):

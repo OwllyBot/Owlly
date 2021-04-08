@@ -8,7 +8,6 @@ intents = discord.Intents(messages=True, guilds=True, reactions=True, members=Tr
 
 
 class memberAssign(commands.Cog, name="Membre", description="Des commandes gérants les membres."):
-
 	def __init__(self, bot):
 		self.bot = bot
 

@@ -171,3 +171,4 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 
 def setup(bot):
 	bot.add_cog(CogUtils(bot))
+ 

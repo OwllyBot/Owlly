@@ -67,7 +67,7 @@ class controlleur(commands.Cog, name="Auteur", description="Permet aux auteurs d
       await ctx.send("Vous n'êtes pas l'auteur de ce channel !", delete_after=10)
     c.close()
     db.close()
-
+	
   @commands.command(aliases=['name'], usage="nouveau nom", brief="Renomme un channel", help="Permet de changer le nom d'un channel, même un ticket, tant que vous êtes l'auteur. Attention, la commande doit-être faite dans le channel que vous souhaitez modifier.")
   async def rename(self, ctx, arg):
     await ctx.message.delete()
