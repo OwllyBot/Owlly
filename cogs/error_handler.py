@@ -7,8 +7,10 @@ import inspect
 
 
 class CommandErrorHandler(commands.Cog):
+
 	def __init__(self, bot):
 		self.bot = bot
+
 	@commands.Cog.listener()
 	async def on_command_error(self, ctx, error):
 		"""The event triggered when an error is raised while invoking a command.
@@ -48,8 +50,6 @@ class CommandErrorHandler(commands.Cog):
 				await ctx.author.send(f'{ctx.command} ne peut pas être utilisé dans des messages privés.')
 			except discord.HTTPException:
 				pass
-
-		# For this error example we check to see where it came from...
 		elif isinstance(error, commands.BadArgument):
 			await ctx.send('Mauvais argument !')
 
