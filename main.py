@@ -48,7 +48,7 @@ if __name__ == '__main__':
 			print(e)
 
 color = discord.Color.blurple()
-ending = "Si vous trouverez un bug, contactez @Mara#3000 !"
+ending = "Pour voir l'aide sur une commande, utilisez {help.clean_prefix}command\n De même, pour une catégorie, utilisez {help.clean_prefix}categorie."
 bot.help_command = PrettyHelp(
 	color=color, index_title="Owlly - Aide", ending_note=ending, active_time=300)
 
@@ -165,6 +165,10 @@ async def on_raw_reaction_add(payload):
 		await channel.send(f"Création du channel {chan_name} dans {category_name}.", delete_after=30)
 		category = bot.get_channel(chan_create)
 		new_chan = await category.create_text_channel(chan_name)
+		overwrite=discord.PermissionOverwrite()
+		overwrite.manage_channels=True
+		overwrite.manage_messages=True
+		await new_chan.set_permission(user, overwrite=overwrite)
 		sql = "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
 		var = (new_chan.id, payload.user_id, idS, payload.message_id)
 		c.execute(sql, var)

@@ -16,10 +16,10 @@ async def convertColor(ctx, color: Optional[discord.Color] = None):
         return colur
 
 def checkImg(ctx, img):
-    pattern = 'http(s?):\/\/www\.(.*)(png|jpg|jpeg|gif|gifv|)'
+    pattern = 'https?:\/\/(.*)\.(png|jpg|jpeg|gif|gifv)'
     result = re.match(pattern, img)
     if result:
-        return (result.group(0))
+        return img
     else:
         return "error"
 
@@ -164,7 +164,7 @@ async def create_ticket(self,ctx, bot):
             return
         else:
             img_content = checkImg(ctx, img_content)
-            if img_content == "Error":
+            if img_content.lower() == "error":
                 await ctx.send("Erreur ! Votre lien n'est pas une image valide.", delete_after=60)
                 await q.delete()
                 await rep.delete()
@@ -197,9 +197,11 @@ async def create_ticket(self,ctx, bot):
             await q.edit(content="Quel est le nom que vous voulez utiliser ?")
             rep = await bot.wait_for("message", timeout=300, check=checkRep)
             name_para = rep.content
+            await rep.delete()
             phrase_para = name_para
         else:
             phrase_para = "Nom du personnage"
+            await q.clear_reactions()
         await q.edit(content="Voulez-vous que les tickets soient comptés ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
@@ -208,6 +210,7 @@ async def create_ticket(self,ctx, bot):
         mod_content = 0
         nb_dep_content = "Aucun"
         if reaction.emoji == "✅":
+            await q.clear_reactions()
             await q.edit(content="Voulez-vous fixer un nombre de départ ?")
             await q.add_reaction("✅")
             await q.add_reaction("❌")
@@ -222,9 +225,11 @@ async def create_ticket(self,ctx, bot):
                     await rep.delete()
                     return
                 else:
+                    await q.clear_reactions()
                     nb_dep_content = str(rep.content)
                     await rep.delete()
             else:
+                await q.clear_reactions()
                 nb_dep_content = "0"
             await q.edit(content="Voulez-vous fixer une limite ? C'est à dire que le ticket va se reset après ce nombre.")
             await q.add_reaction("✅")
@@ -235,12 +240,13 @@ async def create_ticket(self,ctx, bot):
                 await q.edit(content="Merci d'indiquer la limite.")
                 rep = await bot.wait_for("message", timeout=300, check=checkRep)
                 limit=rep.content
-                if limit.lower() == "stop":
+                if limit.lower() == "stop" or limit.lower()=="cancel" or limit.lower() is not limit.isnumeric():
                     await ctx.send("Annulation !", delete_after=10)
                     await q.delete()
                     await rep.delete()
                     return
                 else:
+                    await q.clear_reactions()
                     limit_content = int(limit)
                     await rep.delete()
                     mod_content = 0
@@ -252,12 +258,12 @@ async def create_ticket(self,ctx, bot):
                         await q.clear_reactions()
                         await q.edit(content="Quel est donc ce nombre ?")
                         rep = await bot.wait_for("message", timeout=300, check=checkRep)
-                        if rep.content.lower() == "stop":
+                        if rep.content.lower() == "stop" or rep.content.lower() == "cancel" or rep.content.lower() is not rep.isnumeric():
                             await ctx.send("Annulation !", delete_after=10)
                             await rep.delete()
                             await q.delete()
                             return
-                        else:
+                        elif rep.content.isnumeric():
                             mod_content = int(rep.content)
                             await rep.delete()
                     else:
@@ -307,7 +313,6 @@ async def create_ticket(self,ctx, bot):
         await ctx.send("Annulation !", delete_after=30)
         await q.delete()
         return
-
 
 async def create_category(self,ctx, bot):
     def checkValid(reaction, user):
@@ -400,11 +405,13 @@ async def create_category(self,ctx, bot):
         return
     elif col == "0":
         col = Colour.random()
+        await rep.delete()
     else:
         try:
             col = await ColourConverter.convert(self,ctx, col)
         except CommandError:
             col = Colour.random()
+        await rep.delete()
     await q.edit(content="Voulez-vous utiliser une image ?")
     await q.add_reaction("✅")
     await q.add_reaction("❌")

@@ -81,7 +81,6 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		cl=ctx.guild.id
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
-		await ctx.message.delete()
 		q= await ctx.send("Dans quel channel voulez-vous que soit envoyé les fiches à valider ?")
 		rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 		if rep.content.lower() == "stop":
@@ -147,7 +146,6 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		cl = ctx.guild.id
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
-		await ctx.message.delete()
 		menu = discord.Embed(title="Menu de gestion des fiches",
 		                     description="1️⃣ - Création \n 2️⃣ - Suppression \n 3️⃣ - Edition \n 4️⃣ - Ajout")
 		menu.set_footer(text="❌ pour annuler.")
@@ -179,6 +177,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					return
 				else:
 					await general_rep.add_reaction("✅")
+					general_champ=general_champ.replace("\'", "\\'")
 					general.append(general_champ.capitalize())
 				await general_rep.delete(delay=10)
 			general=",".join(general)
@@ -198,6 +197,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					await q.delete()
 					return
 				else:
+					physique_champ=physique_champ.replace("\'", "\\'")
 					await physique_rep.add_reaction("✅")
 					physique.append(physique_champ.capitalize())
 				await physique_rep.delete(delay=10)
