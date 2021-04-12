@@ -177,6 +177,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					return
 				else:
 					await general_rep.add_reaction("✅")
+					general_champ=general_champ.replace("'", "\\'")
 					general.append(general_champ.capitalize())
 				await general_rep.delete(delay=10)
 			general=",".join(general)
@@ -196,6 +197,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					await q.delete()
 					return
 				else:
+					physique_champ=physique_champ.replace("'", "\\'")
 					await physique_rep.add_reaction("✅")
 					physique.append(physique_champ.capitalize())
 				await physique_rep.delete(delay=10)
