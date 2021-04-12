@@ -149,8 +149,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			for t in template.keys():
 				if t not in perso.keys():
 					champ = t.capitalize()
-					champ=champ.replace("'", "\\'")
 					await member.send(f"{champ} ?\n Si votre perso n'en a pas, merci de mettre `/` ou `NA`.")
+					champ = champ.replace("\'", "\\'")
 					rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 					try:
 						if rep.content.lower() == "stop":
@@ -165,8 +165,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							return "delete"
 						else:
 							reponse= rep.content 
-							reponse=reponse.replace("'", "\\'")
-							perso.update({t: rep.content})
+							reponse=reponse.replace("\'", "\\'")
+							perso.update({champ.lower(): rep.content})
 					except asyncio.TimeoutError:
 						await member.send(f"Timeout ! Enregistrement des modifications. Vous pourrez la reprendre plus tard avec la commande `{ctx.prefix}fiche`")
 						f.write(str(perso))
