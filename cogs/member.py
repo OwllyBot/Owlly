@@ -143,7 +143,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			if (len(data) > 0):
 				data = "".join(data)
 				p = re.compile('(?<!\\\\)\'')
-				data=p.sub('\"', data)
+				data = p.sub('\"', data)
 				perso = json.loads(data)
 			else:
 				perso = {}
@@ -153,6 +153,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				if t not in perso.keys():
 					champ = t.capitalize()
 					await member.send(f"{champ} ?\n Si votre perso n'en a pas, merci de mettre `/` ou `NA`.")
+					champ = champ.replace("\'", "\\'")
 					rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 					try:
 						if rep.content.lower() == "stop":
@@ -167,6 +168,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							return "delete"
 						else:
 							reponse= rep.content 
+							reponse=reponse.replace("\'", "\\'")
 							perso.update({champ.lower(): rep.content})
 					except asyncio.TimeoutError:
 						await member.send(f"Timeout ! Enregistrement des modifications. Vous pourrez la reprendre plus tard avec la commande `{ctx.prefix}fiche`")
@@ -300,7 +302,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				if (len(data) > 0):
 					data = "".join(data)
 					p = re.compile('(?<!\\\\)\'')
-					data=p.sub('\"', data)
+					data = p.sub('\"', data)
 					perso = json.loads(data)
 					msg, img=await self.forme(ctx, member, chartype, idS)
 					q = await ctx.send(f"Actuellement, la fiche ressemble à ça : {msg} \n Quel champ voulez-vous éditer ?")
@@ -399,6 +401,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					f.close()
 					if (len(data) > 0):
 						data = "".join(data)
+						p = re.compile('(?<!\\\\)\'')
+						data = p.sub('\"', data)
 						perso = json.loads(data)
 						msg, img= await self.forme(ctx, member, chartype, idS)
 						await member.send(f"Actuellement, votre fiche ressemble à ceci :\n {msg}")
