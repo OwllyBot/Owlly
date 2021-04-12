@@ -11,6 +11,7 @@ import os.path
 import json
 import asyncio
 import unidecode
+import re
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
@@ -41,7 +42,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		msg = "error"
 		if (len(data) > 0):
 			data = "".join(data)
-			data = data.replace("\'", "\"")
+			p = re.compile('(?<!\\\\)\'')
+			data=p.sub('\"', data)
 			perso = json.loads(data)
 			db = sqlite3.connect("owlly.db", timeout=3000)
 			c = db.cursor()
@@ -140,17 +142,17 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			f.close()
 			if (len(data) > 0):
 				data = "".join(data)
-				data = data.replace("\'", "\"")
+				p = re.compile('(?<!\\\\)\'')
+				data=p.sub('\"', data)
 				perso = json.loads(data)
 			else:
 				perso = {}
 		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
-		while last not in perso.keys():
+		if last not in perso.keys():
 			for t in template.keys():
 				if t not in perso.keys():
 					champ = t.capitalize()
 					await member.send(f"{champ} ?\n Si votre perso n'en a pas, merci de mettre `/` ou `NA`.")
-					champ = champ.replace("\'", "\\'")
 					rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 					try:
 						if rep.content.lower() == "stop":
@@ -165,15 +167,14 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							return "delete"
 						else:
 							reponse= rep.content 
-							reponse=reponse.replace("\'", "\\'")
 							perso.update({champ.lower(): rep.content})
 					except asyncio.TimeoutError:
 						await member.send(f"Timeout ! Enregistrement des modifications. Vous pourrez la reprendre plus tard avec la commande `{ctx.prefix}fiche`")
 						f.write(str(perso))
 						f.close()
 						return "NOTdone"
-		f.write(str(perso))
-		f.close()
+			f.write(str(perso))
+			f.close()
 		msg, img = await self.forme(ctx, member, chartype, idS)
 		if img != "":
 			msg = msg+"\n\n"+img
@@ -298,7 +299,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				f.close()
 				if (len(data) > 0):
 					data = "".join(data)
-					data = data.replace("\'", "\"")
+					p = re.compile('(?<!\\\\)\'')
+					data=p.sub('\"', data)
 					perso = json.loads(data)
 					msg, img=await self.forme(ctx, member, chartype, idS)
 					q = await ctx.send(f"Actuellement, la fiche ressemble à ça : {msg} \n Quel champ voulez-vous éditer ?")
@@ -397,7 +399,6 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					f.close()
 					if (len(data) > 0):
 						data = "".join(data)
-						data = data.replace("\'", "\"")
 						perso = json.loads(data)
 						msg, img= await self.forme(ctx, member, chartype, idS)
 						await member.send(f"Actuellement, votre fiche ressemble à ceci :\n {msg}")
