@@ -165,6 +165,10 @@ async def on_raw_reaction_add(payload):
 		await channel.send(f"Création du channel {chan_name} dans {category_name}.", delete_after=30)
 		category = bot.get_channel(chan_create)
 		new_chan = await category.create_text_channel(chan_name)
+		overwrite=discord.PermissionOverwrite()
+		overwrite.manage_channels=True
+		overwrite.manage_messages=True
+		await new_chan.set_permission(user, overwrite=overwrite)
 		sql = "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
 		var = (new_chan.id, payload.user_id, idS, payload.message_id)
 		c.execute(sql, var)
