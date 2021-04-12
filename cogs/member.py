@@ -149,6 +149,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			for t in template.keys():
 				if t not in perso.keys():
 					champ = t.capitalize()
+					champ=champ.replace("'", "\\'")
 					await member.send(f"{champ} ?\n Si votre perso n'en a pas, merci de mettre `/` ou `NA`.")
 					rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 					try:
