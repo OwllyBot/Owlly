@@ -266,5 +266,5 @@ if repo_name == "main":
 	token = os.environ.get('DISCORD_BOT_TOKEN')
 	keep_alive.keep_alive()
 else:
-	token = os.environ.get('DISCORD_BOT_TOKEN_TESTING')
+	token = "ODA1MTU4MDY4OTg3NDk0NDEz.YBWz4g.eJ2NqgLHx6LyZO3ZI3jLfdufDJw"
 bot.run(token)

@@ -8,7 +8,7 @@ from discord.ext.commands import TextChannelConverter as tcc
 from discord.ext.commands import CommandError
 import sqlite3
 import os.path
-import json
+import ast
 import asyncio
 import unidecode
 import re
@@ -40,11 +40,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		data = f.readlines()
 		f.close()
 		msg = "error"
+		img="Error"
 		if (len(data) > 0):
 			data = "".join(data)
-			p = re.compile('(?<!\\\\)\'')
-			data=p.sub('\"', data)
-			perso = json.loads(data)
+			perso=ast.literal_eval(data)
 			db = sqlite3.connect("owlly.db", timeout=3000)
 			c = db.cursor()
 			sql="SELECT champ_physique, champ_general FROM SERVEUR WHERE idS=?"
@@ -101,7 +100,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							chan_send = await self.search_chan(ctx, channel[0])
 					else:
 						chan_send = await self.search_chan(ctx, channel[0])
-					if img!="":
+					if img!="Error" or img != "":
 						embed=discord.Embed()
 						embed.set_image(url=img)
 						await chan_send.send(content=msg, embed=embed)
@@ -142,9 +141,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			f.close()
 			if (len(data) > 0):
 				data = "".join(data)
-				p = re.compile('(?<!\\\\)\'')
-				data = p.sub('\"', data)
-				perso = json.loads(data)
+				perso = ast.literal_eval(data)
 			else:
 				perso = {}
 		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
@@ -177,8 +174,11 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						return "NOTdone"
 			f.write(str(perso))
 			f.close()
+		else:
+			f.write(str(perso))
+			f.close()
 		msg, img = await self.forme(ctx, member, chartype, idS)
-		if img != "":
+		if img != "Error" or img !="":
 			msg = msg+"\n\n"+img
 		if msg != "error":
 			q=await member.send(f"Votre présentation est donc : \n {msg}.\n Validez-vous ses paramètres ?")
@@ -301,9 +301,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				f.close()
 				if (len(data) > 0):
 					data = "".join(data)
-					p = re.compile('(?<!\\\\)\'')
-					data = p.sub('\"', data)
-					perso = json.loads(data)
+					perso = ast.literal_eval(data)
 					msg, img=await self.forme(ctx, member, chartype, idS)
 					q = await ctx.send(f"Actuellement, la fiche ressemble à ça : {msg} \n Quel champ voulez-vous éditer ?")
 					rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -401,9 +399,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					f.close()
 					if (len(data) > 0):
 						data = "".join(data)
-						p = re.compile('(?<!\\\\)\'')
-						data = p.sub('\"', data)
-						perso = json.loads(data)
+						perso = ast.literal_eval(data)
 						msg, img= await self.forme(ctx, member, chartype, idS)
 						await member.send(f"Actuellement, votre fiche ressemble à ceci :\n {msg}")
 						q=await member.send("Quel est le champ que vous voulez modifier ?")
