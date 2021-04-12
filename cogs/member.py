@@ -63,12 +63,12 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			physique_msg = "──────༺Physique༻──────\n "
 			img=""
 			for k, v in general_info.items():
-				if v.startswith("http"):
+				if v.endswith("png") or v.endswith("jpg") or v.endswith("gif") or v.endswith("jpeg"):
 					img=v
 				else:
 					general_msg = general_msg+f"**__{k}__** : {v}\n"
 			for l, m in physique_info.items():
-				if m.startswith("http"):
+				if m.endswith("png") or m.endswith("jpg") or m.endswith("gif") or m.endswith("jpeg"):
 					img=m
 				else:
 					physique_msg=physique_msg+f"**__{l}__** : {m}\n"
@@ -163,6 +163,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
 							return "delete"
 						else:
+							rep.content=reponse 
+							reponse=reponse.replace("'", "\\'")
 							perso.update({t: rep.content})
 					except asyncio.TimeoutError:
 						await member.send(f"Timeout ! Enregistrement des modifications. Vous pourrez la reprendre plus tard avec la commande `{ctx.prefix}fiche`")
