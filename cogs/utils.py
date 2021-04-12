@@ -23,19 +23,20 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 
 	@commands.Cog.listener()
 	async def on_message(self, message):
-		channel = message.channel
-		db = sqlite3.connect("owlly.db", timeout=3000)
-		c = db.cursor()
-		prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-		c.execute(prefix, (int(message.guild.id), ))
-		prefix = c.fetchone()
-		if prefix is not None:
-			prefix = prefix[0]
-		if self.bot.user.mentioned_in(message) and 'prefix' in message.content:
-			await channel.send(f'Mon prefix est `{prefix}`')
-		else:
-			if message.type == discord.MessageType.pins_add:
-				await message.delete()
+		if not isinstance(message.channel, discord.DMChannel):
+			channel = message.channel
+			db = sqlite3.connect("owlly.db", timeout=3000)
+			c = db.cursor()
+			prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
+			c.execute(prefix, (int(message.guild.id), ))
+			prefix = c.fetchone()
+			if prefix is not None:
+				prefix = prefix[0]
+			if self.bot.user.mentioned_in(message) and 'prefix' in message.content:
+				await channel.send(f'Mon prefix est `{prefix}`')
+			else:
+				if message.type == discord.MessageType.pins_add:
+					await message.delete()
 
 	@commands.Cog.listener()
 	async def on_guild_join(self, guild):

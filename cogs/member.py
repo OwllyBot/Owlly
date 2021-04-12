@@ -163,7 +163,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
 							return "delete"
 						else:
-							rep.content=reponse 
+							reponse= rep.content 
 							reponse=reponse.replace("'", "\\'")
 							perso.update({t: rep.content})
 					except asyncio.TimeoutError:
