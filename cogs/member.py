@@ -46,7 +46,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		img="Error"
 		if (len(data) > 0):
 			data = "".join(data)
-			perso=ast.literal_eval(data)
+			perso = ast.literal_eval(data)
 			db = sqlite3.connect("owlly.db", timeout=3000)
 			c = db.cursor()
 			sql="SELECT champ_physique, champ_general FROM SERVEUR WHERE idS=?"
@@ -54,35 +54,35 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			champ=c.fetchone()
 			general=champ[1].split(",")
 			physique=champ[0].split(",")
+			print(general, physique)
 			general_info={}
 			physique_info={}
 			for k, v in perso.items():
 				for gen in general:
 					for phys in physique:
-						if k == gen:
-							general_info.update({k:v})
-						elif k == phys:
+						gen=gen.replace("\\", "")
+						phys=phys.replace("\\","")
+						k=k.replace("\\","")
+						if k.lower() == gen.lower():
+							if "NA" not in v or "/" not in v:
+								general_info.update({k:v})
+						elif k.lower() == phys.lower():
 							physique_info.update({k:v})
 			general_msg = "─────༺ Présentation ༻─────\n"
 			physique_msg = "──────༺Physique༻──────\n "
 			img=""
 			for k, v in general_info.items():
-				if re.search('http(s?):\/\/media\.discordapp\.net\/attachments\.(png|jpeg|gif|jpg)', v) is not None:
-					imgur = im.upload_image(url=v)
-					img = imgur.link
-				elif re.search('http(s?):\/\/(.*)\.(png|jpeg|gif|jpg)', v) is not None:
+				if v.endswith(('.png','.jpg','.jpeg','.gif')):
 					img = v
 				else:
-					general_msg = general_msg+f"**__{k}__** : {v}\n"
+					general_msg = general_msg+f"**__{k.capitalize()}__** : {v}\n"
 			for l, m in physique_info.items():
-				if re.search('http(s?):\/\/media\.discordapp\.net\/attachments\.(png|jpeg|gif|jpg)', m) is not None:
-					imgur=im.upload_image(url=m)
-					img=imgur.link
-				elif re.search('http(s?):\/\/(.*)\.(png|jpeg|gif|jpg)', m) is not None:
+				if m.endswith(('.png','.jpg','.jpeg','.gif')):
 					img=m
 				else:
-					physique_msg=physique_msg+f"**__{l}__** : {m}\n"
+					physique_msg=physique_msg+f"**__{l.capitalize()}__** : {m}\n"
 			msg = general_msg+"\n"+physique_msg+"\n"+f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Auteur* : {member.mention}"
+			print(msg, img)
 		return msg, img
 
 	async def validation(self, ctx, msg, img, chartype, member: discord.Member):
@@ -138,7 +138,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		template={i:str(Personnage(i)) for i in champ}
 		last=list(template)[-1]
 		def checkRep(message):
-			return message.author == member and isinstance(message.channel, discord.DMChannel)
+			return message.author == ctx.author and isinstance(message.channel, discord.DMChannel)
+		
 		emoji = ["✅", "❌"]
 		def checkValid(reaction, user):
 			return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
@@ -147,6 +148,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		else:
 			f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 			data = f.readlines()
+			print(type(data))
 			f.close()
 			if (len(data) > 0):
 				data = "".join(data)
@@ -154,12 +156,14 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			else:
 				perso = {}
 		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
-		if last not in perso.keys():
+		while last.lower() not in perso.keys():
 			for t in template.keys():
-				if t not in perso.keys():
-					champ = t.capitalize()
-					await member.send(f"{champ} ?\n Si votre perso n'en a pas, merci de mettre `/` ou `NA`.")
-					champ = champ.replace("\'", "\\'")
+				t=t.replace("\\","")
+				if t.lower() not in perso.keys():
+					c = t.capitalize()
+					await member.send(f"{c} ?\n Si votre perso n'en a pas, merci de mettre `/` ou `NA`.")
+					c = c.replace("\'", "\\'")
+					c=c.replace("\\", "")
 					rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 					try:
 						if rep.content.lower() == "stop":
@@ -175,20 +179,21 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						else:
 							reponse= rep.content 
 							reponse=reponse.replace("\'", "\\'")
-							if ctx.message.attachments:
-								reponse=ctx.message.attachments[0]
-								reponse=reponse.url
-							perso.update({champ.lower(): reponse})
+							if rep.attachments:
+								reponse=rep.attachments[0]
+								imgur = im.upload_image(url=reponse.url)
+								reponse = imgur.link
+								print(reponse)
+							perso.update({c.lower(): reponse})
+							print(c.lower())
+							print(last)
 					except asyncio.TimeoutError:
 						await member.send(f"Timeout ! Enregistrement des modifications. Vous pourrez la reprendre plus tard avec la commande `{ctx.prefix}fiche`")
 						f.write(str(perso))
 						f.close()
 						return "NOTdone"
-			f.write(str(perso))
-			f.close()
-		else:
-			f.write(str(perso))
-			f.close()
+		f.write(str(perso))
+		f.close()
 		msg, img = await self.forme(ctx, member, chartype, idS)
 		if img != "Error" or img !="":
 			msg = msg+"\n\n"+img
@@ -455,7 +460,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					await ctx.send("Regardez vos DM 📨 !")
 					step = await self.start_presentation(ctx, member, chartype)
 					if step == "done":
-						msg, img = self.forme(ctx, member, chartype, idS)
+						msg, img = await self.forme(ctx, member, chartype, idS)
 						await self.validation(ctx, msg, img, chartype, member)
 				elif reaction.emoji == "4️⃣":
 					msg, img = await self.forme(ctx, member, chartype, idS)
