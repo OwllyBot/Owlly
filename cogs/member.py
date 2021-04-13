@@ -12,8 +12,11 @@ import ast
 import asyncio
 import unidecode
 import re
+import pyimgur
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
+CLIENT_ID = os.environ.get("CLIENT_ID")
+im=pyimgur.Imgur(CLIENT_ID)
 
 class Personnage(object):
 	def __init__(self, champ):
@@ -64,16 +67,22 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			physique_msg = "──────༺Physique༻──────\n "
 			img=""
 			for k, v in general_info.items():
-				if v.endswith("png") or v.endswith("jpg") or v.endswith("gif") or v.endswith("jpeg"):
-					img=v
+				if re.search('http(s?):\/\/media\.discordapp\.net\/attachments\.(png|jpeg|gif|jpg)', v) is not None:
+					imgur = im.upload_image(url=v)
+					img = imgur.link
+				elif re.search('http(s?):\/\/(.*)\.(png|jpeg|gif|jpg)', v) is not None:
+					img = v
 				else:
 					general_msg = general_msg+f"**__{k}__** : {v}\n"
 			for l, m in physique_info.items():
-				if m.endswith("png") or m.endswith("jpg") or m.endswith("gif") or m.endswith("jpeg"):
+				if re.search('http(s?):\/\/media\.discordapp\.net\/attachments\.(png|jpeg|gif|jpg)', m) is not None:
+					imgur=im.upload_image(url=m)
+					img=imgur.link
+				elif re.search('http(s?):\/\/(.*)\.(png|jpeg|gif|jpg)', m) is not None:
 					img=m
 				else:
 					physique_msg=physique_msg+f"**__{l}__** : {m}\n"
-			msg = general_msg+"\n\n"+physique_msg+"\n\n"+f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Auteur* : {member.mention}"
+			msg = general_msg+"\n"+physique_msg+"\n"+f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Auteur* : {member.mention}"
 		return msg, img
 
 	async def validation(self, ctx, msg, img, chartype, member: discord.Member):
@@ -166,7 +175,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						else:
 							reponse= rep.content 
 							reponse=reponse.replace("\'", "\\'")
-							perso.update({champ.lower(): rep.content})
+							if ctx.message.attachments:
+								reponse=ctx.message.attachments[0]
+								reponse=reponse.url
+							perso.update({champ.lower(): reponse})
 					except asyncio.TimeoutError:
 						await member.send(f"Timeout ! Enregistrement des modifications. Vous pourrez la reprendre plus tard avec la commande `{ctx.prefix}fiche`")
 						f.write(str(perso))
