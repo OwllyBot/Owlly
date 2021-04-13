@@ -221,7 +221,15 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				return
 		elif reaction.emoji =="2️⃣":
 			await q.delete()
-			q=await ctx.send("Quel champ voulez-vous supprimer ?")
+			sql="SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+			var=(sql,(cl,))
+			champs = c.fetchone()
+			gen_msg="".join(champs[0]).split(",")
+			gen_msg=", ".join(gen_msg)
+			phys_msg="".join(champs[1]).split(",")
+			phys_msg=", ".join(phys_msg)
+			msg_full=f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
+			q=await ctx.send(f"{msg_full} Quel champ voulez-vous supprimer ?")
 			rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
 			if rep.content.lower() == "stop":
 				await q.delete()
@@ -230,9 +238,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				return
 			else:
 				champ=unidecode.unidecode(rep.content.lower())
-			sql="SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
-			c.execute(sql, (cl,))
-			champs=c.fetchone()
+			
 			if champs[0] is not None:
 				champ_general=champs[0].split(",")
 				champ_physique=champs[1].split(",")
@@ -260,7 +266,15 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			await ctx.send(f"Le Champ : {champ} a bien été supprimé !")
 		elif reaction.emoji == "3️⃣": 
 			await q.delete()
-			q = await ctx.send("Quel champ voulez-vous éditer ?")
+			sql = "SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+			var = (sql, (cl,))
+			champs = c.fetchone()
+			gen_msg = "".join(champs[0]).split(",")
+			gen_msg = ", ".join(gen_msg)
+			phys_msg = "".join(champs[1]).split(",")
+			phys_msg = ", ".join(phys_msg)
+			msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
+			q = await ctx.send("{msg_full} Quel champ voulez-vous éditer ?")
 			rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 			if rep.content.lower() == "stop":
 				await q.delete()
@@ -269,9 +283,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				return
 			else:
 				champ = unidecode.unidecode(rep.content.lower())
-			sql = "SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
-			c.execute(sql, (cl,))
-			champs = c.fetchone()
+			
 			if champs[0] is not None:
 				champ_general = champs[0].split(",")
 				champ_physique = champs[1].split(",")
