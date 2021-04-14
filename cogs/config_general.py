@@ -161,7 +161,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			channels=c.fetchone()
 			if channels[0] is None:
 				await self.chan_fiche(ctx)
-			q=await ctx.send("Merci de rentrer les champs que vous souhaitez pour la partie présentation **générale**.\n `cancel` pour annuler et `stop` pour valider.")
+			q=await ctx.send("Merci de rentrer les champs que vous souhaitez pour la partie présentation **générale**.\n `cancel` pour annuler et `stop` pour valider.\n Utiliser le symbole `*` pour marquer l'obligation du champ.")
 			general=[]
 			while True:
 				general_rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -182,7 +182,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				await general_rep.delete(delay=10)
 			general=",".join(general)
 			await q.delete()
-			q=await ctx.send("Maintenant, rentrer les champs pour la description physique.\n `stop` pour valider, `cancel` pour annuler.")
+			q=await ctx.send("Maintenant, rentrer les champs pour la description physique.\n `stop` pour valider, `cancel` pour annuler.\n Utiliser `*` pour marquer les champs obligatoires.")
 			physique=[]
 			while True:
 				physique_rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -222,7 +222,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		elif reaction.emoji =="2️⃣":
 			await q.delete()
 			sql="SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
-			var=(sql,(cl,))
+			c.execute(sql,(cl,))
 			champs = c.fetchone()
 			gen_msg="".join(champs[0]).split(",")
 			gen_msg=", ".join(gen_msg)
@@ -267,14 +267,14 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		elif reaction.emoji == "3️⃣": 
 			await q.delete()
 			sql = "SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
-			var = (sql, (cl,))
+			c.execute(sql, (cl,))
 			champs = c.fetchone()
 			gen_msg = "".join(champs[0]).split(",")
 			gen_msg = ", ".join(gen_msg)
 			phys_msg = "".join(champs[1]).split(",")
 			phys_msg = ", ".join(phys_msg)
 			msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
-			q = await ctx.send("{msg_full} Quel champ voulez-vous éditer ?")
+			q = await ctx.send(f"{msg_full} Quel champ voulez-vous éditer ?")
 			rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 			if rep.content.lower() == "stop":
 				await q.delete()
@@ -323,7 +323,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			db.close()
 			await q.delete()
 			await rep.delete()
-			await ctx.send("Le champ : {champ} a bien été édité par {save}.")
+			await ctx.send(f"Le champ : {champ} a bien été édité par {save}.")
 			return
 		elif reaction.emoji == "4️⃣":
 			await q.delete()
@@ -341,7 +341,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					return
 				champ_general=champ_general.split(",")
 				await q.delete()
-				q=await ctx.send("Quel est le champ à ajouter ?")
+				q=await ctx.send("Quel est le champ à ajouter ?\n Utiliser `*` pour marquer l'obligation.")
 				rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
 				if rep.content.lower() == "stop":
 					await q.delete()

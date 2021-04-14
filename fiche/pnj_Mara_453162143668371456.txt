@@ -1,1 +1,1 @@
-{'nom': 'Blakes', 'prénoms': 'Kara', 'surnoms': 'Grimalkin', 'anniversaire': '28/03/97', 'age': '24', 'genre': 'F', 'orientation': 'Bi', 'race': 'H', 'métier': 'Prof', 'lien vers la fiche': 'zaeze', 'yeux': 'bleu', 'cheveux': 'roux', 'taille': '1m55', 'poids': '48kg', 'peau': 'blanche', 'traits notables': 'NA', 'cicatrice': 'NA', 'style vestimentaire': 'Colorés jupe', "faceclaim : (lien vers l'image)": 'https://i.imgur.com/vygEvUD.png'}
+{'nom *': 'Kara'}
