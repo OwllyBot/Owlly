@@ -64,10 +64,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						phys=phys.replace("\\","")
 						k=k.replace("\\","")
 						if k.lower() == gen.lower():
-							if "NA" not in v or "/" not in v:
+							if v != "NA" or v != "/":
 								general_info.update({k:v})
 						elif k.lower() == phys.lower():
-							if "NA" not in v or "/" not in v:
+							if "NA" != v or "/" != v:
 								physique_info.update({k: v})
 			general_msg = "─────༺ Présentation ༻─────\n"
 			physique_msg = "──────༺Physique༻──────\n "
@@ -100,7 +100,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
 			if (channel[0] is not None) and (channel[1] is not None) and (channel[0] != 0) and (channel[1] != 0):
 				chan = await self.search_chan(ctx, channel[2])
-				q = await chan.send(f"Il y a une présentation à valider ! Son contenu est :\n {msg}\n\n Validez-vous la fiche ? ")
+				q = await chan.send(f"Il y a une présentation à valider ! Son contenu est :\n {msg}\n {img} \n Validez-vous la fiche ? ")
 				await q.add_reaction("✅")
 				await q.add_reaction("❌")
 				reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
@@ -120,6 +120,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					else:
 						await chan_send.send(msg)
 					os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
+					try:
+						os.remove(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt")
+					except OSError:
+						pass
 				else:
 					await member.send("Il y a un soucis avec votre fiche ! Rapprochez-vous des modérateurs pour voir le soucis.")
 			else:
@@ -145,8 +149,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			return message.author == ctx.author and isinstance(message.channel, discord.DMChannel)
 		
 		emoji = ["✅", "❌"]
-		def checkValid(reaction, user):
-			return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
+		def checkValid(reaction, user):			
+			return user.bot != True and isinstance(reaction.message.channel, discord.DMChannel) and q.id == reaction.message.id and str(reaction.emoji) in emoji
 		if not os.path.isfile(f'fiche/{chartype}_{member.name}_{idS}.txt'):
 			perso = {}
 		else:
@@ -157,8 +161,22 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			if (len(data) > 0):
 				data = "".join(data)
 				perso = ast.literal_eval(data)
+				save=open(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt","w", encoding="utf-8")
+				save.write(str(perso))
+				save.close()
 			else:
-				perso = {}
+				try : 
+					os.path.isfile(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt")
+					save = open(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
+					save_data=save.readlines()
+					save.close()
+					if (len(save_data)>0):
+						save_data="".join(save_data)
+						perso=ast.literal_eval(save_data)
+					else:
+						perso={}
+				except OSError:
+					perso={}
 		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
 		while last.lower() not in perso.keys():
 			for t in template.keys():
@@ -183,11 +201,15 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							await member.send("Annulation de la présentation.")
 							f.close()
 							os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
+							try:
+								os.remove(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt")
+							except OSError:
+								pass
 							return "delete"
 						else:
 							reponse= rep.content 
 							reponse=reponse.replace("\'", "\\'")
-							if rep.attachments:
+							if rep.attachments or "cdn.discordapp.com" in reponse :
 								reponse=rep.attachments[0]
 								imgur = im.upload_image(url=reponse.url)
 								reponse = imgur.link
@@ -228,9 +250,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		normal_name = unicodedata.normalize('NFKD', name)
 		await Member.edit(nick=normal_name)
   
-	@commands.command(usage="@mention (pnj?) *role", brief="Donne divers rôles.", help="Permet de donner des rôles à un membre, ainsi que les rôles qui ont été inscrits dans la base. Si les rôles n'existent pas, le bot les crée avant.")
+	@commands.command(usage="@mention *role", brief="Donne divers rôles.", help="Permet de donner des rôles à un membre, ainsi que les rôles qui ont été inscrits dans la base. Si les rôles n'existent pas, le bot les crée avant.")
 	@commands.has_permissions(administrator=True)
-	async def member(self, ctx, user: discord.Member, chartype="pj", *role: str):
+	async def member(self, ctx, user: discord.Member, *role: str):
+		chartype="pj"
 		addRole = []
 		infoNew = []
 		db = sqlite3.connect("owlly.db", timeout=3000)
@@ -275,20 +298,32 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			roleInfo = roleInfo + " " + infoNew
 		await ctx.send(f"{user.Mention} est devenu un membre du serveur ! Il·Elle a donc reçu les rôles : {roleInfo}. ", delete_after=60)
 		await ctx.message.delete()
+		await ctx.send(f"Début de la création de la fiche ! \n {user.mention} regardez vos DM !")
 		pres = await self.start_presentation(ctx, user, chartype)
 		if pres == "done":
 			fiche, img = await self.forme(user, chartype, idS=ctx.guild.id)
 			await self.validation(ctx, fiche, img, chartype, user)
 
-	@commands.command(usage="@mention (pnj?)", brief="Lance la création d'une fiche", help="Permet à un joueur ayant sa fiche valider de faire sa présentation.", aliases=["add_pres"])
+	@commands.command(usage="@mention (pnj?)", brief="Lance la création d'une fiche", help="Permet à un joueur ayant sa fiche valider de faire sa présentation.", aliases=["add_pres","validation"])
 	@commands.has_permissions(administrator=True)
 	async def add_presentation(self, ctx, member: discord.Member, chartype="pj"):
 		pres=await self.start_presentation(ctx, member, chartype)
+		await ctx.message.delete()
+		await ctx.send(f"{member.mention} check tes DM ! 📧")
 		if pres == "done":
 			fiche, img=await self.forme(ctx, member, chartype, idS=ctx.guild.id)
 			await self.validation(ctx, fiche, img, chartype, member)
 
-	@commands.command(usage="@mention (pnj?) -(delete|edit champs)", brief="Permet d'éditer une présentation non validé ou en cours.", help="Permet à un administrateur de modifier ou supprimer une fiche en cours de validation, ou en cours d'écriture.")
+	@commands.command(usage="@mention", brief="Lance la création d'une fiche PNJ", help="Permet à un joueur ayant sa fiche PNJ validée de faire sa présentation.", aliases=["add_pres", "validation"])
+	@commands.has_permissions(administrator=True)
+	async def pnj(self, ctx, member: discord.Member):
+		chartype="pnj"
+		pres = await self.start_presentation(ctx, member, chartype)
+		if pres == "done":
+			fiche, img = await self.forme(ctx, member, chartype, idS=ctx.guild.id)
+			await self.validation(ctx, fiche, img, chartype, member)
+
+	@commands.command(usage="@mention", brief="Permet d'éditer une présentation non validé ou en cours.", help="Permet à un administrateur de modifier ou supprimer une fiche en cours de validation, ou en cours d'écriture.")
 	@commands.has_permissions(administrator=True)
 	async def admin_edit(self, ctx, member:discord.Member):
 		idS=ctx.guild.id
@@ -332,7 +367,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					data = "".join(data)
 					perso = ast.literal_eval(data)
 					msg, img=await self.forme(ctx, member, chartype, idS)
-					q = await ctx.send(f"Actuellement, la fiche ressemble à ça : {msg} \n Quel champ voulez-vous éditer ?")
+					q = await ctx.send(f"Actuellement, la fiche ressemble à ça : {msg} \n {img} \n Quel champ voulez-vous éditer ?")
 					rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 					if rep.content.lower() == "stop":
 						await q.delete()
@@ -364,7 +399,11 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						return
 			elif reaction.emoji == "2️⃣":
 				await q.delete()
-				os.remove("fiche/{chartype}_{member.name}_{idS}.txt")
+				os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
+				try:
+					os.remove(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt")
+				except OSError:
+					pass
 				await ctx.send(f"La présentation de {member.name} a été supprimé.")
 			elif reaction.emoji == "3️⃣":
 				msg, img=await self.forme(ctx, member, chartype, idS)
@@ -467,6 +506,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					f.close()
 				elif reaction.emoji == "2️⃣":
 					os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
+					try:
+						os.remove(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt")
+					except OSError:
+						pass
 					await ctx.send("Votre présentation a été supprimé.")
 				elif reaction.emoji == "3️⃣":
 					await ctx.send("Regardez vos DM 📨 !")
