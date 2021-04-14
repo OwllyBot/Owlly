@@ -143,7 +143,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			return message.author == member and isinstance(message.channel, discord.DMChannel)
 		emoji = ["✅", "❌"]
 		def checkValid(reaction, user):
-			return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
+			return user.id == member.id and isinstance(reaction.message.channel, discord.DMChannel) and q.id == reaction.message.id and str(reaction.emoji) in emoji
 		if not os.path.isfile(f'fiche/{chartype}_{member.name}_{idS}.txt'):
 			perso = {}
 		else:
