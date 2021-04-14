@@ -113,9 +113,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					else:
 						chan_send = await self.search_chan(ctx, channel[0])
 					if img!="Error" or img != "":
-						embed=discord.Embed()
+						embed=discord.Embed(color=0x36393f)
 						embed.set_image(url=img)
-						await chan_send.send(content=msg, embed=embed)
+						await chan_send.send(embed=embed)
+						await chan_send.send(msg)
 					else:
 						await chan_send.send(msg)
 					os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
