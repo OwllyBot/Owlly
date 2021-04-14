@@ -273,7 +273,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		if (len(infoNew)) > 0:
 			infoNew = "\n ◽".join(infoNew)
 			roleInfo = roleInfo + " " + infoNew
-		await ctx.send(f"{user.Mention} est devenu un membre du serveur ! Il·Elle a donc reçu les rôles : {roleInfo}. ", delete_after=60)
+		await ctx.send(f"{user.mention} est devenu un membre du serveur ! Il·Elle a donc reçu les rôles : {roleInfo}. ", delete_after=60)
 		await ctx.message.delete()
 		pres = await self.start_presentation(ctx, user, chartype)
 		if pres == "done":
