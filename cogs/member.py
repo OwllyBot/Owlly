@@ -54,7 +54,6 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			champ=c.fetchone()
 			general=champ[1].split(",")
 			physique=champ[0].split(",")
-			print(general, physique)
 			general_info={}
 			physique_info={}
 			for k, v in perso.items():
@@ -85,7 +84,6 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					l = l.replace("*", "")
 					physique_msg=physique_msg+f"**__{l.capitalize()}__** : {m}\n"
 			msg = general_msg+"\n"+physique_msg+"\n"+f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Auteur* : {member.mention}"
-			print(msg, img)
 		return msg, img
 
 	async def validation(self, ctx, msg, img, chartype, member: discord.Member):
@@ -142,8 +140,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		template={i:str(Personnage(i)) for i in champ}
 		last=list(template)[-1]
 		def checkRep(message):
-			return message.author == ctx.author and isinstance(message.channel, discord.DMChannel)
-		
+			return message.author == member and isinstance(message.channel, discord.DMChannel)
 		emoji = ["✅", "❌"]
 		def checkValid(reaction, user):
 			return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
@@ -152,7 +149,6 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		else:
 			f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 			data = f.readlines()
-			print(type(data))
 			f.close()
 			if (len(data) > 0):
 				data = "".join(data)
@@ -197,8 +193,6 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 									repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
 									reponse=repError.content
 							perso.update({c.lower(): reponse})
-							print(c.lower())
-							print(last)
 					except asyncio.TimeoutError:
 						await member.send(f"Timeout ! Enregistrement des modifications. Vous pourrez la reprendre plus tard avec la commande `{ctx.prefix}fiche`")
 						f.write(str(perso))
@@ -433,7 +427,6 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						await member.send(f"Actuellement, votre fiche ressemble à ceci :\n {msg}")
 						q=await member.send("Quel est le champ que vous voulez modifier ?")
 						rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
-						print(rep.content)
 						if rep.content.lower() == "stop":
 							await q.delete()
 							await rep.delete()
