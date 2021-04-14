@@ -67,7 +67,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							if "NA" not in v or "/" not in v:
 								general_info.update({k:v})
 						elif k.lower() == phys.lower():
-							physique_info.update({k:v})
+							if "NA" not in v or "/" not in v:
+								physique_info.update({k: v})
 			general_msg = "─────༺ Présentation ༻─────\n"
 			physique_msg = "──────༺Physique༻──────\n "
 			img=""
@@ -75,11 +76,13 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				if v.endswith(('.png','.jpg','.jpeg','.gif')):
 					img = v
 				else:
+					k = k.replace("*", "")
 					general_msg = general_msg+f"**__{k.capitalize()}__** : {v}\n"
 			for l, m in physique_info.items():
 				if m.endswith(('.png','.jpg','.jpeg','.gif')):
 					img=m
 				else:
+					l = l.replace("*", "")
 					physique_msg=physique_msg+f"**__{l.capitalize()}__** : {m}\n"
 			msg = general_msg+"\n"+physique_msg+"\n"+f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Auteur* : {member.mention}"
 			print(msg, img)
@@ -161,7 +164,11 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				t=t.replace("\\","")
 				if t.lower() not in perso.keys():
 					c = t.capitalize()
-					await member.send(f"{c} ?\n Si votre perso n'en a pas, merci de mettre `/` ou `NA`.")
+					if "*" in c :
+						msg = f"{c} ?\n Ce champ est obligatoire."
+					else:
+						msg=f"{c} ?\n Si votre perso n'en a pas, merci de mettre `/` ou `NA`."
+					await member.send(msg)
 					c = c.replace("\'", "\\'")
 					c=c.replace("\\", "")
 					rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -183,7 +190,11 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 								reponse=rep.attachments[0]
 								imgur = im.upload_image(url=reponse.url)
 								reponse = imgur.link
-								print(reponse)
+							elif "*" in c :
+								while ("NA" in reponse or "/" in reponse):
+									await member.send(f"Erreur ! Ce champ est obligatoire \n {c} ?")
+									repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
+									reponse=repError.content
 							perso.update({c.lower(): reponse})
 							print(c.lower())
 							print(last)

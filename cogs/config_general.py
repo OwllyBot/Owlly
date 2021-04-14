@@ -161,7 +161,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			channels=c.fetchone()
 			if channels[0] is None:
 				await self.chan_fiche(ctx)
-			q=await ctx.send("Merci de rentrer les champs que vous souhaitez pour la partie présentation **générale**.\n `cancel` pour annuler et `stop` pour valider.")
+			q=await ctx.send("Merci de rentrer les champs que vous souhaitez pour la partie présentation **générale**.\n `cancel` pour annuler et `stop` pour valider.\n Utiliser le symbole `*` pour marquer l'obligation du champ.")
 			general=[]
 			while True:
 				general_rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -182,7 +182,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				await general_rep.delete(delay=10)
 			general=",".join(general)
 			await q.delete()
-			q=await ctx.send("Maintenant, rentrer les champs pour la description physique.\n `stop` pour valider, `cancel` pour annuler.")
+			q=await ctx.send("Maintenant, rentrer les champs pour la description physique.\n `stop` pour valider, `cancel` pour annuler.\n Utiliser `*` pour marquer les champs obligatoires.")
 			physique=[]
 			while True:
 				physique_rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -341,7 +341,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					return
 				champ_general=champ_general.split(",")
 				await q.delete()
-				q=await ctx.send("Quel est le champ à ajouter ?")
+				q=await ctx.send("Quel est le champ à ajouter ?\n Utiliser `*` pour marquer l'obligation.")
 				rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
 				if rep.content.lower() == "stop":
 					await q.delete()
