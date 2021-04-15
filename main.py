@@ -64,6 +64,7 @@ async def on_raw_reaction_add(payload):
 	channel = bot.get_channel(payload.channel_id)
 	msg = await channel.fetch_message(mid)
 	user = bot.get_user(payload.user_id)
+	print(user.id)
 	guild = discord.utils.find(lambda g: g.id == idS, bot.guilds)
 
 	def checkRep(message):
@@ -167,9 +168,9 @@ async def on_raw_reaction_add(payload):
 		overwrite=discord.PermissionOverwrite()
 		overwrite.manage_channels=True
 		overwrite.manage_messages=True
-		await new_chan.set_permission(user, overwrite=overwrite)
+		await new_chan.set_permissions(user, overwrite=overwrite)
 		sql = "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
-		var = (new_chan.id, payload.user_id, idS, payload.message_id)
+		var = (new_chan.id, user.id, idS, payload.message_id)
 		c.execute(sql, var)
 		db.commit()
 		c.close()
