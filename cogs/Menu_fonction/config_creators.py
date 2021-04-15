@@ -174,7 +174,7 @@ async def create_ticket(self,ctx, bot):
 			img_content = checkImg(ctx, img_content)
 			if img_content.lower() == "error":
 				await ctx.send("Erreur ! Votre lien n'est pas une image valide.", delete_after=60)
-			   	await q.delete()
+				await q.delete()
 				await rep.delete()
 				return
 			else:
