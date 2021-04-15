@@ -48,7 +48,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		await ctx.message.delete()
 
 	@commands.has_permissions(administrator=True)
-	@commands.command(name="Roliste", help="Assignation des rôles assignés par défaut par la commande `member`.", brief="Enregistrement de rôles pour la commande member.", usage="@mention/ID des rôles à enregistrer", aliases=['role_config', 'roliste_config', 'assign'])
+	@commands.command(help="Assignation des rôles assignés par défaut par la commande `member`.", brief="Enregistrement de rôles pour la commande member.", usage="@mention/ID des rôles à enregistrer", aliases=['role_config', 'roliste_config', 'assign'])
 	async def roliste(self, ctx, *role: discord.Role):
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
