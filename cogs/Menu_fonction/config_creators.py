@@ -182,7 +182,7 @@ async def create_ticket(self,ctx, bot):
 	else:
 		await q.clear_reactions()
 		img_content = "none"
-	await q.edit(content="Voulez-vous donner la possibilité de nommer librement les channels ?")
+	await q.edit(content="**Voulez-vous donner la possibilité de nommer librement les channels ?**")
 	await q.add_reaction("✅")
 	await q.add_reaction("❌")
 	reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
@@ -382,7 +382,7 @@ async def create_category(self,ctx, bot):
 	msg = "\n".join(namelist)
 	await q.delete()
 	parameters_save = f"Votre channel sera donc créé dans une des catégories suivantes:\n{msg}\n\nLe choix final de la catégories se fait lors des réactions."
-	q = await ctx.send(f"{parameters_save}\nVoulez-vous pouvoir nommer librement les channels créées ?")
+	q = await ctx.send(f"{parameters_save}\n\n**Voulez-vous pouvoir nommer librement les channels créées ?**")
 	await q.add_reaction("✅")
 	await q.add_reaction("❌")
 	reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
