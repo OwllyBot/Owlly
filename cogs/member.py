@@ -298,9 +298,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			fiche, img = await self.forme(user, chartype, idS=ctx.guild.id)
 			await self.validation(ctx, fiche, img, chartype, user)
 
-	@commands.command(usage="@mention (pnj?)", brief="Lance la création d'une fiche", help="Permet à un joueur ayant sa fiche valider de faire sa présentation.", aliases=["add_pres","validation"])
+	@commands.command(usage="@mention", brief="Lance la création d'une fiche", help="Permet à un joueur ayant sa fiche valider de faire sa présentation.", aliases=["add_pj","validation", "add_pres", "pj"])
 	@commands.has_permissions(administrator=True)
-	async def add_presentation(self, ctx, member: discord.Member, chartype="pj"):
+	async def add_presentation(self, ctx, member: discord.Member):
+		chartype="pj"
 		pres=await self.start_presentation(ctx, member, chartype)
 		await ctx.message.delete()
 		await ctx.send(f"{member.mention} check tes DM ! 📧")
@@ -308,7 +309,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			fiche, img=await self.forme(ctx, member, chartype, idS=ctx.guild.id)
 			await self.validation(ctx, fiche, img, chartype, member)
 
-	@commands.command(usage="@mention", brief="Lance la création d'une fiche PNJ", help="Permet à un joueur ayant sa fiche PNJ validée de faire sa présentation.", aliases=["add_pres", "validation"])
+	@commands.command(usage="@mention", brief="Lance la création d'une fiche PNJ", help="Permet à un joueur ayant sa fiche PNJ validée de faire sa présentation.", aliases=["add_pnj", "validation_pnj"])
 	@commands.has_permissions(administrator=True)
 	async def pnj(self, ctx, member: discord.Member):
 		chartype="pnj"
