@@ -119,15 +119,15 @@ async def on_raw_reaction_add(payload):
 		elif para_name == "2":
 			perso = payload.member.nick
 			if nb.isnumeric():
-				chan_name = f"{nb}{perso}"
+				chan_name = f"{nb} {perso}"
 			else:
 				chan_name = f"{perso}"
 		else:
 			perso = payload.member.nick
 			if nb.ismeric():
-				chan_name = f"{nb}{para_name}{perso}"
+				chan_name = f"{nb} {para_name} {perso}"
 			else:
-				chan_name = f"{para_name}{perso}"
+				chan_name = f"{para_name} {perso}"
 		if nb.isnumeric():
 			sql = "UPDATE TICKET SET num = ? WHERE idM = ?"
 			var = (nb, mid)
@@ -154,7 +154,6 @@ async def on_raw_reaction_add(payload):
 				return
 			else:
 				chan_name = f"{chan_name}"
-				chan_name = chan_name.replace(" ", "")
 				await chan_rep.delete()
 		else:
 			chan_name = f"{payload.member.nick}"

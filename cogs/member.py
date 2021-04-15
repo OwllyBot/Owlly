@@ -54,7 +54,6 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			champ=c.fetchone()
 			general=champ[1].split(",")
 			physique=champ[0].split(",")
-			print(general, physique)
 			general_info={}
 			physique_info={}
 			for k, v in perso.items():
@@ -85,7 +84,6 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					l = l.replace("*", "")
 					physique_msg=physique_msg+f"**__{l.capitalize()}__** : {m}\n"
 			msg = general_msg+"\n"+physique_msg+"\n"+f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Auteur* : {member.mention}"
-			print(msg, img)
 		return msg, img
 
 	async def validation(self, ctx, msg, img, chartype, member: discord.Member):
@@ -146,8 +144,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		template={i:str(Personnage(i)) for i in champ}
 		last=list(template)[-1]
 		def checkRep(message):
-			return message.author == ctx.author and isinstance(message.channel, discord.DMChannel)
-		
+			return message.author == member and isinstance(message.channel, discord.DMChannel)
 		emoji = ["✅", "❌"]
 		def checkValid(reaction, user):			
 			return user.bot != True and isinstance(reaction.message.channel, discord.DMChannel) and q.id == reaction.message.id and str(reaction.emoji) in emoji
@@ -156,7 +153,6 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		else:
 			f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 			data = f.readlines()
-			print(type(data))
 			f.close()
 			if (len(data) > 0):
 				data = "".join(data)
@@ -219,8 +215,6 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 									repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
 									reponse=repError.content
 							perso.update({c.lower(): reponse})
-							print(c.lower())
-							print(last)
 					except asyncio.TimeoutError:
 						await member.send(f"Timeout ! Enregistrement des modifications. Vous pourrez la reprendre plus tard avec la commande `{ctx.prefix}fiche`")
 						f.write(str(perso))
@@ -296,7 +290,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		if (len(infoNew)) > 0:
 			infoNew = "\n ◽".join(infoNew)
 			roleInfo = roleInfo + " " + infoNew
-		await ctx.send(f"{user.Mention} est devenu un membre du serveur ! Il·Elle a donc reçu les rôles : {roleInfo}. ", delete_after=60)
+		await ctx.send(f"{user.mention} est devenu un membre du serveur ! Il·Elle a donc reçu les rôles : {roleInfo}. ", delete_after=60)
 		await ctx.message.delete()
 		await ctx.send(f"Début de la création de la fiche ! \n {user.mention} regardez vos DM !")
 		pres = await self.start_presentation(ctx, user, chartype)
@@ -304,9 +298,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			fiche, img = await self.forme(user, chartype, idS=ctx.guild.id)
 			await self.validation(ctx, fiche, img, chartype, user)
 
-	@commands.command(usage="@mention (pnj?)", brief="Lance la création d'une fiche", help="Permet à un joueur ayant sa fiche valider de faire sa présentation.", aliases=["add_pres","validation"])
+	@commands.command(usage="@mention", brief="Lance la création d'une fiche", help="Permet à un joueur ayant sa fiche valider de faire sa présentation.", aliases=["add_pj","validation", "add_pres", "pj"])
 	@commands.has_permissions(administrator=True)
-	async def add_presentation(self, ctx, member: discord.Member, chartype="pj"):
+	async def add_presentation(self, ctx, member: discord.Member):
+		chartype="pj"
 		pres=await self.start_presentation(ctx, member, chartype)
 		await ctx.message.delete()
 		await ctx.send(f"{member.mention} check tes DM ! 📧")
@@ -314,7 +309,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			fiche, img=await self.forme(ctx, member, chartype, idS=ctx.guild.id)
 			await self.validation(ctx, fiche, img, chartype, member)
 
-	@commands.command(usage="@mention", brief="Lance la création d'une fiche PNJ", help="Permet à un joueur ayant sa fiche PNJ validée de faire sa présentation.", aliases=["add_pres", "validation"])
+	@commands.command(usage="@mention", brief="Lance la création d'une fiche PNJ", help="Permet à un joueur ayant sa fiche PNJ validée de faire sa présentation.", aliases=["add_pnj", "validation_pnj"])
 	@commands.has_permissions(administrator=True)
 	async def pnj(self, ctx, member: discord.Member):
 		chartype="pnj"
@@ -472,7 +467,6 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						await member.send(f"Actuellement, votre fiche ressemble à ceci :\n {msg}")
 						q=await member.send("Quel est le champ que vous voulez modifier ?")
 						rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
-						print(rep.content)
 						if rep.content.lower() == "stop":
 							await q.delete()
 							await rep.delete()
