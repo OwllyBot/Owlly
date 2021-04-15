@@ -12,7 +12,6 @@ import os
 CLIENT_ID = os.environ.get("CLIENT_ID")
 im = pyimgur.Imgur(CLIENT_ID)
 
-
 async def convertColor(ctx, color: Optional[discord.Color] = None):
 	if color is None:
 		return Colour.blurple()
