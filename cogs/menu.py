@@ -53,7 +53,7 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
 				c = db.cursor()
 				sql="SELECT idM FROM TICKET where idM=?"
 				c.execute(sql, (idM,))
-				check=c.fetchone()[0]
+				check=c.fetchone()
 				if check is not None:
 					await edit.edit_ticket(ctx, idM, self.bot)
 				else:
@@ -112,7 +112,7 @@ class menu(commands.Cog, name="Créateur", description="Affiche le menu afin de 
 				c = db.cursor()
 				sql="SELECT idM FROM CATEGORY where idM=?"
 				c.execute(sql, (idM,))
-				check=c.fetchone()[0]
+				check=c.fetchone()
 				if check is not None:
 					await edit.edit_category(ctx, idM, self.bot)
 				else:
