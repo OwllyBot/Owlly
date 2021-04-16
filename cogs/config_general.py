@@ -416,6 +416,9 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			sql = "SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
 			c.execute(sql, (cl,))
 			champs = c.fetchone()
+			if champs is None:
+				await ctx.send("Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.", delete_after=30)
+				return
 			gen_msg = "".join(champs[0]).split(",")
 			gen_msg = ", ".join(gen_msg)
 			phys_msg = "".join(champs[1]).split(",")
@@ -430,14 +433,15 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				return
 			else:
 				champ = unidecode.unidecode(rep.content.lower())
-			print(champ)
-			if champs[0] is not None:
-				champ_general = champs[0].split(",")
-				champ_physique = champs[1].split(",")
-			else:
-				await ctx.send("Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.", delete_after=30)
-				return
-			if champ in [unidecode.unidecode(i.lower()) for i in champ_general]:
+			
+			champ_general = champs[0].split(",")
+			champ_general = [unidecode.unidecode(i.lower()) for i in champ_general]
+			print(champ_general)
+			champ_physique = champs[1].split(",")
+			champ_physique = [unidecode.unidecode(i.lower()) for i in champ_physique]
+			print(champ_physique)
+
+			if champ in champ_general:
 				await rep.delete()
 				await q.edit(content=f"Par quoi voulez-vous modifier {champ} ?")
 				rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -448,7 +452,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					await ctx.send("Annulation", delete_after=30)
 					return
 				champ_general=[rep.content.capitalize() if champ == unidecode.unidecode(x.lower()) else x for x in champ_general]
-			elif champ in [unidecode.unidecode(i.lower()) for i in champ_physique]:
+			elif champ in champ_physique:
 				if rep.content.lower() == "stop":
 					await q.delete()
 					await rep.delete()
