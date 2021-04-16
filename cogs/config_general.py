@@ -411,6 +411,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			await q.delete()
 			await ctx.send(f"Le Champ : {champ} a bien été supprimé !")
 		elif reaction.emoji == "3️⃣": 
+			save=""
 			await q.delete()
 			sql = "SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
 			c.execute(sql, (cl,))
@@ -429,7 +430,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				return
 			else:
 				champ = unidecode.unidecode(rep.content.lower())
-			
+			print(champ)
 			if champs[0] is not None:
 				champ_general = champs[0].split(",")
 				champ_physique = champs[1].split(",")
