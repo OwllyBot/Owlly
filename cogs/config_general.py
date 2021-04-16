@@ -284,7 +284,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 	@commands.command(brief="Permet de choisir les champs de la présentation des personnages.", help="Cette commande permet de choisir les champs de présentation générale et du physique, de les éditer, supprimer mais aussi en ajouter.")
 	@commands.has_permissions(administrator=True)
 	async def admin_fiche (self, ctx):
-		emoji=["1️⃣","2️⃣","3️⃣", "4️⃣", "❌", "✅"]
+		emoji=["1️⃣","2️⃣","3️⃣", "4️⃣", "❌", "✅", "👀"]
 		def checkValid(reaction, user):
 			return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
 		def checkRep(message):
@@ -293,7 +293,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
 		menu = discord.Embed(title="Menu de gestion des fiches",
-		                     description="1️⃣ - Création \n 2️⃣ - Suppression \n 3️⃣ - Edition \n 4️⃣ - Ajout")
+		                     description="1️⃣ | Création \n 2️⃣ | Suppression \n 3️⃣ | Edition \n 4️⃣ | Ajout \n 👀 | Affichage")
 		menu.set_footer(text="❌ pour annuler.")
 		q=await ctx.send(embed=menu)
 		for i in emoji:
@@ -473,7 +473,15 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			return
 		elif reaction.emoji == "4️⃣":
 			await q.delete()
-			q=await ctx.send("Dans quel partie voulez-vous ajouter votre champ ? \n 1️⃣ : GÉNÉRALE \n 2️⃣: PHYSIQUE")
+			sql = "SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+			c.execute(sql, (cl,))
+			champs = c.fetchone()
+			gen_msg = "".join(champs[0]).split(",")
+			gen_msg = ", ".join(gen_msg)
+			phys_msg = "".join(champs[1]).split(",")
+			phys_msg = ", ".join(phys_msg)
+			msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
+			q=await ctx.send(f"__**Fiche actuelle**__ :\n {msg_full}\n Dans quelle partie voulez-vous ajouter votre champ ? \n 1️⃣ : GÉNÉRALE \n 2️⃣: PHYSIQUE")
 			await q.add_reaction("1️⃣")
 			await q.add_reaction("2️⃣")
 			await q.add_reaction("❌")
@@ -554,6 +562,20 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				c.close()
 				db.close()
 				return
+		elif reaction.emoji=="👀":
+			sql = "SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+			c.execute(sql,(cl,))
+			champs = c.fetchone()
+			gen_msg="".join(champs[0]).split(",")
+			gen_msg=", ".join(gen_msg)
+			phys_msg="".join(champs[1]).split(",")
+			phys_msg=", ".join(phys_msg)
+			msg_full=f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
+			q.clear_reactions()
+			q.edit(content=f"Fiche actuelle : \n {msg_full}")
+			c.close()
+			db.close()
+			return
 		else:
 			await q.delete()
 			await ctx.send("Annulation", delete_after=30)
