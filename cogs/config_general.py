@@ -571,8 +571,8 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			phys_msg="".join(champs[1]).split(",")
 			phys_msg=", ".join(phys_msg)
 			msg_full=f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
-			await q.clear_reactions()
-			await q.edit(content=f"Fiche actuelle : \n {msg_full}")
+			await q.delete()
+			await ctx.send(f"Fiche actuelle : \n {msg_full}")
 			c.close()
 			db.close()
 			return
