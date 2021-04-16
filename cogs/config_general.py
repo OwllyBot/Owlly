@@ -90,6 +90,30 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 
 
 	@commands.has_permissions(administrator=True)
+	@commands.command(help="Permet d'enregistrer / réenregistrer la liste des rôles données par la commandes member, sans passer par le menu de configuration.", brief="Enregistrement de rôles pour la commande member, sans passer par le menu.", usage="@mention/ID des rôles à enregistrer", aliases=['init_role', 'assign_init'])
+	async def role_init(self, ctx, *role: discord.Role):
+		db = sqlite3.connect("owlly.db", timeout=3000)
+		c = db.cursor()
+		sql = "UPDATE SERVEUR SET roliste = ? WHERE idS = ?"
+		role_list = []
+		if (len(role)) > 1:
+			for i in role:
+				role_list.append(str(i.id))
+		else:
+		  role_str = str(role[0].id)
+		role_str = ",".join((role_list))
+		var = (role_str, ctx.guild.id)
+		c.execute(sql, var)
+		phrase = []
+		for i in role:
+			phrase.append(i.name)
+		phrase = ", ".join(phrase)
+		await ctx.send(f"Les rôles {phrase} ont bien été enregistré dans la base de données")
+		db.commit()
+		c.close()
+		db.close()
+	
+	@commands.has_permissions(administrator=True)
 	@commands.command(help="Assignation des rôles assignés par défaut par la commande `member`.", brief="Enregistrement de rôles pour la commande member.", aliases=['role_config', 'roliste_config', 'assign'])
 	async def roliste(self, ctx):
 		db = sqlite3.connect("owlly.db", timeout=3000)
