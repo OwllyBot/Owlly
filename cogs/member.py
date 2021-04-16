@@ -63,10 +63,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						phys=phys.replace("\\","")
 						k=k.replace("\\","")
 						if k.lower() == gen.lower():
-							if v != "NA" or v != "/":
+							if v != "NA" or v != "/" or v != "na":
 								general_info.update({k:v})
 						elif k.lower() == phys.lower():
-							if "NA" != v or "/" != v:
+							if v != "NA" or v != "/" or v != "na":
 								physique_info.update({k: v})
 			general_msg = "─────༺ Présentation ༻─────\n"
 			physique_msg = "──────༺Physique༻──────\n "
@@ -210,10 +210,15 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 								imgur = im.upload_image(url=reponse.url)
 								reponse = imgur.link
 							elif "*" in c :
-								while ("NA" in reponse or "/" in reponse):
+								while ("NA" in reponse) :
 									await member.send(f"Erreur ! Ce champ est obligatoire \n {c} ?")
 									repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
 									reponse=repError.content
+									if repError.content.lower() == "stop":
+										await member.send(f"Mise en pause. Vous pourrez reprendre plus tard avec la commande `{ctx.prefix}fiche`")
+										f.write(str(perso))
+										f.close()
+										return "NOTdone"
 							perso.update({c.lower(): reponse})
 					except asyncio.TimeoutError:
 						await member.send(f"Timeout ! Enregistrement des modifications. Vous pourrez la reprendre plus tard avec la commande `{ctx.prefix}fiche`")

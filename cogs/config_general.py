@@ -436,10 +436,8 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			
 			champ_general = champs[0].split(",")
 			champ_general = [unidecode.unidecode(i.lower()) for i in champ_general]
-			print(champ_general)
 			champ_physique = champs[1].split(",")
 			champ_physique = [unidecode.unidecode(i.lower()) for i in champ_physique]
-			print(champ_physique)
 
 			if champ in champ_general:
 				await rep.delete()
@@ -453,6 +451,9 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					return
 				champ_general=[rep.content.capitalize() if champ == unidecode.unidecode(x.lower()) else x for x in champ_general]
 			elif champ in champ_physique:
+				await q.edit(content=f"Par quoi voulez-vous modifier {champ} ?")
+				rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+				save=rep.content
 				if rep.content.lower() == "stop":
 					await q.delete()
 					await rep.delete()
