@@ -284,7 +284,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 	@commands.command(brief="Permet de choisir les champs de la présentation des personnages.", help="Cette commande permet de choisir les champs de présentation générale et du physique, de les éditer, supprimer mais aussi en ajouter.")
 	@commands.has_permissions(administrator=True)
 	async def admin_fiche (self, ctx):
-		emoji=["1️⃣","2️⃣","3️⃣", "4️⃣", "❌", "✅", "👀"]
+		emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "👀", "❌", "✅", ]
 		def checkValid(reaction, user):
 			return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
 		def checkRep(message):
@@ -571,8 +571,8 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			phys_msg="".join(champs[1]).split(",")
 			phys_msg=", ".join(phys_msg)
 			msg_full=f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
-			q.clear_reactions()
-			q.edit(content=f"Fiche actuelle : \n {msg_full}")
+			await q.clear_reactions()
+			await q.edit(content=f"Fiche actuelle : \n {msg_full}")
 			c.close()
 			db.close()
 			return
