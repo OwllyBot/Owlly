@@ -166,9 +166,12 @@ async def create_ticket(self,ctx, bot):
 			await q.delete()
 			await rep.delete()
 			return
-		elif rep.attachments or "cdn.discordapp.com" in img_content:
+		elif rep.attachments :
 			img_content=rep.attachments[0]
 			imgur=im.upload_image(url=img_content.url)
+			img_content=imgur.link
+		elif "cdn.discordapp.com" in img_content:
+			imgur=im.upload_image(url=img_content)
 			img_content=imgur.link
 		else:
 			img_content = checkImg(ctx, img_content)
@@ -402,7 +405,7 @@ async def create_category(self,ctx, bot):
 	else:
 		titre = rep.content
 		await rep.add_reaction("✅")
-		await rep.delete(delay=5)
+		await rep.delete()
 	await q.edit(content="Quelle couleur voulez vous utiliser ?\n 0 donnera une couleur aléatoire")
 	rep = await bot.wait_for("message", timeout=300, check=checkRep)
 	col = rep.content
@@ -434,10 +437,15 @@ async def create_category(self,ctx, bot):
 			await q.delete()
 			await rep.delete()
 			return
-		elif rep.attachments or "cdn.discordapp.com" in img_content:
+		elif rep.attachments :
 			img_content = rep.attachments[0]
 			imgur = im.upload_image(url=img_content.url)
 			img_content = imgur.link
+			await rep.delete()
+		elif "cdn.discordapp.com" in img_content :			
+			imgur = im.upload_image(url=img_content)
+			img_content = imgur.link
+			await rep.delete()
 		else:
 			img_content = checkImg(ctx, img_content)
 			if img_content.lower() == "error":

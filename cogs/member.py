@@ -205,9 +205,12 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						else:
 							reponse= rep.content 
 							reponse=reponse.replace("\'", "\\'")
-							if rep.attachments or "cdn.discordapp.com" in reponse :
+							if rep.attachments :
 								reponse=rep.attachments[0]
 								imgur = im.upload_image(url=reponse.url)
+								reponse = imgur.link
+							elif "cdn.discordapp.com" in reponse:
+								imgur = im.upload_image(url=reponse)
 								reponse = imgur.link
 							elif "*" in c :
 								while ("NA" in reponse) :
