@@ -64,7 +64,6 @@ async def on_raw_reaction_add(payload):
 	channel = bot.get_channel(payload.channel_id)
 	msg = await channel.fetch_message(mid)
 	user = bot.get_user(payload.user_id)
-	print(user.id)
 	guild = discord.utils.find(lambda g: g.id == idS, bot.guilds)
 
 	def checkRep(message):
