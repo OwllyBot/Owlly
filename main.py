@@ -3,7 +3,6 @@ from discord.ext import commands
 from discord.utils import get
 import os
 import sqlite3
-import keep_alive
 from pretty_help import PrettyHelp
 from discord.ext.commands.help import HelpCommand
 from pygit2 import Repository
@@ -263,7 +262,6 @@ async def on_guild_remove(guild):
 
 if repo_name == "main":
 	token = os.environ.get('DISCORD_BOT_TOKEN')
-	keep_alive.keep_alive()
 else:
 	token = "ODA1MTU4MDY4OTg3NDk0NDEz.YBWz4g.eJ2NqgLHx6LyZO3ZI3jLfdufDJw"
 bot.run(token)
