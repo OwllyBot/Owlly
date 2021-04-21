@@ -82,7 +82,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				else:
 					l = l.replace("*", "")
 					physique_msg=physique_msg+f"**__{l.capitalize()}__** : {m}\n"
-			msg = general_msg+"\n"+physique_msg+"\n"+f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Auteur* : {member.mention}"
+			msg = general_msg+"\n"+physique_msg+"\n"+f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Joueur* : {member.mention}"
 		return msg, img
 
 	async def validation(self, ctx, msg, img, chartype, member: discord.Member):
