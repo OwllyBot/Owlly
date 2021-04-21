@@ -267,8 +267,13 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		defaut = ','.join(defaut)
 		defaut = defaut.split(',')
 		for i in defaut:
-			i = get(ctx.guild.roles, id=int(i))
-			await user.add_roles(i)
+			rol_save=i
+			try:
+				i = get(ctx.guild.roles, id=int(i))
+				await user.add_roles(i)
+			except AttributeError:
+				await ctx.send (f"Attention, le rôle {rol_save} a été supprimé, il ne peut donc pas être rajouté sur le joueur !")
+				pass
 		for i in role:
 			i = i.replace("<", "")
 			i = i.replace(">", "")
