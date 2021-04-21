@@ -308,7 +308,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		await ctx.send(f"Début de la création de la fiche ! \n {user.mention} regardez vos DM !")
 		pres = await self.start_presentation(ctx, user, chartype)
 		if pres == "done":
-			fiche, img = await self.forme(user, chartype, idS=ctx.guild.id)
+			idS=ctx.guild.id
+			fiche, img = await self.forme(ctx,user, chartype, idS)
 			await self.validation(ctx, fiche, img, chartype, user)
 
 	@commands.command(usage="@mention", brief="Lance la création d'une fiche", help="Permet à un joueur ayant sa fiche valider de faire sa présentation.", aliases=["add_pj","validation", "add_pres", "pj"])
