@@ -62,7 +62,9 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						gen=gen.replace("\\", "")
 						phys=phys.replace("\\","")
 						k=k.replace("\\","")
-						if v != "NA" or v != "na" or v != "/": 
+						if v == "NA" or v == "na" or v == "/":
+							pass
+						else:
 							if k.lower() == gen.lower():
 								general_info.update({k:v})
 							elif k.lower() == phys.lower():
