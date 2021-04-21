@@ -62,14 +62,13 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						gen=gen.replace("\\", "")
 						phys=phys.replace("\\","")
 						k=k.replace("\\","")
-						if k.lower() == gen.lower():
-							if v != "NA" or v != "/" or v != "na":
+						if v != "NA" or v != "na" or v != "/": 
+							if k.lower() == gen.lower():
 								general_info.update({k:v})
-						elif k.lower() == phys.lower():
-							if v != "NA" or v != "/" or v != "na":
+							elif k.lower() == phys.lower():
 								physique_info.update({k: v})
 			general_msg = "─────༺ Présentation ༻─────\n"
-			physique_msg = "──────༺Physique༻──────\n "
+			physique_msg = "──────༺ Physique ༻──────\n"
 			img=""
 			for k, v in general_info.items():
 				if v.endswith(('.png','.jpg','.jpeg','.gif')):
