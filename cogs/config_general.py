@@ -273,7 +273,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		else:
 			fiche_pnj=0
 		await q.edit(content="Validation des modification....")
-		sql = "UPDATE SERVEUR SET fiche_validation=?, fiche_pj = ?, fiche_pnj=? WHERE idS=?"
+		sql = "UPDATE FICHE SET fiche_validation=?, fiche_pj = ?, fiche_pnj=? WHERE idS=?"
 		var=(fiche_validation.id, fiche_pj.id,fiche_pnj, cl)
 		c.execute(sql, var)
 		db.commit()
@@ -354,7 +354,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			await q.add_reaction("❌")
 			reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
 			if reaction.emoji == "✅":
-				sql="UPDATE SERVEUR SET champ_general = ?, champ_physique = ? WHERE idS=?"
+				sql="UPDATE FICHE SET champ_general = ?, champ_physique = ? WHERE idS=?"
 				var=(general, physique, cl)
 				c.execute(sql, var)
 				db.commit()
@@ -403,7 +403,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				return
 			champ_general=",".join(champ_general)
 			champ_physique=",".join(champ_physique)
-			sql="UPDATE SERVEUR SET champ_general = ?, champ_physique = ? WHERE idS=?"
+			sql="UPDATE FICHE SET champ_general = ?, champ_physique = ? WHERE idS=?"
 			var=(champ_general,champ_physique, cl)
 			c.execute(sql, var)
 			db.commit()
@@ -467,7 +467,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				return
 			champ_general=",".join(champ_general)
 			champ_physique=",".join(champ_physique)
-			sql="UPDATE SERVEUR SET champ_general = ?, champ_physique = ? WHERE idS=?"
+			sql="UPDATE FICHE SET champ_general = ?, champ_physique = ? WHERE idS=?"
 			var=(champ_general,champ_physique, cl)
 			c.execute(sql, var)
 			db.commit()
@@ -517,7 +517,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					await ctx.send("Ce champ existe déjà !", delete_after=30)
 					return
 				champ_general=",".join(champ_general)
-				sql="UPDATE SERVEUR SET champ_general = ? WHERE idS=?"
+				sql="UPDATE FICHE SET champ_general = ? WHERE idS=?"
 				var=(champ_general, cl)
 				c.execute(sql, var)
 				db.commit()
@@ -552,7 +552,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					await ctx.send("Ce champ existe déjà !", delete_after=30)
 					return
 				champ_physique = ",".join(champ_physique)
-				sql = "UPDATE SERVEUR SET champ_physique = ? WHERE idS=?"
+				sql = "UPDATE FICHE SET champ_physique = ? WHERE idS=?"
 				var = (champ_physique, cl)
 				c.execute(sql, var)
 				db.commit()

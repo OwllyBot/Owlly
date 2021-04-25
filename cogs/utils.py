@@ -42,8 +42,11 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 	async def on_guild_join(self, guild):
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
-		sql = "INSERT INTO SERVEUR (prefix, idS, roliste, notes, fiche_pj, fiche_pnj, fiche_validation) VALUES (?,?,?,?, ?)"
-		var = ("?", guild.id, "0", 0, 0, 0, 0)
+		sql = "INSERT INTO SERVEUR (prefix, idS, roliste, notes) VALUES (?,?,?,?)"
+		var = ("?", guild.id, "0", 0)
+		c.execute(sql, var)
+		sql="INSERT INTO FICHE (idS, fiche_pj, fiche_pnj, fiche_validation, champ_general, champ_physique) VALUES (?, ?, ?, ?,?,?)"
+		var=(guild.id, 0, 0, 0, "0","0")
 		c.execute(sql, var)
 		db.commit()
 		c.close()

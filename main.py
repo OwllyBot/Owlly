@@ -250,9 +250,11 @@ async def on_guild_remove(guild):
 	sql1 = "DELETE FROM AUTHOR WHERE idS = ?"
 	sql2 = "DELETE FROM TICKET WHERE idS = ?"
 	sql3 = "DELETE FROM CATEGORY WHERE idS = ?"
+	sql4= "DELETE FROM FICHE WHERE idS = ?"
 	c.execute(sql1, (server, ))
 	c.execute(sql2, (server, ))
 	c.execute(sql3, (server, ))
+	c.execute(sql4, (server,))
 	sql = "DELETE FROM SERVEUR WHERE idS = ?"
 	var = guild.id
 	c.execute(sql, (var, ))
