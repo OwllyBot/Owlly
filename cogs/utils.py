@@ -54,7 +54,8 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 
 	@commands.command(name="ping", brief="Permet d'avoir la latence du bot.", help="Permet d'avoir la latence du bot.")
 	async def ping(self, ctx):
-		await ctx.send(f"🏓 Pong with {str(round(self.bot.latency, 2))}")
+		lag = (round(self.bot.latency, 2)) * 100
+		await ctx.send(f"🏓 Pong with {str(lag)} ms")
 
 	@commands.command(name="prefix", help="Affiche le prefix du bot. Il est possible de l'obtenir en le mentionnant simplement.", brief="Donne le préfix du bot. ")
 	async def prefix(self, ctx):
