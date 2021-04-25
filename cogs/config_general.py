@@ -302,7 +302,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
 		if reaction.emoji=="1️⃣":
 			await q.delete()
-			sql="SELECT fiche_pj, fiche_validation, fiche_pnj FROM SERVEUR WHERE idS=?"
+			sql="SELECT fiche_pj, fiche_validation, fiche_pnj FROM FICHE WHERE idS=?"
 			c.execute(sql, (cl,))
 			channels=c.fetchone()
 			if channels[0] is None:
@@ -367,7 +367,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				return
 		elif reaction.emoji =="2️⃣":
 			await q.delete()
-			sql="SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+			sql="SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
 			c.execute(sql,(cl,))
 			champs = c.fetchone()
 			gen_msg="".join(champs[0]).split(",")
@@ -413,7 +413,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		elif reaction.emoji == "3️⃣": 
 			save=""
 			await q.delete()
-			sql = "SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+			sql = "SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
 			c.execute(sql, (cl,))
 			champs = c.fetchone()
 			if champs is None:
@@ -479,7 +479,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			return
 		elif reaction.emoji == "4️⃣":
 			await q.delete()
-			sql = "SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+			sql = "SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
 			c.execute(sql, (cl,))
 			champs = c.fetchone()
 			gen_msg = "".join(champs[0]).split(",")
@@ -493,7 +493,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			await q.add_reaction("❌")
 			reaction, user=await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
 			if reaction.emoji == "1️⃣":
-				sql="SELECT champ_general FROM SERVEUR WHERE idS=?"
+				sql="SELECT champ_general FROM FICHE WHERE idS=?"
 				c.execute(sql, (cl,))
 				champ_general = c.fetchone()[0]
 				if champ_general is None:
@@ -528,7 +528,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				await rep.delete()
 				return
 			elif reaction.emoji == "2️⃣":
-				sql="SELECT champ_physique FROM SERVEUR WHERE idS=?"
+				sql="SELECT champ_physique FROM FICHE WHERE idS=?"
 				c.execute(sql,(cl,))
 				champ_physique=c.fetchone()[0]
 				if champ_physique is None:
@@ -569,7 +569,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				db.close()
 				return
 		elif reaction.emoji=="👀":
-			sql = "SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+			sql = "SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
 			c.execute(sql,(cl,))
 			champs = c.fetchone()
 			gen_msg="".join(champs[0]).split(",")

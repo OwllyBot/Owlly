@@ -49,7 +49,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			perso = ast.literal_eval(data)
 			db = sqlite3.connect("owlly.db", timeout=3000)
 			c = db.cursor()
-			sql="SELECT champ_physique, champ_general FROM SERVEUR WHERE idS=?"
+			sql="SELECT champ_physique, champ_general FROM FICHE WHERE idS=?"
 			c.execute(sql, (idS,))
 			champ=c.fetchone()
 			general=champ[1].split(",")
@@ -93,7 +93,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		if msg != "error":
 			db = sqlite3.connect("owlly.db", timeout=3000)
 			c = db.cursor()
-			SQL = "SELECT fiche_pj, fiche_pnj, fiche_validation FROM SERVEUR WHERE idS=?"
+			SQL = "SELECT fiche_pj, fiche_pnj, fiche_validation FROM FICHE WHERE idS=?"
 			c.execute(SQL, (ctx.guild.id,))
 			channel = c.fetchone()
 			def checkValid(reaction, user):
@@ -133,7 +133,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
 		idS=ctx.guild.id
-		sql="SELECT champ_general, champ_physique FROM SERVEUR WHERE idS=?"
+		sql="SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
 		c.execute(sql, (idS,))
 		champ_map=c.fetchone()
 		general=champ_map[0]
@@ -460,7 +460,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			return message.author == member and ctx.message.channel == message.channel
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
-		SQL = "SELECT fiche_pj, fiche_pnj, fiche_validation FROM SERVEUR WHERE idS=?"
+		SQL = "SELECT fiche_pj, fiche_pnj, fiche_validation FROM FICHE WHERE idS=?"
 		c.execute(SQL, (ctx.guild.id,))
 		channel = c.fetchone()
 		if (channel[0] is not None) and (channel[1] is not None) and (channel[0] != 0) and (channel[1] != 0):
