@@ -111,7 +111,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		db.close()
 
 	@commands.has_permissions(administrator=True)
-	@commands.command(help="Permet d'enregistrer / réenregistrer la liste des rôles retirés par la commandes member, sans passer par le menu de configuration.", brief="Enregistrement de rôles pour la commande member, sans passer par le menu.", usage="@mention/ID des rôles à enregistrer", aliases=['init_rm', 'assign_rm'], usage="*role")
+	@commands.command(help="Permet d'enregistrer / réenregistrer la liste des rôles retirés par la commandes member, sans passer par le menu de configuration.", brief="Enregistrement de rôles pour la commande member, sans passer par le menu.", usage="@mention/ID des rôles à enregistrer", aliases=['init_rm', 'assign_rm'])
 	async def init_role_rm(self, ctx, *role: discord.Role):
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
