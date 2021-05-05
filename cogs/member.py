@@ -29,6 +29,30 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 	def __init__(self, bot):
 		self.bot = bot
 	
+	async def checkTriggers(self, rep, c, member: discord.Member):
+		#Verification "&"
+		def checkRep(message):
+			return message.author == member and isinstance(message.channel, discord.DMChannel)
+		reponse = rep.replace("\'", "\\'")
+		if "&" in c :
+			while ((not reponse.attachments) or ("cdn.discordapp.com" not in reponse)):
+				await member.send(f"Erreur, ce champ doit être une image (pièce-jointe / lien)")
+				repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
+				reponse = repError.content
+			if reponse.attachments:
+				reponse = rep.attachments[0]
+				imgur = im.upload_image(url=reponse.url)
+				reponse = imgur.link
+			elif "cdn.discordapp.com" in reponse:
+				imgur = im.upload_image(url=reponse)
+				reponse = imgur.link
+		elif "#" in c:
+			while ("https://www." not in reponse) : 
+				await member.send(f"Erreur, ce champ doit être une image (pièce-jointe / lien)")
+				repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
+				reponse = repError.content
+		return reponse
+
 	async def search_chan(self, ctx, chan: str):
 		chan=str(chan)
 		try:
@@ -77,6 +101,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					img = v
 				else:
 					k = k.replace("*", "")
+					k=k.replace("$","")
+					k=k.replace("&","")
 					general_msg = general_msg+f"**__{k.capitalize()}__** : {v}\n"
 			for l, m in physique_info.items():
 				if m.endswith(('.png','.jpg','.jpeg','.gif')):
@@ -176,6 +202,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				except OSError:
 					perso={}
 		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
+		await member.send(f":white_small_square: `*` signifie que le champ est obligatoire. \n :white_small_square: `$` signifie que le réponse **doit être un lien** \n :white_small_square: `&` signifie que la réponse doit être **une image**.")
 		while last.lower() not in perso.keys():
 			for t in template.keys():
 				t=t.replace("\\","")
@@ -185,6 +212,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						msg = f"{c} ?\n Ce champ est obligatoire."
 					else:
 						msg=f"{c} ?\n Si votre perso n'en a pas, merci de mettre `/` ou `NA`."
+					if "$" in c: 
+						msg=f"{msg}\n Ce champ doit être sous forme de lien."
+					if "&" in c:
+						msg=f"{msg}\n Ce champ doit être une image (pièce-jointe ou lien)."
 					await member.send(msg)
 					c = c.replace("\'", "\\'")
 					c=c.replace("\\", "")
@@ -206,20 +237,13 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							return "delete"
 						else:
 							reponse= rep.content 
-							reponse=reponse.replace("\'", "\\'")
-							if rep.attachments :
-								reponse=rep.attachments[0]
-								imgur = im.upload_image(url=reponse.url)
-								reponse = imgur.link
-							elif "cdn.discordapp.com" in reponse:
-								imgur = im.upload_image(url=reponse)
-								reponse = imgur.link
-							elif "*" in c :
+							if "*" in c :
 								while ("NA" in reponse) :
 									await member.send(f"Erreur ! Ce champ est obligatoire \n {c} ?")
 									repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
 									reponse=repError.content
-									if repError.content.lower() == "stop":
+									repCheck= self.checkTriggers(rep, c, member)
+									if repCheck.lower() == "stop":
 										await member.send(f"Mise en pause. Vous pourrez reprendre plus tard avec la commande `{ctx.prefix}fiche`")
 										f.write(str(perso))
 										f.close()

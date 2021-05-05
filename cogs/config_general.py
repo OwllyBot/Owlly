@@ -328,7 +328,7 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 				await general_rep.delete(delay=10)
 			general=",".join(general)
 			await q.delete()
-			q=await ctx.send("Maintenant, rentrer les champs pour la description physique.\n `stop` pour valider, `cancel` pour annuler.\n Utiliser `*` pour marquer les champs obligatoires.")
+			q=await ctx.send("Maintenant, rentrer les champs pour la description physique.\n `stop` pour valider, `cancel` pour annuler.\n Utiliser `*` pour marquer les champs obligatoires, `$` si cela doit être un lien, et `&` si cela doit être une image.")
 			physique=[]
 			while True:
 				physique_rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
