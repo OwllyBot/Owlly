@@ -391,7 +391,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			menu=discord.Embed(title=f"MENU {chartype} EDITION ADMIN", description="1️⃣ - EDITION\n 2️⃣ - SUPPRESSION \n 3️⃣ - VOIR LA FICHE")
 			q=await ctx.send(embed=menu)
 			for i in emoji:
-				q.add_reaction(i)
+				await q.add_reaction(i)
 			reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
 			if reaction.user=="1️⃣":
 				await q.delete()
