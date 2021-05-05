@@ -362,7 +362,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 	@commands.has_permissions(administrator=True)
 	async def admin_edit(self, ctx, member:discord.Member):
 		idS=ctx.guild.id
-		emoji = ["1️⃣", "2️⃣", "3️⃣", "❌"]
+		emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "❌"]
 		def checkRep(message): 
 			return message.author == member and ctx.message.channel == message.channel
 		def checkValid(reaction, user):
@@ -388,7 +388,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		else:
 			chartype = "ERROR"
 		if chartype != "ERROR":
-			menu=discord.Embed(title=f"MENU {chartype} EDITION ADMIN", description="1️⃣ - EDITION\n 2️⃣ - SUPPRESSION \n 3️⃣ - VOIR LA FICHE")
+			menu=discord.Embed(title=f"MENU {chartype} EDITION ADMIN", description="1️⃣ - EDITION\n 2️⃣ - SUPPRESSION \n 3️⃣ - VOIR LA FICHE \n 4️⃣ - ENVOYER EN VERIFICATION")
 			q=await ctx.send(embed=menu)
 			for i in emoji:
 				await q.add_reaction(i)
@@ -443,12 +443,17 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			elif reaction.emoji == "3️⃣":
 				msg, img=await self.forme(ctx, member, chartype, idS)
 				await ctx.send(f"{msg} \n {img}")
+			elif reaction.emoji == "4️⃣":
+				pres = await self.start_presentation(ctx, member, chartype)
+				if pres == "done":
+					fiche, img=await self.forme(ctx, member, chartype, idS=ctx.guild.id)
+					await self.validation(ctx, fiche, img, chartype, member)
 			else:
 				await q.delete()
 				await ctx.send(f"Annulation", delete_after=30)
 				return
 		else:
-			await ctx.send("{member.name} n'a pas de présentation en cours...")
+			await ctx.send(f"{member.name} n'a pas de présentation en cours...")
 			return
 
 	@commands.command(aliases=["pres"], brief="Commandes pour modifier une présentation en cours.", help="Le champ PNJ est à indiquer pour les fiches lorsque celles-ci sont pour les PNJ. Autrement, par défaut, les fiches PJ sont sélectionnées. \n Cette commande permet la reprise, modification ou suppression d'une présentation.")
