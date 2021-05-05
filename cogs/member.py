@@ -289,17 +289,17 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		sql = "SELECT roliste FROM SERVEUR WHERE idS=?"
 		c.execute(sql, (ctx.guild.id,))
 		defaut = c.fetchone()
-		rolelist = []
-		defaut = ','.join(defaut)
-		defaut = defaut.split(',')
-		for i in defaut:
-			rol_save=i
-			try:
-				i = get(ctx.guild.roles, id=int(i))
-				await user.add_roles(i)
-			except AttributeError:
-				await ctx.send (f"Attention, le rôle {rol_save} a été supprimé, il ne peut donc pas être rajouté sur le joueur !")
-				pass
+		if defaut is not None : 
+			defaut = ','.join(defaut)
+			defaut = defaut.split(',')
+			for i in defaut:
+				rol_save=i
+				try:
+					i = get(ctx.guild.roles, id=int(i))
+					await user.add_roles(i)
+				except AttributeError:
+					await ctx.send (f"Attention, le rôle {rol_save} a été supprimé, il ne peut donc pas être rajouté sur le joueur !")
+					pass
 		for i in role:
 			i = i.replace("<", "")
 			i = i.replace(">", "")
@@ -329,7 +329,24 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		if (len(infoNew)) > 0:
 			infoNew = "\n ◽".join(infoNew)
 			roleInfo = roleInfo + " " + infoNew
-		await ctx.send(f"{user.mention} est devenu un membre du serveur ! Il·Elle a donc reçu les rôles : {roleInfo}. ", delete_after=60)
+		
+		# remove role 
+		sql="SELECT rolerm FROM SERVEUR where idS= ?"
+		c.execute(sql, (ctx.guild.id,))
+		rm_role = c.fetchone()
+		if rm_role is not None:
+			rm_role=",".join(rm_role)
+			rm_role=rm_role.split(",")
+			for i in rm_role:
+				try:
+					i = get(ctx.guild.roles, id=int(i))
+					await user.remove_roles(i)
+					role_rm_info=i + ", "
+				except AttributeError:
+					pass
+			role_rm_info=f", et les rôles {role_rm_info} lui ont été retiré."
+		await ctx.send(f"{user.mention} est devenu un membre du serveur ! Il·Elle a donc reçu les rôles : {roleInfo}{role_rm_info}", delete_after=60)
+
 		await ctx.message.delete()
 		await ctx.send(f"Début de la création de la fiche ! \n {user.mention} regardez vos DM !")
 		pres = await self.start_presentation(ctx, user, chartype)

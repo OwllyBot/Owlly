@@ -49,13 +49,11 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		await ctx.send(f"Le channels des notes est donc {chan}", delete_after=30)
 		await ctx.message.delete()
 
-	async def roliste_init(self, ctx, role):
+	async def roliste_init(self, ctx, role, type_db):
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
-		sql = "UPDATE SERVEUR SET roliste = ? WHERE idS = ?"
+		sql = f"UPDATE SERVEUR SET {type_db} = ? WHERE idS = ?"
 		role_list=[]
-		print(role)
-		print(type(role))
 		if (len(role)) > 1:
 			for i in role :
 				try:
@@ -89,8 +87,10 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		db.close()
 
 
+
+
 	@commands.has_permissions(administrator=True)
-	@commands.command(help="Permet d'enregistrer / réenregistrer la liste des rôles données par la commandes member, sans passer par le menu de configuration.", brief="Enregistrement de rôles pour la commande member, sans passer par le menu.", usage="@mention/ID des rôles à enregistrer", aliases=['init_role', 'assign_init'])
+	@commands.command(help="Permet d'enregistrer / réenregistrer la liste des rôles données par la commandes member, sans passer par le menu de configuration.", brief="Enregistrement de rôles pour la commande member, sans passer par le menu.", usage="@mention/ID des rôles à enregistrer", aliases=['init_role', 'assign_init'], usage="*role")
 	async def role_init(self, ctx, *role: discord.Role):
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
@@ -112,44 +112,70 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		db.commit()
 		c.close()
 		db.close()
-	
-	@commands.has_permissions(administrator=True)
-	@commands.command(help="Assignation des rôles assignés par défaut par la commande `member`.", brief="Enregistrement de rôles pour la commande member.", aliases=['role_config', 'roliste_config', 'assign'])
-	async def roliste(self, ctx):
+
+		@commands.has_permissions(administrator=True)
+	@commands.command(help="Permet d'enregistrer / réenregistrer la liste des rôles retirés par la commandes member, sans passer par le menu de configuration.", brief="Enregistrement de rôles pour la commande member, sans passer par le menu.", usage="@mention/ID des rôles à enregistrer", aliases=['init_rm', 'assign_rm'], usage="*role")
+	async def init_role_rm(self, ctx, *role: discord.Role):
 		db = sqlite3.connect("owlly.db", timeout=3000)
 		c = db.cursor()
-		sql="SELECT roliste FROM SERVEUR WHERE idS=?"
-		c.execute(sql,(ctx.guild.id,))
-		emoji=["✅", "❌", "1️⃣","2️⃣","3️⃣"]
+		sql = "UPDATE SERVEUR SET rolerm = ? WHERE idS = ?"
+		role_list = []
+		if (len(role)) > 1:
+			for i in role:
+				role_list.append(str(i.id))
+		else:
+		  role_str = str(role[0].id)
+		role_str = ",".join((role_list))
+		var = (role_str, ctx.guild.id)
+		c.execute(sql, var)
+		phrase = []
+		for i in role:
+			phrase.append(i.name)
+		phrase = ", ".join(phrase)
+		await ctx.send(f"Les rôles {phrase} ont bien été enregistré dans la base de données")
+		db.commit()
+		c.close()
+		db.close()
+	
+	async def inscription_role(self, ctx, type_db):
+		db = sqlite3.connect("owlly.db", timeout=3000)
+		c = db.cursor()
+		if type_db == "rm":
+			sql = "SELECT rolerm FROM SERVEUR WHERE idS =?"
+			type_db="rolerm"
+		else:
+			sql = "SELECT roliste FROM SERVEUR WHERE idS=?"
+			type_db="roliste"
+		c.execute(sql, (ctx.guild.id,))
+		role_list = c.fetchone()
 		def checkValid(reaction, user):
 			return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) in emoji)
 		def checkRep(message):
 			return message.author == ctx.message.author and ctx.message.channel == message.channel
-		role_list= c.fetchone()
+		emoji = ["1️⃣", "2️⃣", "3️⃣", "✅", "❌"]
 		if role_list is not None:
-			role_list= role_list[0].split(",")
-			role_phrase=""
+			role_list = role_list[0].split(",")
+			role_phrase = ""
 			for i in role_list:
 				try:
 					role_phrase = str(await commands.RoleConverter().convert(ctx, i))+" / "+role_phrase
 				except RoleNotFound:
 					pass
-			q=await ctx.send(f"Vous avez actuellement des rôles enregistrés : {role_phrase}\n Voulez-vous :\n 1️⃣ - Rajouter un rôle \n 2️⃣ - Supprimer un rôle \n 3️⃣ - Recommencer votre inscription \n ❌ - Annuler. ")
-			await q.add_reaction("1️⃣")
-			await q.add_reaction("2️⃣")
-			await q.add_reaction("3️⃣")
-			await q.add_reaction("❌")
+			q = await ctx.send(f"Vous avez actuellement des rôles enregistrés : {role_phrase}\n Voulez-vous :\n 1️⃣ - Rajouter un rôle \n 2️⃣ - Supprimer un rôle \n 3️⃣ - Recommencer votre inscription \n ❌ - Annuler. ")
+			for i in emoji:
+				while i != "✅":
+					await q.add_reaction(i)
 			reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
 			if reaction.emoji == "1️⃣":
 				await q.clear_reactions()
 				await q.edit(content="Quel est le rôle que vous voulez rajouter ?")
-				rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+				rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 				if rep.content.lower() == "stop":
 					await ctx.send("Annulation")
 					await q.delete()
 				else:
 					try:
-						add_role=await commands.RoleConverter().convert(ctx, rep.content.lower())
+						add_role = await commands.RoleConverter().convert(ctx, rep.content.lower())
 					except RoleNotFound:
 						await ctx.send("Erreur ! Ce rôle n'existe pas.")
 						await q.delete()
@@ -158,10 +184,10 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 					if str(add_role.id) not in role_list:
 						role_list.append(str(add_role.id))
 						print(role_list)
-						role_list_str=",".join(role_list)
-						sql = "UPDATE SERVEUR SET roliste = ? WHERE idS = ?"
-						var=(role_list_str,ctx.guild.id)
-						c.execute(sql,var)
+						role_list_str = ",".join(role_list)
+						sql = f"UPDATE SERVEUR SET {type_db} = ? WHERE idS = ?"
+						var = (role_list_str, ctx.guild.id)
+						c.execute(sql, var)
 						await q.edit(content="La liste a été mise à jour !")
 						await rep.delete()
 						db.commit()
@@ -175,13 +201,13 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 			elif reaction.emoji == "2️⃣":
 				await q.clear_reactions()
 				await q.edit(content="Quel est le rôle que vous voulez supprimer ?")
-				rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+				rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 				if rep.content.lower() == "stop":
 					await ctx.send("Annulation")
 					await q.delete()
 				else:
 					try:
-						rm_role=await commands.RoleConverter().convert(ctx,rep.content.lower())
+						rm_role = await commands.RoleConverter().convert(ctx, rep.content.lower())
 					except RoleNotFound:
 						await ctx.send("Erreur ! Ce rôle n'existe pas.")
 						await q.delete()
@@ -189,8 +215,8 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 						return
 					if str(rm_role.id) in role_list:
 						role_list.remove(str(rm_role.id))
-						role_list_str=",".join(role_list)
-						sql = "UPDATE SERVEUR SET roliste = ? WHERE idS = ?"
+						role_list_str = ",".join(role_list)
+						sql = f"UPDATE SERVEUR SET {type_db} = ? WHERE idS = ?"
 						var = (role_list_str, ctx.guild.id)
 						c.execute(sql, var)
 						await q.edit(content="La liste a été mise à jour !")
@@ -203,16 +229,27 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 						await ctx.send("Ce rôle n'est pas enregistré.")
 						await rep.delete()
 						return
-			elif reaction.emoji=="3️⃣":
+			elif reaction.emoji == "3️⃣":
 				await q.clear_reactions()
 				await q.edit(content="Merci d'envoyer les rôles que vous voulez rajouter.")
-				rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
-				roliste=rep.content.split(" ")
-				await self.roliste_init(ctx, roliste)
+				rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+				roliste = rep.content.split(" ")
+				await self.roliste_init(ctx, roliste, type_db)
 			else:
 				await q.delete()
 				await ctx.send("Annulation", delete_after=30)
 				return
+
+	@commands.has_permissions(administrator=True)
+	@commands.command(help="Permet d'inscrire des rôles à retirer lorsqu'un membre est validé.", brief="Enregistrement de rôle pour les faire retirer.", aliases=["rm_role", "role_remove", "remover_member"])
+	async def role_rm(self, ctx):
+		await self.inscription_role(ctx, "rm")
+
+	@commands.has_permissions(administrator=True)
+	@commands.command(help="Assignation des rôles par la commande `member`.", brief="Enregistrement de rôles pour la commande member.", aliases=['role_config', 'roliste_config', 'assign'])
+	async def roliste(self, ctx):
+		await self.inscription_role(ctx, "roliste")
+		
 
 			
 
