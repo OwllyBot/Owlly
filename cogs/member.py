@@ -393,7 +393,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			for i in emoji:
 				await q.add_reaction(i)
 			reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
-			if reaction.user=="1️⃣":
+			if reaction.emoji=="1️⃣":
 				await q.delete()
 				f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 				data = f.readlines()
