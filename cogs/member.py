@@ -444,10 +444,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				msg, img=await self.forme(ctx, member, chartype, idS)
 				await ctx.send(f"{msg} \n {img}")
 			elif reaction.emoji == "4️⃣":
-				pres = await self.start_presentation(ctx, member, chartype)
-				if pres == "done":
-					fiche, img=await self.forme(ctx, member, chartype, idS=ctx.guild.id)
-					await self.validation(ctx, fiche, img, chartype, member)
+				fiche, img=await self.forme(ctx, member, chartype, idS=ctx.guild.id)
+				await self.validation(ctx, fiche, img, chartype, member)
 			else:
 				await q.delete()
 				await ctx.send(f"Annulation", delete_after=30)
