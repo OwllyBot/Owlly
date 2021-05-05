@@ -96,9 +96,9 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		if (len(role)) > 1:
 			for i in role:
 				role_list.append(str(i.id))
+			role_str = ",".join((role_list))
 		else:
 		  role_str = str(role[0].id)
-		role_str = ",".join((role_list))
 		var = (role_str, ctx.guild.id)
 		c.execute(sql, var)
 		phrase = []
@@ -120,9 +120,10 @@ class CogAdmins(commands.Cog, name="Configuration générale", description="Perm
 		if (len(role)) > 1:
 			for i in role:
 				role_list.append(str(i.id))
+			role_str = ",".join((role_list))
 		else:
 		  role_str = str(role[0].id)
-		role_str = ",".join((role_list))
+		print(role_str)
 		var = (role_str, ctx.guild.id)
 		c.execute(sql, var)
 		phrase = []
