@@ -176,7 +176,6 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 				phrase = []
 				for i in search_ni:
 					phrase.append(f":white_small_square:{i}")
-					print(i)
 				phrase_rep = "\n".join(phrase)
 				await ctx.send(f"__Résultats__ :\n{phrase_rep}")
 				await ctx.message.delete()
