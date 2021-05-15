@@ -163,6 +163,8 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 			search = list(filter(w.match, msg_content_uni))
 			search_ni = list(filter(w.match, msg_content))
 			lg = len(search)
+			print(search_ni)
+			print(search)
 			if lg == 0:
 				await ctx.send("Pas de résultat.")
 				await ctx.message.delete()
@@ -174,8 +176,10 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 				await ctx.message.delete()
 			else:
 				phrase = []
-				for i in search_ni:
-					phrase.append(f":white_small_square:{i}")
+				for i in search:
+					for msg in messages:
+						if i in uni.unidecode(msg.content):
+							phrase.append(f":white_small_square:{msg.content}")
 				phrase_rep = "\n".join(phrase)
 				await ctx.send(f"__Résultats__ :\n{phrase_rep}")
 				await ctx.message.delete()
