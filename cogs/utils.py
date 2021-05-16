@@ -108,12 +108,10 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 
 	@commands.command()
 	async def convertColor(self, ctx, color):
-		print(color)
 		try:
 			colur = await ColourConverter.convert(self, ctx, color)
 		except CommandError:
 			colur = Colour.random()
-			print(colur)
 
 		@commands.command(name="info", help="Affiche des infos sur le bot.", brief="Informations sur le bot.")
 		async def info(self, ctx):
@@ -163,8 +161,6 @@ class CogUtils(commands.Cog, name="Utilitaire", description="Une série de comma
 			search = list(filter(w.match, msg_content_uni))
 			search_ni = list(filter(w.match, msg_content))
 			lg = len(search)
-			print(search_ni)
-			print(search)
 			if lg == 0:
 				await ctx.send("Pas de résultat.")
 				await ctx.message.delete()
