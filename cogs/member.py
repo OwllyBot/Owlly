@@ -341,7 +341,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				try:
 					i = get(ctx.guild.roles, id=int(i))
 					await user.remove_roles(i)
-					role_rm_info=i + ", "
+					role_rm_info=i.name + ", "
 				except AttributeError:
 					pass
 			role_rm_info=f", et les rôles {role_rm_info} lui ont été retiré."
