@@ -161,9 +161,12 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		sql="SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
 		c.execute(sql, (idS,))
 		champ_map=c.fetchone()
+		print(champ_map)
 		general=champ_map[0]
 		physique=champ_map[1]
+		print(general, physique)
 		if general is None or physique is None:
+			print("erreur")
 			return "ERROR"
 		general=general.split(",")
 		physique=physique.split(",")
@@ -370,6 +373,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 	async def pnj(self, ctx, member: discord.Member):
 		chartype="pnj"
 		pres = await self.start_presentation(ctx, member, chartype)
+		await ctx.send(f"{member.mention} check tes DM ! 📧")
 		if pres == "done":
 			fiche, img = await self.forme(ctx, member, chartype, idS=ctx.guild.id)
 			await self.validation(ctx, fiche, img, chartype, member)
