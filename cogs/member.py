@@ -30,27 +30,26 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		self.bot = bot
 	
 	async def checkTriggers(self, rep, c, member: discord.Member):
-		#Verification "&"
 		def checkRep(message):
 			return message.author == member and isinstance(message.channel, discord.DMChannel)
-		reponse = rep.replace("\'", "\\'")
+		reponse = rep.content.replace("\'", "\\'")
 		if "&" in c :
-			while ((not reponse.attachments) or ("cdn.discordapp.com" not in reponse)):
+			while ((not rep.attachments) or ("cdn.discordapp.com" not in reponse) or (reponse.endswith(("jpg","png","gif","jpeg")))):
 				await member.send(f"Erreur, ce champ doit être une image (pièce-jointe / lien)")
-				repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
-				reponse = repError.content
+				rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+				reponse = rep.content
 			if reponse.attachments:
 				reponse = rep.attachments[0]
 				imgur = im.upload_image(url=reponse.url)
 				reponse = imgur.link
-			elif "cdn.discordapp.com" in reponse:
+			elif "cdn.discordapp.com" in reponse or reponse.endswith(("jpg", "png", "gif", "jpeg")):
 				imgur = im.upload_image(url=reponse)
 				reponse = imgur.link
-		elif "#" in c:
-			while ("https://www." not in reponse) : 
+		elif "$" in c:
+			while ("www." not in reponse) : 
 				await member.send(f"Erreur, ce champ doit être un lien.")
-				repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
-				reponse = repError.content
+				rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+				reponse = rep.content
 		return reponse
 
 	async def search_chan(self, ctx, chan: str):
