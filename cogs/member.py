@@ -48,7 +48,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				reponse = imgur.link
 		elif "#" in c:
 			while ("https://www." not in reponse) : 
-				await member.send(f"Erreur, ce champ doit être une image (pièce-jointe / lien)")
+				await member.send(f"Erreur, ce champ doit être un lien.")
 				repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
 				reponse = repError.content
 		return reponse
