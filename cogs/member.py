@@ -238,7 +238,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							return "delete"
 						else:
 							reponse= rep.content 
-							if "*" in c :
+							if ("*" in c) or ("$" in c) or ("&" in c):
 								while ("NA" in reponse) :
 									await member.send(f"Erreur ! Ce champ est obligatoire \n {c} ?")
 									repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -545,6 +545,16 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 									await member.send("Annulation")
 									await rep.delete()
 									return
+								c=value.capitalize()
+								if ("*" in c) or ("$" in c) or ("&" in c):
+									while ("NA" in rep.content):
+										await member.send(f"Erreur ! Ce champ est obligatoire \n {value.capitalize()} ?")
+										rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+										repCheck=self.checkTriggers(rep, c, member)
+										if repCheck.lower()== "stop":
+											await member.send(f"Mise en pause. Vous pourrez reprendre plus tard avec la commande `{ctx.prefix}fiche`")
+											f.write(str(perso))
+											f.close()
 								perso[k] = rep.content
 								f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
 								f.write(str(perso))
