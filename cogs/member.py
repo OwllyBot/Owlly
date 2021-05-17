@@ -30,27 +30,26 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		self.bot = bot
 	
 	async def checkTriggers(self, rep, c, member: discord.Member):
-		#Verification "&"
 		def checkRep(message):
 			return message.author == member and isinstance(message.channel, discord.DMChannel)
-		reponse = rep.replace("\'", "\\'")
+		reponse = rep.content.replace("\'", "\\'")
 		if "&" in c :
-			while ((not reponse.attachments) or ("cdn.discordapp.com" not in reponse)):
+			while ((not rep.attachments) or ("cdn.discordapp.com" not in reponse) or (reponse.endswith(("jpg","png","gif","jpeg")))):
 				await member.send(f"Erreur, ce champ doit être une image (pièce-jointe / lien)")
-				repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
-				reponse = repError.content
+				rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+				reponse = rep.content
 			if reponse.attachments:
 				reponse = rep.attachments[0]
 				imgur = im.upload_image(url=reponse.url)
 				reponse = imgur.link
-			elif "cdn.discordapp.com" in reponse:
+			elif "cdn.discordapp.com" in reponse or reponse.endswith(("jpg", "png", "gif", "jpeg")):
 				imgur = im.upload_image(url=reponse)
 				reponse = imgur.link
-		elif "#" in c:
-			while ("https://www." not in reponse) : 
+		elif "$" in c:
+			while ("www." not in reponse) : 
 				await member.send(f"Erreur, ce champ doit être un lien.")
-				repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
-				reponse = repError.content
+				rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+				reponse = rep.content
 		return reponse
 
 	async def search_chan(self, ctx, chan: str):
@@ -109,6 +108,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					img=m
 				else:
 					l = l.replace("*", "")
+					l=l.replace("$","")
+					l=l.replace("&","")
 					physique_msg=physique_msg+f"**__{l.capitalize()}__** : {m}\n"
 			msg = general_msg+"\n"+physique_msg+"\n"+f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Joueur* : {member.mention}"
 		return msg, img
@@ -239,7 +240,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							return "delete"
 						else:
 							reponse= rep.content 
-							if "*" in c :
+							if ("*" in c) or ("$" in c) or ("&" in c):
 								while ("NA" in reponse) :
 									await member.send(f"Erreur ! Ce champ est obligatoire \n {c} ?")
 									repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -433,7 +434,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					await rep.delete()
 					found="not"
 					for k in perso.keys():
-						if unidecode.unidecode(k.lower()) == unidecode.unidecode(value.lower()):
+						if unidecode.unidecode(k.lower()) in unidecode.unidecode(value.lower()):
 							q=await ctx.send(f"Par quoi voulez-vous modifier {value.capitalize()} ? \n Actuellement, sa valeur est {perso.get(k)}")
 							rep = self.bot.wait_for("message", timeout=300, check=checkRep)
 							if rep.content.lower()=="stop":
@@ -441,6 +442,16 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 								await q.delete()
 								await rep.delete()
 								return
+							c = k.capitalize()
+							if ("*" in c) or ("$" in c) or ("&" in c):
+								while ("NA" in rep.content):
+									await member.send(f"Erreur ! Ce champ est obligatoire \n {value.capitalize()} ?")
+									rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+									repCheck = self.checkTriggers(rep, c, member)
+									if repCheck.lower() == "stop":
+										await member.send(f"Mise en pause. Vous pourrez reprendre plus tard avec la commande `{ctx.prefix}fiche`")
+										f.write(str(perso))
+										f.close()
 							perso[k]=rep.content
 							f = open(f"fiche/{chartype}_{member.name}_{idS}.txt","w", encoding="utf-8")
 							f.write(str(perso))
@@ -474,7 +485,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			await ctx.send(f"{member.name} n'a pas de présentation en cours...")
 			return
 
-	@commands.command(aliases=["pres"], brief="Commandes pour modifier une présentation en cours.", help="Le champ PNJ est à indiquer pour les fiches lorsque celles-ci sont pour les PNJ. Autrement, par défaut, les fiches PJ sont sélectionnées. \n Cette commande permet la reprise, modification ou suppression d'une présentation.")
+	@commands.command(aliases=["pres", "edit_pres"], brief="Commandes pour modifier une présentation en cours.", help="Le champ PNJ est à indiquer pour les fiches lorsque celles-ci sont pour les PNJ. Autrement, par défaut, les fiches PJ sont sélectionnées. \n Cette commande permet la reprise, modification ou suppression d'une présentation.")
 	async def fiche(self, ctx):
 		member = ctx.message.author
 		idS = ctx.guild.id
@@ -501,6 +512,31 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			chartype="pj"
 		else:
 			chartype="ERROR"
+		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
+		data = f.readlines()
+		f.close()
+		if (len(data) > 0):
+			data = "".join(data)
+			perso = ast.literal_eval(data)
+			save = open(
+				f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
+			save.write(str(perso))
+			save.close()
+		else:
+			try:
+				os.path.isfile(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt")
+				save = open(
+				    f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
+				save_data = save.readlines()
+				save.close()
+				if (len(save_data) > 0):
+					save_data = "".join(save_data)
+					perso = ast.literal_eval(save_data)
+				else:
+					perso = {}
+			except OSError:
+				perso = {}
+		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
 		def checkRep(message):
 			return message.author == member and isinstance(message.channel, discord.DMChannel)
 		def checkRepChan(message):
@@ -512,55 +548,52 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		channel = c.fetchone()
 		if (channel[0] is not None) and (channel[1] is not None) and (channel[0] != 0) and (channel[1] != 0):
 			if chartype != "ERROR":
+				msg, img = await self.forme(ctx, member, chartype, idS)
 				menu=discord.Embed(title=f"Menu ({chartype})", description="1️⃣ - Edition\n 2️⃣ - Suppression\n 3️⃣ - Reprise \n 4️⃣ - Voir la fiche en cours")
 				q=await ctx.send(embed=menu)
 				for i in emoji:
 					await q.add_reaction(i)
 				reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
 				if reaction.emoji=="1️⃣":
-					await q.delete()
-					await ctx.send("Regardez vos DM ! 📨")
-					f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
-					data = f.readlines()
-					f.close()
-					if (len(data) > 0):
-						data = "".join(data)
-						perso = ast.literal_eval(data)
-						msg, img= await self.forme(ctx, member, chartype, idS)
-						await member.send(f"Actuellement, votre fiche ressemble à ceci :\n {msg}")
-						q=await member.send("Quel est le champ que vous voulez modifier ?")
-						rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
-						if rep.content.lower() == "stop":
-							await q.delete()
-							await rep.delete()
-							await ctx.send("Annulation", delete_after=30)
-							return
-						value=rep.content
-						found="not"
-						for k in perso.keys():
-							if unidecode.unidecode(k.lower()) == unidecode.unidecode(value.lower()):
-								q = await member.send(f"Par quoi voulez-vous modifier {value.capitalize()} ?\n Actuellement, elle a pour valeur {perso.get(k)}.")
-								rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-								if rep.content.lower() == "stop":
-									await q.delete()
-									await member.send("Annulation")
-									await rep.delete()
-									return
-								perso[k] = rep.content
-								f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
-								f.write(str(perso))
-								f.close()
-								q = await q.edit(content=f"{value.capitalize()} a bien été modifié !")
-								found="yes"
-								break
-						if found == "not":
-							await ctx.send(f"{value} n'a pas été trouvé dans votre fiche...")
-							return	
-					else:
-						await ctx.send("Erreur ! Votre présentation n'existe pas.")
+					await member.send(f"Actuellement, votre fiche ressemble à ceci :\n {msg}")
+					q=await member.send("Quel est le champ que vous voulez modifier ?")
+					rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+					if rep.content.lower() == "stop":
 						await q.delete()
+						await rep.delete()
+						await ctx.send("Annulation", delete_after=30)
 						return
-					f.close()
+					value=rep.content
+					found="not"
+					for k in perso.keys():
+						if unidecode.unidecode(value.lower()) in unidecode.unidecode(k.lower()):
+							q = await member.send(f"Par quoi voulez-vous modifier {value.capitalize()} ?\n Actuellement, elle a pour valeur {perso.get(k)}.")
+							rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+							if rep.content.lower() == "stop":
+								await q.delete()
+								await member.send("Annulation")
+								await rep.delete()
+								return
+							c=k.capitalize()
+							if ("*" in c) or ("$" in c) or ("&" in c):
+								while ("NA" in rep.content):
+									await member.send(f"Erreur ! Ce champ est obligatoire \n {value.capitalize()} ?")
+									rep=await self.bot.wait_for("message", timeout=300, check=checkRep)
+									repCheck=self.checkTriggers(rep, c, member)
+									if repCheck.lower()== "stop":
+										await member.send(f"Mise en pause. Vous pourrez reprendre plus tard avec la commande `{ctx.prefix}fiche`")
+										f.write(str(perso))
+										f.close()
+							perso[k] = rep.content
+							f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
+							f.write(str(perso))
+							f.close()
+							q = await q.edit(content=f"{value.capitalize()} a bien été modifié !")
+							found="yes"
+							break
+					if found == "not":
+						await ctx.send(f"{value} n'a pas été trouvé dans votre fiche...")
+						return	
 				elif reaction.emoji == "2️⃣":
 					os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
 					try:
