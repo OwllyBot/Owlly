@@ -440,6 +440,16 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 								await q.delete()
 								await rep.delete()
 								return
+							c = value.capitalize()
+							if ("*" in c) or ("$" in c) or ("&" in c):
+								while ("NA" in rep.content):
+									await member.send(f"Erreur ! Ce champ est obligatoire \n {value.capitalize()} ?")
+									rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+									repCheck = self.checkTriggers(rep, c, member)
+									if repCheck.lower() == "stop":
+										await member.send(f"Mise en pause. Vous pourrez reprendre plus tard avec la commande `{ctx.prefix}fiche`")
+										f.write(str(perso))
+										f.close()
 							perso[k]=rep.content
 							f = open(f"fiche/{chartype}_{member.name}_{idS}.txt","w", encoding="utf-8")
 							f.write(str(perso))
@@ -473,7 +483,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			await ctx.send(f"{member.name} n'a pas de présentation en cours...")
 			return
 
-	@commands.command(aliases=["pres"], brief="Commandes pour modifier une présentation en cours.", help="Le champ PNJ est à indiquer pour les fiches lorsque celles-ci sont pour les PNJ. Autrement, par défaut, les fiches PJ sont sélectionnées. \n Cette commande permet la reprise, modification ou suppression d'une présentation.")
+	@commands.command(aliases=["pres", "edit_pres"], brief="Commandes pour modifier une présentation en cours.", help="Le champ PNJ est à indiquer pour les fiches lorsque celles-ci sont pour les PNJ. Autrement, par défaut, les fiches PJ sont sélectionnées. \n Cette commande permet la reprise, modification ou suppression d'une présentation.")
 	async def fiche(self, ctx):
 		member = ctx.message.author
 		idS = ctx.guild.id
