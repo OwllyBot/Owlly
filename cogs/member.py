@@ -62,7 +62,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			return chan
 
 	async def forme(self, ctx, member: discord.Member, chartype, idS):
-		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
+		f = open(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 		data = f.readlines()
 		f.close()
 		msg = "error"
@@ -146,9 +146,9 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						await chan_send.send(msg)
 					else:
 						await chan_send.send(msg)
-					os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
+					os.remove(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
 					try:
-						os.remove(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt")
+						os.remove(f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt")
 					except OSError:
 						pass
 				else:
@@ -180,22 +180,22 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		emoji = ["✅", "❌"]
 		def checkValid(reaction, user):			
 			return user.bot != True and isinstance(reaction.message.channel, discord.DMChannel) and q.id == reaction.message.id and str(reaction.emoji) in emoji
-		if not os.path.isfile(f'fiche/{chartype}_{member.name}_{idS}.txt'):
+		if not os.path.isfile(f'fiche/{member.id}_{chartype}_{member.name}_{idS}.txt'):
 			perso = {}
 		else:
-			f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
+			f = open(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 			data = f.readlines()
 			f.close()
 			if (len(data) > 0):
 				data = "".join(data)
 				perso = ast.literal_eval(data)
-				save=open(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt","w", encoding="utf-8")
+				save=open(f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt","w", encoding="utf-8")
 				save.write(str(perso))
 				save.close()
 			else:
 				try : 
-					os.path.isfile(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt")
-					save = open(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
+					os.path.isfile(f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt")
+					save = open(f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 					save_data=save.readlines()
 					save.close()
 					if (len(save_data)>0):
@@ -205,7 +205,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						perso={}
 				except OSError:
 					perso={}
-		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
+		f = open(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
 		await member.send(f":white_small_square: `*` signifie que le champ est obligatoire. \n :white_small_square: `$` signifie que le réponse **doit être un lien** \n :white_small_square: `&` signifie que la réponse doit être **une image**.")
 		while last.lower() not in perso.keys():
 			for t in template.keys():
@@ -233,9 +233,9 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						elif rep.content.lower() == "cancel":
 							await member.send("Annulation de la présentation.")
 							f.close()
-							os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
+							os.remove(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
 							try:
-								os.remove(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt")
+								os.remove(f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt")
 							except OSError:
 								pass
 							return "delete"
@@ -244,14 +244,19 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 							if ("*" in c) or ("$" in c) or ("&" in c):
 								while ("NA" in reponse) :
 									await member.send(f"Erreur ! Ce champ est obligatoire \n {c} ?")
-									repError = await self.bot.wait_for("message", timeout=300, check=checkRep)
-									reponse=repError.content
-									repCheck= self.checkTriggers(rep, c, member)
-									if repCheck.lower() == "stop":
+									rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+									reponse=rep.content
+									if reponse.lower() == "stop":
 										await member.send(f"Mise en pause. Vous pourrez reprendre plus tard avec la commande `{ctx.prefix}fiche`")
 										f.write(str(perso))
 										f.close()
 										return "NOTdone"
+								if reponse.lower() == "stop":
+									await member.send(f"Mise en pause. Vous pourrez reprendre plus tard avec la commande `{ctx.prefix}fiche`")
+									f.write(str(perso))
+									f.close()
+									return "NOTdone"
+								reponse = self.checkTriggers(rep, c, member)
 							perso.update({c.lower(): reponse})
 					except asyncio.TimeoutError:
 						await member.send(f"Timeout ! Enregistrement des modifications. Vous pourrez la reprendre plus tard avec la commande `{ctx.prefix}fiche`")
@@ -417,7 +422,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
 			if reaction.emoji=="1️⃣":
 				await q.delete()
-				f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
+				f = open(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 				data = f.readlines()
 				f.close()
 				if (len(data) > 0):
@@ -454,7 +459,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 										f.write(str(perso))
 										f.close()
 							perso[k]=rep.content
-							f = open(f"fiche/{chartype}_{member.name}_{idS}.txt","w", encoding="utf-8")
+							f = open(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt","w", encoding="utf-8")
 							f.write(str(perso))
 							f.close()
 							q=await q.edit(content=f"{value.capitalize()} a bien été modifié !")
@@ -466,9 +471,9 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						return
 			elif reaction.emoji == "2️⃣":
 				await q.delete()
-				os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
+				os.remove(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
 				try:
-					os.remove(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt")
+					os.remove(f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt")
 				except OSError:
 					pass
 				await ctx.send(f"La présentation de {member.name} a été supprimé.")
@@ -513,21 +518,21 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			chartype="pj"
 		else:
 			chartype="ERROR"
-		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
+		f = open(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 		data = f.readlines()
 		f.close()
 		if (len(data) > 0):
 			data = "".join(data)
 			perso = ast.literal_eval(data)
 			save = open(
-				f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
+				f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
 			save.write(str(perso))
 			save.close()
 		else:
 			try:
-				os.path.isfile(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt")
+				os.path.isfile(f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt")
 				save = open(
-				    f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
+				    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt", "r", encoding="utf-8")
 				save_data = save.readlines()
 				save.close()
 				if (len(save_data) > 0):
@@ -537,7 +542,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					perso = {}
 			except OSError:
 				perso = {}
-		f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
+		f = open(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
 		def checkRep(message):
 			return message.author == member and isinstance(message.channel, discord.DMChannel)
 		def checkRepChan(message):
@@ -586,7 +591,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 										f.write(str(perso))
 										f.close()
 							perso[k] = rep.content
-							f = open(f"fiche/{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
+							f = open(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt", "w", encoding="utf-8")
 							f.write(str(perso))
 							f.close()
 							q = await q.edit(content=f"{value.capitalize()} a bien été modifié !")
@@ -596,9 +601,9 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						await ctx.send(f"{value} n'a pas été trouvé dans votre fiche...")
 						return	
 				elif reaction.emoji == "2️⃣":
-					os.remove(f"fiche/{chartype}_{member.name}_{idS}.txt")
+					os.remove(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
 					try:
-						os.remove(f"fiche/Saves_files/{chartype}_{member.name}_{idS}.txt")
+						os.remove(f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt")
 					except OSError:
 						pass
 					await ctx.send("Votre présentation a été supprimé.")
