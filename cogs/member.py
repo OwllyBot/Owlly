@@ -432,7 +432,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 					await rep.delete()
 					found="not"
 					for k in perso.keys():
-						if unidecode.unidecode(k.lower()) == unidecode.unidecode(value.lower()):
+						if unidecode.unidecode(k.lower()) in unidecode.unidecode(value.lower()):
 							q=await ctx.send(f"Par quoi voulez-vous modifier {value.capitalize()} ? \n Actuellement, sa valeur est {perso.get(k)}")
 							rep = self.bot.wait_for("message", timeout=300, check=checkRep)
 							if rep.content.lower()=="stop":
@@ -440,7 +440,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 								await q.delete()
 								await rep.delete()
 								return
-							c = value.capitalize()
+							c = k.capitalize()
 							if ("*" in c) or ("$" in c) or ("&" in c):
 								while ("NA" in rep.content):
 									await member.send(f"Erreur ! Ce champ est obligatoire \n {value.capitalize()} ?")
@@ -547,7 +547,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 						value=rep.content
 						found="not"
 						for k in perso.keys():
-							if unidecode.unidecode(k.lower()) == unidecode.unidecode(value.lower()):
+							if unidecode.unidecode(k.lower()) in unidecode.unidecode(value.lower()):
 								q = await member.send(f"Par quoi voulez-vous modifier {value.capitalize()} ?\n Actuellement, elle a pour valeur {perso.get(k)}.")
 								rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 								if rep.content.lower() == "stop":
@@ -555,7 +555,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 									await member.send("Annulation")
 									await rep.delete()
 									return
-								c=value.capitalize()
+								c=k.capitalize()
 								if ("*" in c) or ("$" in c) or ("&" in c):
 									while ("NA" in rep.content):
 										await member.send(f"Erreur ! Ce champ est obligatoire \n {value.capitalize()} ?")
