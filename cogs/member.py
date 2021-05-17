@@ -46,7 +46,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				imgur = im.upload_image(url=reponse)
 				reponse = imgur.link
 		elif "$" in c:
-			while ("www." not in reponse) : 
+			while (("https://" not in reponse) or ("http://" not in reponse)): 
 				await member.send(f"Erreur, ce champ doit être un lien.")
 				rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
 				reponse = rep.content
@@ -106,6 +106,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			for l, m in physique_info.items():
 				if m.endswith(('.png','.jpg','.jpeg','.gif')):
 					img=m
+					print(m)
 				else:
 					l = l.replace("*", "")
 					l=l.replace("$","")
