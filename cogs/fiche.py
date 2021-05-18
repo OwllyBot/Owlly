@@ -154,7 +154,7 @@ class fiches (commands.Cog, name="Fiche", description="Permet la création, édi
             else:
                 await member.send("Huh, il y a eu un soucis avec l'envoie. Il semblerait que les channels ne soient pas configurés ! Rapproche toi du staff pour le prévenir. \n Note : Ce genre de chose n'est pas sensé arrivé, donc contacte aussi @Mara#3000 et fait un rapport de bug. ")
 
-    async def start_presentation(self, ctx, member, chartype):
+    async def start_presentation(self, ctx, member: discord.Member, chartype):
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
         idS = ctx.guild.id
