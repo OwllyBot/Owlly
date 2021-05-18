@@ -1,1 +1,0 @@
-{'nom': 'Pouic', 'prenoms*': 'lol', 'surnoms': 'SDSD', 'anniversaire': 'SQDSQ', 'age': 'SQD', 'genre': 'D', 'orientation': 'Q', 'race*': 'SD'}
