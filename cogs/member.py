@@ -9,7 +9,6 @@ from discord.ext.commands import CommandError
 import sqlite3
 import os.path
 import pyimgur
-from cogs.fiche import fiches as fi
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 CLIENT_ID = os.environ.get("CLIENT_ID")
@@ -25,7 +24,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 
 	def __init__(self, bot):
 		self.bot = bot
-	
+
 	
 	async def search_chan(self, ctx, chan: str):
 		chan=str(chan)
@@ -120,15 +119,15 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 			idS=ctx.guild.id
 			fiche, img = await fi.forme(ctx,user, chartype, idS)
 			await fi.validation(ctx, fiche, img, chartype, user)
-   
+
 
 	@commands.command(usage="@mention", brief="Lance la création d'une fiche", help="Permet à un joueur ayant sa fiche valider de faire sa présentation.", aliases=["add_pj","validation", "add_pres", "pj"])
 	@commands.has_permissions(administrator=True)
 	async def add_presentation(self, ctx, member: discord.Member):
+		fi = self.bot.get_cog("Fiche")
 		chartype="pj"
 		await ctx.send(f"{member.mention} check tes DM ! 📧")
 		await ctx.message.delete()
-		await ctx.send(f"Voici l'aide :\n{help(fi.start_presentation)}")
 		pres=await fi.start_presentation(ctx, member, chartype)
 		if pres == "done":
 			fiche, img=await fi.forme(ctx, member, chartype, idS=ctx.guild.id)
@@ -136,7 +135,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 
 	@commands.command(usage="@mention", brief="Lance la création d'une fiche PNJ", help="Permet à un joueur ayant sa fiche PNJ validée de faire sa présentation.", aliases=["add_pnj", "validation_pnj"])
 	@commands.has_permissions(administrator=True)
-	async def pnj(ctx, member: discord.Member):
+	async def pnj(self, ctx, member: discord.Member):
+		fi = self.bot.get_cog("Fiche")
 		chartype="pnj"
 		await ctx.send(f"{member.mention} check tes DM ! 📧")
 		pres = await fi.start_presentation(ctx, member, chartype)
