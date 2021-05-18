@@ -38,16 +38,17 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
     async def checkTriggers(self, rep, c, member: discord.Member):
         def checkRep(message):
             return message.author == member and isinstance(message.channel, discord.DMChannel)
-
         reponse = rep.content.replace("'", "\\'")
+        print(type(rep))
         if "&" in c:
-            while (
-                (not rep.attachments)
-                or ("cdn.discordapp.com" not in reponse)
+            while not (
+                (rep.attachments)
+                or ("discordapp" in reponse)
                 or (reponse.endswith(("jpg", "png", "gif", "jpeg")))
             ):
                 await member.send(f"Erreur, ce champ doit être une image (pièce-jointe / lien)")
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                print(rep.attachments[0].url)
                 reponse = rep.content
             if rep.attachments:
                 reponse = rep.attachments[0]
@@ -59,7 +60,7 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                 imgur = im.upload_image(url=reponse)
                 reponse = imgur.link
         elif "$" in c:
-            while ("https://" not in reponse) or ("http://" not in reponse):
+            while ("http" not in reponse):
                 await member.send(f"Erreur, ce champ doit être un lien.")
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
                 reponse = rep.content
