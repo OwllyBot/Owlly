@@ -126,9 +126,9 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 	@commands.has_permissions(administrator=True)
 	async def add_presentation(self, ctx, member: discord.Member):
 		chartype="pj"
-		pres=await fi.start_presentation(self, ctx, member, chartype)
+  		await ctx.send(f"{member.mention} check tes DM ! 📧")
 		await ctx.message.delete()
-		await ctx.send(f"{member.mention} check tes DM ! 📧")
+		pres=await fi.start_presentation(self, ctx, member, chartype)
 		if pres == "done":
 			fiche, img=await fi.forme(self, ctx, member, chartype, idS=ctx.guild.id)
 			await fi.validation(self, ctx, fiche, img, chartype, member)
@@ -137,8 +137,9 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 	@commands.has_permissions(administrator=True)
 	async def pnj(self, ctx, member: discord.Member):
 		chartype="pnj"
-		pres = await fi.start_presentation(self, ctx, member, chartype)
 		await ctx.send(f"{member.mention} check tes DM ! 📧")
+		pres = await fi.start_presentation(self, ctx, member, chartype)
+		await ctx.message.delete()
 		if pres == "done":
 			fiche, img = await fi.forme(self, ctx, member, chartype, idS=ctx.guild.id)
 			await fi.validation(self, ctx, fiche, img, chartype, member)
