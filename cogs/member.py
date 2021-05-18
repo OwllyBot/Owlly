@@ -8,13 +8,8 @@ from discord.ext.commands import TextChannelConverter as tcc
 from discord.ext.commands import CommandError
 import sqlite3
 import os.path
-import ast
-import asyncio
-import unidecode
-import re
 import pyimgur
-from cogs import fiche
-from fiche import fiches as fi
+from cogs.fiche import fiches as fi
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 CLIENT_ID = os.environ.get("CLIENT_ID")
