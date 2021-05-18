@@ -126,7 +126,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 	@commands.has_permissions(administrator=True)
 	async def add_presentation(self, ctx, member: discord.Member):
 		chartype="pj"
-  		await ctx.send(f"{member.mention} check tes DM ! 📧")
+		await ctx.send(f"{member.mention} check tes DM ! 📧")
 		await ctx.message.delete()
 		pres=await fi.start_presentation(self, ctx, member, chartype)
 		if pres == "done":
