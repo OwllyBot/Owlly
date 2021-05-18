@@ -173,11 +173,9 @@ class fiches (commands.Cog, name="Fiche", description="Permet la création, édi
         champ = general+physique
         template = {i: str(Personnage(i)) for i in champ}
         last = list(template)[-1]
-
         def checkRep(message):
             return message.author == member and isinstance(message.channel, discord.DMChannel)
         emoji = ["✅", "❌"]
-
         def checkValid(reaction, user):
             return user.bot != True and isinstance(reaction.message.channel, discord.DMChannel) and q.id == reaction.message.id and str(reaction.emoji) in emoji
         if not os.path.isfile(f'fiche/{member.id}_{chartype}_{member.name}_{idS}.txt'):
