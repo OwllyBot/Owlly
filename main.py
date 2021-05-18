@@ -36,7 +36,7 @@ def getprefix(bot, message):
 
 
 initial_extensions = ['cogs.clean_db', 'cogs.utils', 'cogs.menu',
-					  'cogs.author_cmd', 'cogs.member', 'cogs.config_general', 'cogs.error_handler', ]
+					  'cogs.author_cmd', 'cogs.member', 'cogs.config_general', 'cogs.error_handler', 'cogs.fiche', 'cogs.admin_fiche']
 repo_name = Repository('.').head.shorthand
 bot = commands.Bot(command_prefix=getprefix, intents=intents,activity=discord.Game("ouvrir des portes !"))
 if __name__ == '__main__':
