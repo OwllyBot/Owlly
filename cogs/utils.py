@@ -9,8 +9,7 @@ from discord.ext.commands import ColourConverter
 import unidecode as uni
 
 from discord.ext.commands.errors import CommandError
-intents = discord.Intents(messages=True, guilds=True,
-                          reactions=True, members=True)
+intents = discord.Intents(messages=True, guilds=True,reactions=True, members=True)
 
 
 class CogUtils(commands.Cog, name="Utilitaire", description="Une série de commande permettant notamment le débug, mais donnant aussi des informations."):
