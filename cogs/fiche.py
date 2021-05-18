@@ -41,13 +41,13 @@ class fiches (commands.Cog, name="Fiche", description="Permet la création, édi
                 await member.send(f"Erreur, ce champ doit être une image (pièce-jointe / lien)")
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
                 reponse = rep.content
-                if reponse.attachments:
-                    reponse = rep.attachments[0]
-                    imgur = im.upload_image(url=reponse.url)
-                    reponse = imgur.link
-                elif "cdn.discordapp.com" in reponse or reponse.endswith(("jpg", "png", "gif", "jpeg")):
-                    imgur = im.upload_image(url=reponse)
-                    reponse = imgur.link
+            if rep.attachments:
+                reponse = rep.attachments[0]
+                imgur = im.upload_image(url=reponse.url)
+                reponse = imgur.link
+            elif "cdn.discordapp.com" in reponse or reponse.endswith(("jpg", "png", "gif", "jpeg")):
+                imgur = im.upload_image(url=reponse)
+                reponse = imgur.link
         elif "$" in c:
             while (("https://" not in reponse) or ("http://" not in reponse)):
                 await member.send(f"Erreur, ce champ doit être un lien.")
@@ -262,7 +262,7 @@ class fiches (commands.Cog, name="Fiche", description="Permet la création, édi
                                     f.write(str(perso))
                                     f.close()
                                     return "NOTdone"
-                                reponse = self.checkTriggers(rep, c, member)
+                                reponse = await self.checkTriggers(rep, c, member)
                             perso.update({c.lower(): reponse})
                     except asyncio.TimeoutError:
                         await member.send(f"Timeout ! Enregistrement des modifications. Vous pourrez la reprendre plus tard avec la commande `{ctx.prefix}fiche`")
