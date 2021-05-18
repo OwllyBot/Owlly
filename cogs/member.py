@@ -100,6 +100,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		if rm_role is not None:
 			rm_role=",".join(rm_role)
 			rm_role=rm_role.split(",")
+			role_rm_info=""
 			for i in rm_role:
 				try:
 					i = get(ctx.guild.roles, id=int(i))
@@ -108,38 +109,39 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 				except AttributeError:
 					pass
 			role_rm_info=f", et les rôles {role_rm_info} lui ont été retiré."
+		else:
+			role_rm_info=""
 		await ctx.send(f"{user.mention} est devenu un membre du serveur ! Il·Elle a donc reçu les rôles : {roleInfo}{role_rm_info}", delete_after=60)
 
 		await ctx.message.delete()
 		await ctx.send(f"Début de la création de la fiche ! \n {user.mention} regardez vos DM !")
-		pres = await fi.start_presentation(ctx, user, chartype)
+		pres = await fi.start_presentation(self, ctx, user, chartype)
 		if pres == "done":
 			idS=ctx.guild.id
-			fiche, img = await fi.forme(ctx,user, chartype, idS)
-			await fi.validation(ctx, fiche, img, chartype, user)
+			fiche, img = await fi.forme(self, ctx,user, chartype, idS)
+			await fi.validation(self, ctx, fiche, img, chartype, user)
    
 
 	@commands.command(usage="@mention", brief="Lance la création d'une fiche", help="Permet à un joueur ayant sa fiche valider de faire sa présentation.", aliases=["add_pj","validation", "add_pres", "pj"])
 	@commands.has_permissions(administrator=True)
 	async def add_presentation(self, ctx, member: discord.Member):
 		chartype="pj"
-		pres=await fi.start_presentation(ctx, member, chartype)
+		pres=await fi.start_presentation(self, ctx, member, chartype)
 		await ctx.message.delete()
 		await ctx.send(f"{member.mention} check tes DM ! 📧")
 		if pres == "done":
-			fiche, img=await fi.forme(ctx, member, chartype, idS=ctx.guild.id)
-			await fi.validation(ctx, fiche, img, chartype, member)
+			fiche, img=await fi.forme(self, ctx, member, chartype, idS=ctx.guild.id)
+			await fi.validation(self, ctx, fiche, img, chartype, member)
 
 	@commands.command(usage="@mention", brief="Lance la création d'une fiche PNJ", help="Permet à un joueur ayant sa fiche PNJ validée de faire sa présentation.", aliases=["add_pnj", "validation_pnj"])
 	@commands.has_permissions(administrator=True)
 	async def pnj(self, ctx, member: discord.Member):
 		chartype="pnj"
-		pres = await fi.start_presentation(ctx, member, chartype)
+		pres = await fi.start_presentation(self, ctx, member, chartype)
 		await ctx.send(f"{member.mention} check tes DM ! 📧")
 		if pres == "done":
-			fiche, img = await fi.forme(ctx, member, chartype, idS=ctx.guild.id)
-			await fi.validation(ctx, fiche, img, chartype, member)
+			fiche, img = await fi.forme(self, ctx, member, chartype, idS=ctx.guild.id)
+			await fi.validation(self, ctx, fiche, img, chartype, member)
 
 def setup(bot):
 	bot.add_cog(memberUtils(bot))
-
