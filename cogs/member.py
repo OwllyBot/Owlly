@@ -9,7 +9,7 @@ from discord.ext.commands import CommandError
 import sqlite3
 import os.path
 import pyimgur
-from .fiche import fiches as fi
+from cogs.fiche import fiches as fi
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 CLIENT_ID = os.environ.get("CLIENT_ID")
@@ -128,6 +128,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
 		chartype="pj"
 		await ctx.send(f"{member.mention} check tes DM ! 📧")
 		await ctx.message.delete()
+		await ctx.send(f"Voici l'aide :\n{help(fi.start_presentation)}")
 		pres=await fi.start_presentation(ctx, member, chartype)
 		if pres == "done":
 			fiche, img=await fi.forme(ctx, member, chartype, idS=ctx.guild.id)
