@@ -9,7 +9,7 @@ from discord.ext.commands import CommandError
 import sqlite3
 import os.path
 import pyimgur
-from cogs.fiche import fiches as fi
+from .fiche import fiches as fi
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 CLIENT_ID = os.environ.get("CLIENT_ID")
