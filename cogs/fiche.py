@@ -19,7 +19,7 @@ class Personnage(object):
     def __str__(self):
         return str(self.champ)
 
-class fiches (commands.Cog, name="Fiche", description="Permet la création, édition, de fiche RP."):
+class fiches(commands.Cog, name="Fiche", description="Permet la création, édition, de fiche RP."):
     def __init__(self, bot):
         self.bot = bot
 
