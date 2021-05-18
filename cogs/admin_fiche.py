@@ -11,7 +11,12 @@ import os
 import ast
 from collections import OrderedDict
 
-class adminfiche(commands.Cog, name="Administration des fiches", description="Permet de configurer les fiches."):
+
+class adminfiche(
+    commands.Cog,
+    name="Administration des fiches",
+    description="Permet de configurer les fiches.",
+):
     def __init__(self, bot):
         self.bot = bot
 
@@ -24,13 +29,23 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
             return chan
 
     @commands.has_permissions(administrator=True)
-    @commands.command(aliases=["fiche_chan"], help="Permet de configurer le channel dans lequel sera envoyé les présentations des personnages.", brief="Insertion d'un channel pour envoyer les présentations validées.", usage="channel")
+    @commands.command(
+        aliases=["fiche_chan"],
+        help="Permet de configurer le channel dans lequel sera envoyé les présentations des personnages.",
+        brief="Insertion d'un channel pour envoyer les présentations validées.",
+        usage="channel",
+    )
     async def chan_fiche(self, ctx):
         def checkRep(message):
             return message.author == ctx.message.author and ctx.message.channel == message.channel
 
         def checkValid(reaction, user):
-            return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+            )
+
         cl = ctx.guild.id
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
@@ -48,7 +63,9 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
             await rep.delete()
             return
         await rep.delete()
-        await q.edit(content="Dans quel channel voulez-vous envoyer la présentation des PJ validés ?")
+        await q.edit(
+            content="Dans quel channel voulez-vous envoyer la présentation des PJ validés ?"
+        )
         rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
         if rep.content.lower() == "stop":
             await q.delete()
@@ -68,7 +85,9 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
         reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
         if reaction.emoji == "✅":
             await q.clear_reactions()
-            await q.edit(content="Dans quel channel voulez-vous que soit envoyé les fiches des PNJ ?")
+            await q.edit(
+                content="Dans quel channel voulez-vous que soit envoyé les fiches des PNJ ?"
+            )
             rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
             fiche_pnj = await self.search_chan(ctx, rep.content)
             fiche_pnj = fiche_pnj.id
@@ -91,33 +110,40 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
     async def edit_update(self, ctx, dm, chartype, champ, old):
         idS = ctx.guild.id
         f = open(
-            f"fiche/{dm.id}_{chartype}_{dm.name}_{ctx.guild.id}.txt", "r", encoding="utf-8")
+            f"fiche/{dm.id}_{chartype}_{dm.name}_{ctx.guild.id}.txt",
+            "r",
+            encoding="utf-8",
+        )
         data = f.readlines()
         f.close()
-        if (len(data) > 0):
+        if len(data) > 0:
             data = "".join(data)
             perso = ast.literal_eval(data)
             save = open(
-                f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8")
+                f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
+                "w",
+                encoding="utf-8",
+            )
             save.write(str(perso))
             save.close()
         else:
             try:
-                os.path.isfile(
-                    f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt")
+                os.path.isfile(f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt")
                 save = open(
-                    f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "r", encoding="utf-8")
+                    f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
+                    "r",
+                    encoding="utf-8",
+                )
                 save_data = save.readlines()
                 save.close()
-                if (len(save_data) > 0):
+                if len(save_data) > 0:
                     save_data = "".join(save_data)
                     perso = ast.literal_eval(save_data)
                 else:
                     perso = {}
             except OSError:
                 perso = {}
-        f = open(f"fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
-                 "w", encoding="utf-8")
+        f = open(f"fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8")
         perso_new = {}
         for k, v in perso.keys():
             if k != old:
@@ -130,33 +156,40 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
     async def add_update(self, ctx, dm, chartype, champ, part):
         idS = ctx.guild.id
         f = open(
-            f"fiche/{dm.id}_{chartype}_{dm.name}_{ctx.guild.id}.txt", "r", encoding="utf-8")
+            f"fiche/{dm.id}_{chartype}_{dm.name}_{ctx.guild.id}.txt",
+            "r",
+            encoding="utf-8",
+        )
         data = f.readlines()
         f.close()
-        if (len(data) > 0):
+        if len(data) > 0:
             data = "".join(data)
             perso = ast.literal_eval(data)
             save = open(
-                f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8")
+                f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
+                "w",
+                encoding="utf-8",
+            )
             save.write(str(perso))
             save.close()
         else:
             try:
-                os.path.isfile(
-                    f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt")
+                os.path.isfile(f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt")
                 save = open(
-                    f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "r", encoding="utf-8")
+                    f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
+                    "r",
+                    encoding="utf-8",
+                )
                 save_data = save.readlines()
                 save.close()
-                if (len(save_data) > 0):
+                if len(save_data) > 0:
                     save_data = "".join(save_data)
                     perso = ast.literal_eval(save_data)
                 else:
                     perso = {}
             except OSError:
                 perso = {}
-        f = open(f"fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
-                 "w", encoding="utf-8")
+        f = open(f"fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8")
         d = OrderedDict()
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
@@ -179,15 +212,15 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
         db.close()
 
     async def presence_membre(self, ctx, type_edit, champ, old, part):
-        if len(os.listdir('fiche')) > 1:  # Repertoire avec autre chose que .pouic
+        if len(os.listdir("fiche")) > 1:  # Repertoire avec autre chose que .pouic
             await ctx.send("Alerte ! Il y a des fiches en cours ! ")
             list_files = []
-            for (rep, sous_rep, fichier) in os.walk('fiche'):
+            for (rep, sous_rep, fichier) in os.walk("fiche"):
                 list_files.extend(fichier)
             play = []
             pj = []
             for i in list:
-                if i != '.pouic' and i not in play:
+                if i != ".pouic" and i not in play:
                     play.append(i.split("_")[0])
                     pj.append(i.split("_")[1])
             for member in play:
@@ -199,21 +232,39 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
                     elif type_edit == "ajouté":
                         await self.add_update(ctx, dm, chartype, champ, part)
 
-    @commands.command(brief="Permet de choisir les champs de la présentation des personnages.", help="Cette commande permet de choisir les champs de présentation générale et du physique, de les éditer, supprimer mais aussi en ajouter.")
+    @commands.command(
+        brief="Permet de choisir les champs de la présentation des personnages.",
+        help="Cette commande permet de choisir les champs de présentation générale et du physique, de les éditer, supprimer mais aussi en ajouter.",
+    )
     @commands.has_permissions(administrator=True)
     async def config_fiche(self, ctx):
-        emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "👀", "❌", "✅", ]
+        emoji = [
+            "1️⃣",
+            "2️⃣",
+            "3️⃣",
+            "4️⃣",
+            "👀",
+            "❌",
+            "✅",
+        ]
 
         def checkValid(reaction, user):
-            return ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and str(reaction.emoji) in emoji
+            )
 
         def checkRep(message):
             return message.author == ctx.message.author and ctx.message.channel == message.channel
+
         cl = ctx.guild.id
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
-        menu = discord.Embed(title="Menu de gestion des fiches",
-                             description="1️⃣ | Création \n 2️⃣ | Suppression \n 3️⃣ | Edition \n 4️⃣ | Ajout \n 👀 | Affichage")
+        menu = discord.Embed(
+            title="Menu de gestion des fiches",
+            description="1️⃣ | Création \n 2️⃣ | Suppression \n 3️⃣ | Edition \n 4️⃣ | Ajout \n 👀 | Affichage",
+        )
         menu.set_footer(text="❌ pour annuler.")
         q = await ctx.send(embed=menu)
         for i in emoji:
@@ -221,8 +272,10 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
                 await q.add_reaction(i)
         reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
         if reaction.emoji == "1️⃣":
-            if len(os.listdir('fiche')) > 1:
-                await ctx.send("ALERTE ! Il y a des fiches en cours. Vous devez attendre qu'elles soient terminé pour pouvoir modifier les champs....")
+            if len(os.listdir("fiche")) > 1:
+                await ctx.send(
+                    "ALERTE ! Il y a des fiches en cours. Vous devez attendre qu'elles soient terminé pour pouvoir modifier les champs...."
+                )
                 return
             await q.delete()
             sql = "SELECT fiche_pj, fiche_validation, fiche_pnj FROM FICHE WHERE idS=?"
@@ -230,12 +283,14 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
             channels = c.fetchone()
             if channels[0] is None:
                 await self.chan_fiche(ctx)
-            q = await ctx.send("Merci de rentrer les champs que vous souhaitez pour la partie présentation **générale**.\n `cancel` pour annuler et `stop` pour valider.\n Utiliser le symbole `*` pour marquer l'obligation du champ, `$` pour les liens et `&` pour les images.")
+            q = await ctx.send(
+                "Merci de rentrer les champs que vous souhaitez pour la partie présentation **générale**.\n `cancel` pour annuler et `stop` pour valider.\n Utiliser le symbole `*` pour marquer l'obligation du champ, `$` pour les liens et `&` pour les images."
+            )
             general = []
             while True:
                 general_rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
                 general_champ = general_rep.content
-                if general_champ.lower() == 'stop':
+                if general_champ.lower() == "stop":
                     await ctx.send("Validation en cours !", delete_after=5)
                     await general_rep.delete()
                     break
@@ -246,12 +301,14 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
                     return
                 else:
                     await general_rep.add_reaction("✅")
-                    general_champ = general_champ.replace("\'", "\\'")
+                    general_champ = general_champ.replace("'", "\\'")
                     general.append(general_champ.capitalize())
                 await general_rep.delete(delay=10)
             general = ",".join(general)
             await q.delete()
-            q = await ctx.send("Maintenant, rentrer les champs pour la description physique.\n `stop` pour valider, `cancel` pour annuler.\n Utiliser `*` pour marquer les champs obligatoires, `$` si cela doit être un lien, et `&` si cela doit être une image.")
+            q = await ctx.send(
+                "Maintenant, rentrer les champs pour la description physique.\n `stop` pour valider, `cancel` pour annuler.\n Utiliser `*` pour marquer les champs obligatoires, `$` si cela doit être un lien, et `&` si cela doit être une image."
+            )
             physique = []
             while True:
                 physique_rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
@@ -266,13 +323,15 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
                     await q.delete()
                     return
                 else:
-                    physique_champ = physique_champ.replace("\'", "\\'")
+                    physique_champ = physique_champ.replace("'", "\\'")
                     await physique_rep.add_reaction("✅")
                     physique.append(physique_champ.capitalize())
                 await physique_rep.delete(delay=10)
             physique = ",".join(physique)
             await q.delete()
-            q = await ctx.send(f"Vos champs sont donc :\n __GÉNÉRAL__ :\n {general} \n\n __PHYSIQUE__ : {physique}\n\n Validez-vous ses paramètres ?")
+            q = await ctx.send(
+                f"Vos champs sont donc :\n __GÉNÉRAL__ :\n {general} \n\n __PHYSIQUE__ : {physique}\n\n Validez-vous ses paramètres ?"
+            )
             await q.add_reaction("✅")
             await q.add_reaction("❌")
             reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
@@ -312,7 +371,10 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
                 champ_general = champs[0].split(",")
                 champ_physique = champs[1].split(",")
             else:
-                await ctx.send("Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.", delete_after=30)
+                await ctx.send(
+                    "Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.",
+                    delete_after=30,
+                )
                 await q.delete()
                 await rep.delete()
                 return
@@ -346,7 +408,10 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
             c.execute(sql, (cl,))
             champs = c.fetchone()
             if champs is None:
-                await ctx.send("Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.", delete_after=30)
+                await ctx.send(
+                    "Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.",
+                    delete_after=30,
+                )
                 return
             gen_msg = "".join(champs[0]).split(",")
             gen_msg = ", ".join(gen_msg)
@@ -378,8 +443,10 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
                     await rep.delete()
                     await ctx.send("Annulation", delete_after=30)
                     return
-                champ_general = [rep.content.capitalize() if champ == unidecode.unidecode(
-                    x.lower()) else x for x in champ_general]
+                champ_general = [
+                    rep.content.capitalize() if champ == unidecode.unidecode(x.lower()) else x
+                    for x in champ_general
+                ]
                 part = "general"
             elif champ in phys_uni:
                 await q.edit(content=f"Par quoi voulez-vous modifier {champ} ?")
@@ -390,8 +457,10 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
                     await rep.delete()
                     await ctx.send("Annulation", delete_after=30)
                     return
-                champ_physique = [rep.content.capitalize() if champ == unidecode.unidecode(
-                    x.lower()) else x for x in champ_physique]
+                champ_physique = [
+                    rep.content.capitalize() if champ == unidecode.unidecode(x.lower()) else x
+                    for x in champ_physique
+                ]
                 part = "physique"
             else:
                 await q.delete()
@@ -421,7 +490,9 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
             phys_msg = "".join(champs[1]).split(",")
             phys_msg = ", ".join(phys_msg)
             msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
-            q = await ctx.send(f"__**Fiche actuelle**__ :\n {msg_full}\n Dans quelle partie voulez-vous ajouter votre champ ? \n 1️⃣ : GÉNÉRALE \n 2️⃣: PHYSIQUE")
+            q = await ctx.send(
+                f"__**Fiche actuelle**__ :\n {msg_full}\n Dans quelle partie voulez-vous ajouter votre champ ? \n 1️⃣ : GÉNÉRALE \n 2️⃣: PHYSIQUE"
+            )
             await q.add_reaction("1️⃣")
             await q.add_reaction("2️⃣")
             await q.add_reaction("❌")
@@ -432,13 +503,17 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
                 champ_general = c.fetchone()[0]
                 part = "general"
                 if champ_general is None:
-                    await ctx.send("Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.", delete_after=30)
+                    await ctx.send(
+                        "Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.",
+                        delete_after=30,
+                    )
                     return
                 champ_general = champ_general.split(",")
-                gen_uni = [unidecode.unidecode(i.lower())
-                           for i in champ_general]
+                gen_uni = [unidecode.unidecode(i.lower()) for i in champ_general]
                 await q.delete()
-                q = await ctx.send("Quel est le champ à ajouter ?\n Utiliser `*` pour marquer l'obligation, `&` que c'est une image, et $` pour un lien.")
+                q = await ctx.send(
+                    "Quel est le champ à ajouter ?\n Utiliser `*` pour marquer l'obligation, `&` que c'est une image, et $` pour un lien."
+                )
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
                 if rep.content.lower() == "stop":
                     await q.delete()
@@ -469,12 +544,14 @@ class adminfiche(commands.Cog, name="Administration des fiches", description="Pe
                 c.execute(sql, (cl,))
                 champ_physique = c.fetchone()[0]
                 if champ_physique is None:
-                    await ctx.send("Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.", delete_after=30)
+                    await ctx.send(
+                        "Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.",
+                        delete_after=30,
+                    )
                     return
                 champ_physique = champ_physique.split(",")
                 part = "physique"
-                phys_uni = [unidecode.unidecode(
-                    i.lower()) for i in champ_physique]
+                phys_uni = [unidecode.unidecode(i.lower()) for i in champ_physique]
                 await q.delete()
                 q = await ctx.send("Quel est le champ à ajouter ?")
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)

@@ -11,7 +11,12 @@ import os
 import ast
 from collections import OrderedDict
 
-class CogAdmins(commands.Cog, name="Administration", description="Permet d'enregistrer quelques paramètres pour le bot."):
+
+class CogAdmins(
+    commands.Cog,
+    name="Administration",
+    description="Permet d'enregistrer quelques paramètres pour le bot.",
+):
     def __init__(self, bot):
         self.bot = bot
 
@@ -23,7 +28,11 @@ class CogAdmins(commands.Cog, name="Administration", description="Permet d'enreg
             chan = "Error"
             return chan
 
-    @commands.command(name="set_prefix", help="Permet de changer le prefix du bot.", brief="Changement du prefix.")
+    @commands.command(
+        name="set_prefix",
+        help="Permet de changer le prefix du bot.",
+        brief="Changement du prefix.",
+    )
     @commands.has_permissions(administrator=True)
     async def set_prefix(self, ctx, prefix):
         db = sqlite3.connect("owlly.db", timeout=3000)
@@ -36,7 +45,11 @@ class CogAdmins(commands.Cog, name="Administration", description="Permet d'enreg
         c.close()
         db.close()
 
-    @commands.command(aliases=['lexique_config'], help="Permet de configurer le channel dans lequel la commande `search` va faire ses recherches.", brief="Configuration de la recherche de message dans un channel.")
+    @commands.command(
+        aliases=["lexique_config"],
+        help="Permet de configurer le channel dans lequel la commande `search` va faire ses recherches.",
+        brief="Configuration de la recherche de message dans un channel.",
+    )
     @commands.has_permissions(administrator=True)
     async def notes_config(self, ctx, chan: discord.TextChannel):
         server = ctx.guild.id
@@ -90,7 +103,12 @@ class CogAdmins(commands.Cog, name="Administration", description="Permet d'enreg
         db.close()
 
     @commands.has_permissions(administrator=True)
-    @commands.command(help="Permet d'enregistrer / réenregistrer la liste des rôles données par la commandes member, sans passer par le menu de configuration.", brief="Enregistrement de rôles pour la commande member, sans passer par le menu.", usage="@mention/ID des rôles à enregistrer", aliases=['init_role', 'assign_init'])
+    @commands.command(
+        help="Permet d'enregistrer / réenregistrer la liste des rôles données par la commandes member, sans passer par le menu de configuration.",
+        brief="Enregistrement de rôles pour la commande member, sans passer par le menu.",
+        usage="@mention/ID des rôles à enregistrer",
+        aliases=["init_role", "assign_init"],
+    )
     async def role_init(self, ctx, *role: discord.Role):
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
@@ -114,7 +132,12 @@ class CogAdmins(commands.Cog, name="Administration", description="Permet d'enreg
         db.close()
 
     @commands.has_permissions(administrator=True)
-    @commands.command(help="Permet d'enregistrer / réenregistrer la liste des rôles retirés par la commandes member, sans passer par le menu de configuration.", brief="Enregistrement de rôles pour la commande member, sans passer par le menu.", usage="@mention/ID des rôles à enregistrer", aliases=['init_rm', 'assign_rm'])
+    @commands.command(
+        help="Permet d'enregistrer / réenregistrer la liste des rôles retirés par la commandes member, sans passer par le menu de configuration.",
+        brief="Enregistrement de rôles pour la commande member, sans passer par le menu.",
+        usage="@mention/ID des rôles à enregistrer",
+        aliases=["init_rm", "assign_rm"],
+    )
     async def init_role_rm(self, ctx, *role: discord.Role):
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
@@ -151,20 +174,29 @@ class CogAdmins(commands.Cog, name="Administration", description="Permet d'enreg
         role_list = c.fetchone()
 
         def checkValid(reaction, user):
-            return ctx.message.author == user and q.id == reaction.message.id and (str(reaction.emoji) in emoji)
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and (str(reaction.emoji) in emoji)
+            )
 
         def checkRep(message):
             return message.author == ctx.message.author and ctx.message.channel == message.channel
+
         emoji = ["1️⃣", "2️⃣", "3️⃣", "✅", "❌"]
         if role_list is not None:
             role_list = role_list[0].split(",")
             role_phrase = ""
             for i in role_list:
                 try:
-                    role_phrase = str(await commands.RoleConverter().convert(ctx, i))+" / "+role_phrase
+                    role_phrase = (
+                        str(await commands.RoleConverter().convert(ctx, i)) + " / " + role_phrase
+                    )
                 except RoleNotFound:
                     pass
-            q = await ctx.send(f"Vous avez actuellement des rôles enregistrés : {role_phrase}\n Voulez-vous :\n 1️⃣ - Rajouter un rôle \n 2️⃣ - Supprimer un rôle \n 3️⃣ - Recommencer votre inscription \n ❌ - Annuler. ")
+            q = await ctx.send(
+                f"Vous avez actuellement des rôles enregistrés : {role_phrase}\n Voulez-vous :\n 1️⃣ - Rajouter un rôle \n 2️⃣ - Supprimer un rôle \n 3️⃣ - Recommencer votre inscription \n ❌ - Annuler. "
+            )
             for i in emoji:
                 while i != "✅":
                     await q.add_reaction(i)
@@ -244,17 +276,30 @@ class CogAdmins(commands.Cog, name="Administration", description="Permet d'enreg
                 return
 
     @commands.has_permissions(administrator=True)
-    @commands.command(help="Permet d'inscrire des rôles à retirer lorsqu'un membre est validé.", brief="Enregistrement de rôle pour les faire retirer.", aliases=["rm_role", "role_remove", "remover_member"])
+    @commands.command(
+        help="Permet d'inscrire des rôles à retirer lorsqu'un membre est validé.",
+        brief="Enregistrement de rôle pour les faire retirer.",
+        aliases=["rm_role", "role_remove", "remover_member"],
+    )
     async def role_rm(self, ctx):
         await self.inscription_role(ctx, "rm")
 
     @commands.has_permissions(administrator=True)
-    @commands.command(help="Assignation des rôles par la commande `member`.", brief="Enregistrement de rôles pour la commande member.", aliases=['role_config', 'roliste_config', 'assign'])
+    @commands.command(
+        help="Assignation des rôles par la commande `member`.",
+        brief="Enregistrement de rôles pour la commande member.",
+        aliases=["role_config", "roliste_config", "assign"],
+    )
     async def roliste(self, ctx):
         await self.inscription_role(ctx, "roliste")
 
     @commands.has_permissions(administrator=True)
-    @commands.command(aliases=["count", "edit_count"], brief="Permet de changer le compteur des ticket", help="Permet de reset, ou changer manuellement le numéro d'un créateur de ticket.", usage="nombre id_message_createur")
+    @commands.command(
+        aliases=["count", "edit_count"],
+        brief="Permet de changer le compteur des ticket",
+        help="Permet de reset, ou changer manuellement le numéro d'un créateur de ticket.",
+        usage="nombre id_message_createur",
+    )
     async def recount(self, ctx, arg, ticket_id):
         await ctx.message.delete()
         db = sqlite3.connect("owlly.db", timeout=3000)
@@ -262,16 +307,18 @@ class CogAdmins(commands.Cog, name="Administration", description="Permet d'enreg
         search_db = "SELECT num FROM TICKET WHERE idM=?"
         sql = "UPDATE TICKET SET num = ? WHERE idM=?"
         search_regex_arg = re.search(
-            '(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$',
-            str(arg))
+            "(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$", str(arg)
+        )
         if search_regex_arg is None:
             search_regex_arg = re.search(
-                '(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$',
-                str(ticket_id))
+                "(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$",
+                str(ticket_id),
+            )
             if search_regex_arg is None:
                 await ctx.send(
                     "Aucun de vos arguments ne correspond à l'ID du message du créateur de ticket...",
-                    delete_after=30)
+                    delete_after=30,
+                )
                 c.close()
                 db.close()
                 return
@@ -282,7 +329,7 @@ class CogAdmins(commands.Cog, name="Administration", description="Permet d'enreg
             silent = int(ticket_id)
             ticket_id = int(arg)
             arg = silent
-            c.execute(search_db, (ticket_id, ))
+            c.execute(search_db, (ticket_id,))
             search = c.fetchone()
             if search is None:
                 await ctx.send("Aucun ne ticket ne possède ce numéro.")
