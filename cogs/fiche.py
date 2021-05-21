@@ -44,7 +44,7 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
             while not (
                 (rep.attachments)
                 or ("discordapp" in reponse)
-                or (reponse.endswith(("jpg", "png", "gif", "jpeg")))
+                or (any (x in reponse for x in ["jpg", "png", "jpeg", "gif"]))
             ):
                 await member.send(f"Erreur, ce champ doit être une image (pièce-jointe / lien)")
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)

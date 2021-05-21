@@ -47,7 +47,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
         brief="Donne divers rôles.",
         help="Permet de donner des rôles à un membre, ainsi que les rôles qui ont été inscrits dans la base. Si les rôles n'existent pas, le bot les crée avant.",
     )
-    @commands.has_permissions(administrator=True)
+    @commands.has_permissions(manage_nicknames=True)
     async def member(self, ctx, user: discord.Member, *role: str):
         fi = self.bot.get_cog("Fiche")
         chartype = "pj"
@@ -137,7 +137,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
         help="Permet à un joueur ayant sa fiche valider de faire sa présentation.",
         aliases=["add_pj", "validation", "add_pres", "pj"],
     )
-    @commands.has_permissions(administrator=True)
+    @commands.has_permissions(manage_nicknames=True)
     async def add_presentation(self, ctx, member: discord.Member):
         fi = self.bot.get_cog("Fiche")
         chartype = "pj"
@@ -154,7 +154,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
         help="Permet à un joueur ayant sa fiche PNJ validée de faire sa présentation.",
         aliases=["add_pnj", "validation_pnj"],
     )
-    @commands.has_permissions(administrator=True)
+    @commands.has_permissions(manage_nicknames=True)
     async def pnj(self, ctx, member: discord.Member):
         fi = self.bot.get_cog("Fiche")
         chartype = "pnj"
