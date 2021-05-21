@@ -70,64 +70,81 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
         f = open(
             f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
             "r",
-            encoding="utf-8",
-        )
+            encoding="utf-8")
+        perso={}
         data = f.readlines()
         f.close()
-        msg = "error"
-        img = "Error"
+        msg = "error forme msg"
+        img = "Error forme image"
         if len(data) > 0:
             data = "".join(data)
             perso = ast.literal_eval(data)
-            db = sqlite3.connect("owlly.db", timeout=3000)
-            c = db.cursor()
-            sql = "SELECT champ_physique, champ_general FROM FICHE WHERE idS=?"
-            c.execute(sql, (idS,))
-            champ = c.fetchone()
-            general = champ[1].split(",")
-            physique = champ[0].split(",")
-            general_info = {}
-            physique_info = {}
-            for k, v in perso.items():
-                for gen in general:
-                    for phys in physique:
-                        gen = gen.replace("\\", "")
-                        phys = phys.replace("\\", "")
-                        k = k.replace("\\", "")
-                        if v == "NA" or v == "na" or v == "/":
-                            pass
-                        else:
-                            if k.lower() == gen.lower():
-                                general_info.update({k: v})
-                            elif k.lower() == phys.lower():
-                                physique_info.update({k: v})
-            general_msg = "─────༺ Présentation ༻─────\n"
-            physique_msg = "──────༺ Physique ༻──────\n"
-            img = ""
-            for k, v in general_info.items():
-                if v.endswith((".png", ".jpg", ".jpeg", ".gif")):
-                    img = v
+        else:
+            try:
+                os.path.isfile(
+                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt")
+                save = open(
+                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                    "r",
+                    encoding="utf-8")
+                save_data = save.readlines()
+                save.close()
+                if len(save_data) > 0:
+                    save_data = "".join(save_data)
+                    perso = ast.literal_eval(save_data)
                 else:
-                    k = k.replace("*", "")
-                    k = k.replace("$", "")
-                    k = k.replace("&", "")
-                    general_msg = general_msg + f"**__{k.capitalize()}__** : {v}\n"
-            for l, m in physique_info.items():
-                if m.endswith((".png", ".jpg", ".jpeg", ".gif")):
-                    img = m
-                    print(m)
-                else:
-                    l = l.replace("*", "")
-                    l = l.replace("$", "")
-                    l = l.replace("&", "")
-                    physique_msg = physique_msg + f"**__{l.capitalize()}__** : {m}\n"
-            msg = (
-                general_msg
-                + "\n"
-                + physique_msg
-                + "\n"
-                + f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Joueur* : {member.mention}"
-            )
+                    perso = {}
+            except OSError:
+                perso = {}
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        sql = "SELECT champ_physique, champ_general FROM FICHE WHERE idS=?"
+        c.execute(sql, (idS,))
+        champ = c.fetchone()
+        general = champ[1].split(",")
+        physique = champ[0].split(",")
+        general_info = {}
+        physique_info = {}
+        for k, v in perso.items():
+            for gen in general:
+                for phys in physique:
+                    gen = gen.replace("\\", "")
+                    phys = phys.replace("\\", "")
+                    k = k.replace("\\", "")
+                    if v == "NA" or v == "na" or v == "/":
+                        pass
+                    else:
+                        if k.lower() == gen.lower():
+                            general_info.update({k: v})
+                        elif k.lower() == phys.lower():
+                            physique_info.update({k: v})
+        general_msg = "─────༺ Présentation ༻─────\n"
+        physique_msg = "──────༺ Physique ༻──────\n"
+        img = ""
+        for k, v in general_info.items():
+            if v.endswith((".png", ".jpg", ".jpeg", ".gif")):
+                img = v
+            else:
+                k = k.replace("*", "")
+                k = k.replace("$", "")
+                k = k.replace("&", "")
+                general_msg = general_msg + f"**__{k.capitalize()}__** : {v}\n"
+        for l, m in physique_info.items():
+            if m.endswith((".png", ".jpg", ".jpeg", ".gif")):
+                img = m
+                print(m)
+            else:
+                l = l.replace("*", "")
+                l = l.replace("$", "")
+                l = l.replace("&", "")
+                physique_msg = physique_msg + f"**__{l.capitalize()}__** : {m}\n"
+        msg = (
+            general_msg
+            + "\n"
+            + physique_msg
+            + "\n"
+            + f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Joueur* : {member.mention}"
+        )
         return msg, img
 
     async def validation(self, ctx, msg, img, chartype, member: discord.Member):
