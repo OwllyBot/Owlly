@@ -385,7 +385,7 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
             )
 
         if os.path.isfile(f"fiche/{member.id}_pj_{member.name}_{idS}.txt") and os.path.isfile(
-            f"{member.id}_pnj_{member.name}_{idS}.txt"
+            f"fiche/{member.id}_pnj_{member.name}_{idS}.txt"
         ):
             q = await ctx.send(
                 "Voulez-vous modifier la fiche du PNJ ou PJ ?\n 1️⃣ : PJ\n 2️⃣ : PNJ"
@@ -404,7 +404,7 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                 await q.delete()
                 await ctx.send("Annulation", delete_after=30)
                 return
-        elif os.path.isfile(f"{member.id}_pnj_{member.name}_{idS}.txt"):
+        elif os.path.isfile(f"fiche/{member.id}_pnj_{member.name}_{idS}.txt"):
             chartype = "pnj"
         elif os.path.isfile(f"fiche/{member.id}_pj_{member.name}_{idS}.txt"):
             chartype = "pj"
