@@ -49,6 +49,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
     )
     @commands.has_permissions(administrator=True)
     async def member(self, ctx, user: discord.Member, *role: str):
+        fi = self.bot.get_cog("Fiche")
         chartype = "pj"
         addRole = []
         infoNew = []

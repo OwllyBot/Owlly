@@ -1,0 +1,11 @@
+-- Logs begin at Wed 2021-04-21 15:56:34 UTC. --
+May 17 06:20:21 owlly python[106102]: https://i.imgur.com/Y7P5t0T.png
+May 17 06:20:21 owlly systemd[1]: owlly.service: Succeeded.
+May 17 06:20:21 owlly systemd[1]: Stopped Owlly bot.
+May 17 06:20:44 owlly systemd[1]: Started Owlly bot.
+May 18 16:41:27 owlly systemd[1]: Stopping Owlly bot...
+May 18 16:41:27 owlly python[106236]: [LOGS] ONLINE
+May 18 16:41:27 owlly python[106236]: https://i.imgur.com/Y7P5t0T.png
+May 18 16:41:27 owlly systemd[1]: owlly.service: Succeeded.
+May 18 16:41:27 owlly systemd[1]: Stopped Owlly bot.
+May 18 16:41:27 owlly systemd[1]: Started Owlly bot.
