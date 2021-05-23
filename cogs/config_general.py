@@ -69,7 +69,7 @@ class CogAdmins(
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
         type_db=type_db
-        sql = "UPDATE SERVEUR SET +type_db+ = ? WHERE idS = ?"
+        sql = "UPDATE SERVEUR SET "+type_db+" = ? WHERE idS = ?"
         role_list = []
         if (len(role)) > 1:
             for i in role:
@@ -220,7 +220,7 @@ class CogAdmins(
                     if str(add_role.id) not in role_list:
                         role_list.append(str(add_role.id))
                         role_list_str = ",".join(role_list)
-                        sql = "UPDATE SERVEUR SET +type_db+ = ? WHERE idS = ?"
+                        sql = "UPDATE SERVEUR SET "+type_db+" = ? WHERE idS = ?"
                         var = (role_list_str, ctx.guild.id)
                         c.execute(sql, var)
                         await q.edit(content="La liste a été mise à jour !")
@@ -251,7 +251,7 @@ class CogAdmins(
                     if str(rm_role.id) in role_list:
                         role_list.remove(str(rm_role.id))
                         role_list_str = ",".join(role_list)
-                        sql = f"UPDATE SERVEUR SET +type_db+ = ? WHERE idS = ?"
+                        sql = f"UPDATE SERVEUR SET "+type_db+" = ? WHERE idS = ?"
                         var = (role_list_str, ctx.guild.id)
                         c.execute(sql, var)
                         await q.edit(content="La liste a été mise à jour !")
