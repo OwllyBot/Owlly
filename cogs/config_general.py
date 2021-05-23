@@ -194,7 +194,7 @@ class CogAdmins(
                         str(await commands.RoleConverter().convert(ctx, i)) + " / " + role_phrase
                     )
                 except RoleNotFound:
-                    pass
+                    role_phrase= "Role Supprimé : id - " + i +" / " + role_phrase
             q = await ctx.send(
                 f"Vous avez actuellement des rôles enregistrés : {role_phrase}\n Voulez-vous :\n 1️⃣ - Rajouter un rôle \n 2️⃣ - Supprimer un rôle \n 3️⃣ - Recommencer votre inscription \n ❌ - Annuler. "
             )
@@ -243,13 +243,11 @@ class CogAdmins(
                 else:
                     try:
                         rm_role = await commands.RoleConverter().convert(ctx, rep.content.lower())
+                        rm=str(rm_role.id)
                     except RoleNotFound:
-                        await ctx.send("Erreur ! Ce rôle n'existe pas.")
-                        await q.delete()
-                        await rep.delete()
-                        return
-                    if str(rm_role.id) in role_list:
-                        role_list.remove(str(rm_role.id))
+                        rm=str(rep.content.lower())
+                    if rm in role_list:
+                        role_list.remove(rm)
                         role_list_str = ",".join(role_list)
                         sql = f"UPDATE SERVEUR SET "+type_db+" = ? WHERE idS = ?"
                         var = (role_list_str, ctx.guild.id)
