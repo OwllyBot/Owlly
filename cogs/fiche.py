@@ -39,7 +39,6 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
         def checkRep(message):
             return message.author == member and isinstance(message.channel, discord.DMChannel)
         reponse = rep.content.replace("'", "\\'")
-        print(type(rep))
         if "&" in c:
             while not (
                 (rep.attachments)
@@ -48,7 +47,6 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
             ):
                 await member.send(f"Erreur, ce champ doit être une image (pièce-jointe / lien)")
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-                print(rep.attachments[0].url)
                 reponse = rep.content
             if rep.attachments:
                 reponse = rep.attachments[0]
@@ -132,7 +130,6 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
         for l, m in physique_info.items():
             if m.endswith((".png", ".jpg", ".jpeg", ".gif")):
                 img = m
-                print(m)
             else:
                 l = l.replace("*", "")
                 l = l.replace("$", "")
@@ -216,12 +213,9 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
         sql = "SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
         c.execute(sql, (idS,))
         champ_map = c.fetchone()
-        print(champ_map)
         general = champ_map[0]
         physique = champ_map[1]
-        print(general, physique)
         if general is None or physique is None:
-            print("erreur")
             return "ERROR"
         general = general.split(",")
         physique = physique.split(",")
