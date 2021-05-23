@@ -68,6 +68,7 @@ class CogAdmins(
     async def roliste_init(self, ctx, role, type_db):
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
+        type_db=type_db
         sql = "UPDATE SERVEUR SET +type_db+ = ? WHERE idS = ?"
         role_list = []
         if (len(role)) > 1:
@@ -218,7 +219,6 @@ class CogAdmins(
                         return
                     if str(add_role.id) not in role_list:
                         role_list.append(str(add_role.id))
-                        print(role_list)
                         role_list_str = ",".join(role_list)
                         sql = "UPDATE SERVEUR SET +type_db+ = ? WHERE idS = ?"
                         var = (role_list_str, ctx.guild.id)
