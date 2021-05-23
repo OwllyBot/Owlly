@@ -83,7 +83,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
                 roleCheck = get(ctx.guild.roles, name=i)
             if roleCheck is None:
                 NewRole = await ctx.guild.create_role(name=i, mentionable=True)
-                await NewRole.edit(position=14)
+                await NewRole.edit(position=17)
                 addRole.append(NewRole)
                 infoNew.append(NewRole.name)
             else:
@@ -131,6 +131,49 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
             fiche, img = await fi.forme(ctx, user, chartype, idS)
             await fi.validation(ctx, fiche, img, chartype, user)
 
+
+    @commands.command(
+       usage="@mention *role",
+       brief="Permet de rajouter des rôles à un membres",
+       help="Permet à un administrateur de rajouter des roles rapidements.",
+       aliases=["setrr", "give_role"])
+    @commands.has_permissions(manage_nicknames=True)
+    async def set_role (self, ctx, user: discord.Member, *role: str):
+        addRole = []
+        infoNew = []
+        for i in role:
+            i = i.replace("<", "")
+            i = i.replace(">", "")
+            i = i.replace("@", "")
+            i = i.replace("&", "")
+            if i.isnumeric():
+                i = int(i)
+                roleCheck = get(ctx.guild.roles, id=i)
+            else:
+                roleCheck = get(ctx.guild.roles, name=i)
+            if roleCheck is None:
+                NewRole = await ctx.guild.create_role(name=i, mentionable=True)
+                await NewRole.edit(position=17)
+                addRole.append(NewRole)
+                infoNew.append(NewRole.name)
+            else:
+                if str(i).isnumeric():
+                    i = get(ctx.guild.roles, id=i)
+                else:
+                    i = get(ctx.guild.roles, name=i)
+                addRole.append(i)
+        roleInfo = []
+        for plus in addRole:
+            await user.add_roles(plus)
+            roleInfo.append(plus.name)
+        roleInfo = ", ".join(roleInfo)
+        if (len(infoNew)) > 0:
+            infoNew = "\n ◽".join(infoNew)
+            roleInfo = roleInfo + " " + infoNew
+        await ctx.send(
+            f"{user.mention} a reçu de nouveau rôle : {roleInfo}",
+            delete_after=60,
+            )
     @commands.command(
         usage="@mention",
         brief="Lance la création d'une fiche",
