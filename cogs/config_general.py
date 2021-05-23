@@ -198,7 +198,7 @@ class CogAdmins(
                 f"Vous avez actuellement des rôles enregistrés : {role_phrase}\n Voulez-vous :\n 1️⃣ - Rajouter un rôle \n 2️⃣ - Supprimer un rôle \n 3️⃣ - Recommencer votre inscription \n ❌ - Annuler. "
             )
             for i in emoji:
-                while i != "✅":
+                if i != "✅":
                     await q.add_reaction(i)
             reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
             if reaction.emoji == "1️⃣":

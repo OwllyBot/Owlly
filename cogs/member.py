@@ -135,10 +135,10 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
         usage="@mention",
         brief="Lance la création d'une fiche",
         help="Permet à un joueur ayant sa fiche valider de faire sa présentation.",
-        aliases=["add_pj", "validation", "add_pres", "pj"],
+        aliases=["add_pj", "validation", "add_pres", "add_presentation"],
     )
     @commands.has_permissions(manage_nicknames=True)
-    async def add_presentation(self, ctx, member: discord.Member):
+    async def pj(self, ctx, member: discord.Member):
         fi = self.bot.get_cog("Fiche")
         chartype = "pj"
         await ctx.send(f"{member.mention} check tes DM ! 📧")
