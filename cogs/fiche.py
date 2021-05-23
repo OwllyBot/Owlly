@@ -176,7 +176,7 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                 await q.add_reaction("✅")
                 await q.add_reaction("❌")
                 reaction, user = await self.bot.wait_for(
-                    "reaction_add", timeout=300, check=checkValid
+                    "reaction_add", check=checkValid
                 )
                 if reaction.emoji == "✅":
                     if chartype.lower() == "pnj":

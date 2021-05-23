@@ -145,7 +145,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
         await ctx.message.delete()
         pres = await fi.start_presentation(ctx, member, chartype)
         if pres == "done":
-            fiche, img = await fi.forme(ctx, member, chartype, idS=ctx.guild.id)
+            fiche, img = await fi.forme(ctx, member, chartype, ctx.guild.id)
             await fi.validation(ctx, fiche, img, chartype, member)
 
     @commands.command(
@@ -162,7 +162,7 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
         pres = await fi.start_presentation(ctx, member, chartype)
         await ctx.message.delete()
         if pres == "done":
-            fiche, img = await fi.forme(ctx, member, chartype, idS=ctx.guild.id)
+            fiche, img = await fi.forme(ctx, member, chartype, ctx.guild.id)
             await fi.validation(ctx, fiche, img, chartype, member)
 
 
