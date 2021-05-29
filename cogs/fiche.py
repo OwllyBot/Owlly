@@ -739,6 +739,38 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                 "Impossible de faire une présentation : Les channels ne sont pas configuré !"
             )
 
+    @commands.command(
+        usage="@mention",
+        brief="Lance la création d'une fiche",
+        help="Permet à un joueur ayant sa fiche valider de faire sa présentation.",
+        aliases=["add_pj", "validation", "add_pres", "add_presentation"])
+    @commands.has_permissions(manage_nicknames=True)
+    async def pj(self, ctx, member: discord.Member):
+        chartype = "pj"
+        await ctx.send(f"{member.mention} check tes DM ! 📧")
+        await ctx.message.delete()
+        pres = await self.start_presentation(ctx, member, chartype)
+        if pres == "done":
+            fiche, img = await self.forme(ctx, member, chartype, ctx.guild.id)
+            await self.validation(ctx, fiche, img, chartype, member)
+
+    @commands.command(
+        usage="@mention",
+        brief="Lance la création d'une fiche PNJ",
+        help="Permet à un joueur ayant sa fiche PNJ validée de faire sa présentation.",
+        aliases=["add_pnj", "validation_pnj"],
+    )
+    @commands.has_permissions(manage_nicknames=True)
+    async def pnj(self, ctx, member: discord.Member):
+        chartype = "pnj"
+        await ctx.send(f"{member.mention} check tes DM ! 📧")
+        pres = await self.start_presentation(ctx, member, chartype)
+        await ctx.message.delete()
+        if pres == "done":
+            fiche, img = await self.forme(ctx, member, chartype, ctx.guild.id)
+            await self.validation(ctx, fiche, img, chartype, member)
+
+
 
 def setup(bot):
     bot.add_cog(fiches(bot))
