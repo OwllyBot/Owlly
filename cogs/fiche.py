@@ -155,7 +155,7 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
 
             def checkValid(reaction, user):
                 return (
-                    ctx.message.author == user
+                    user.bot != True
                     and q.id == reaction.message.id
                     and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
                 )
