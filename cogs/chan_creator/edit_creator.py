@@ -375,7 +375,7 @@ async def edit_category(ctx, idM, bot):
                 await q.edit(content="Aucun changement...")
                 await q.clear_reactions()
                 config = 1
-        elif reaction.emoji == "2️⃣":
+        elif config == 0:
             await q.clear_reactions()
             await q.edit(
                 content="Actuellement, le nom des channel est donné par le nom du personnage. Voulez-vous changer ce paramètre ?"

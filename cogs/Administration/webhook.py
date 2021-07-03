@@ -130,6 +130,7 @@ async def chanRp (ctx, bot):
                         await ctx.send("Erreur, ce channel ou cette catégorie n'existe pas.", delete_after=30)
                         await q.delete()
                         await channels.delete()
+                        return
                     else:
                         chan.append(str(chan_search.id))
                 else:
@@ -142,12 +143,19 @@ async def chanRp (ctx, bot):
     c.execute(sql, var)
     db.commit()
     c.close()
+    db.close()
 
 async def ajoutHRP(ctx, bot):
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    sql= "SELECT chanRP FROM SERVEUR WHERE idS = ?"
+    c.execute(sql, (ctx.guild.id,))
+    cat=c.fetchone()[0].split(",")
+        
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
     q = await ctx.send("Merci de donner l'ID ou le nom du channel/catégorie que vous souhaitez rajouter.")
-    rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+    rep = await bot.wait_for("message", timeout=300, check=checkRep)
     if rep.content.lower() == "stop":
        await q.delete()
        await rep.delete()
@@ -157,6 +165,37 @@ async def ajoutHRP(ctx, bot):
         if rep.content.isnumeric():
             chan = int(rep.content)
             check_id = get(ctx.message.guild.categories, id=chan)
+            if check_id is None or check_id == "None":
+                check_id=bot.get_channel(chan)
+                if check_id is None or check_id == "None":
+                    await ctx.send("Erreur, ce channel ou cette catégorie n'existe pas.", delete_after=30)
+                    await q.delete()
+                    await rep.delete()
+                else:
+                  cat.append(str(chan))
+            else:
+                cat.append(str(chan))
+        else:
+            cat_search=await search_cat_name(ctx, rep.content.lower(), bot)
+            if cat_search==12:
+                cat_search = await search_chan(ctx, rep.content.lower())
+                if cat_search == "Error":
+                    await ctx.send("Erreur, ce channel ou cette catégorie n'existe pas", delete_after=30)
+                    await q.delete()
+                    await rep.delete()
+                    return
+                else:
+                    cat.append(str(cat_search))
+            else:
+                cat.append(str(cat_search))
+        chanRP= ",".join(cat)
+        sql="UPDATE SERVEUR SET chanRP = ? WHERE idS=?"
+        var=(chanRP, ctx.guild.id)
+        c.execute(sql, var)
+        db.commit()
+        c.close()
+        db.close()
+                    
 async def maxDC (ctx, bot):
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
