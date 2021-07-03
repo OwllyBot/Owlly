@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 import os
 import sqlite3
-import sqlite3
 import os.path
 import ast
 import asyncio

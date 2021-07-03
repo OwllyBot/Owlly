@@ -45,7 +45,6 @@ class adminfiche(
                 and q.id == reaction.message.id
                 and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
             )
-
         cl = ctx.guild.id
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
@@ -99,7 +98,7 @@ class adminfiche(
         else:
             fiche_pnj = 0
         await q.edit(content="Validation des modification....")
-        sql = "UPDATE FICHE SET fiche_validation=?, fiche_pj = ?, fiche_pnj=? WHERE idS=?"
+        sql = "UPDATE FICHE SET fiche_validation=?, fiche_pj=?, fiche_pnj=? WHERE idS=?"
         var = (fiche_validation.id, fiche_pj.id, fiche_pnj, cl)
         c.execute(sql, var)
         db.commit()
@@ -263,7 +262,7 @@ class adminfiche(
         c = db.cursor()
         menu = discord.Embed(
             title="Menu de gestion des fiches",
-            description="1️⃣ | Création \n 2️⃣ | Suppression \n 3️⃣ | Edition \n 4️⃣ | Ajout \n 👀 | Affichage",
+            description="1️⃣ | Création\n2️⃣ | Suppression\n3️⃣ | Edition\n4️⃣ | Ajout\n👀 | Affichage",
         )
         menu.set_footer(text="❌ pour annuler.")
         q = await ctx.send(embed=menu)

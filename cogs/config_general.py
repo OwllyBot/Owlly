@@ -8,6 +8,8 @@ from typing import Optional
 from discord.ext.commands import CommandError
 from discord.ext.commands.errors import RoleNotFound
 from cogs.Administration import config_member as member
+from cogs.Administration import admin_fiche as fiche
+from cogs.Administration import webhook 
 import unidecode
 import os
 import ast
@@ -37,6 +39,10 @@ class CogAdmins(
      )
     @commands.has_permissions(administrator=True)
     async def config (self, ctx):
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        fi = self.bot.get_cog("Fiche")
+        adminfi = self.bot.get_cog("Administration des fiches")
         emoji=["✅", "❌"]
         def checkRep(message):
             return message.author == ctx.message.author and ctx.message.channel == message.channel
@@ -81,10 +87,30 @@ class CogAdmins(
         await q.add_reaction("❌")
         reaction,user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
         if reaction.emoji == "✅":
-            q=q.clear_reactions()
-            rep=await q.edit(content="Merci de donner le channel voulu, sous forme de mention, nom ou ID.")
+            q.clear_reactions()
+            q=await q.edit(content="Merci de donner le channel voulu, sous forme de mention, nom ou ID.")
             await self.notes_config(ctx, rep.content)        
-            
+        q = await ctx.send("Voulez-vous configurer les channels des fiches de présentation ?")
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        if reaction.emoji == "✅":
+            await adminfi.chan_fiche(ctx)
+            await ctx.send("Faites la commande `config_fiche` pour configurer les champs des fiches.")
+        q = await ctx.send("Voulez-vous configurez les channels RP ? Cela permettra d'utiliser les Personae plus tard.")
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        if reaction.emoji == "✅":
+            await webhook.chanRp(ctx, self.bot)
+        else:
+           sql= "UPDATE SERVEUR SET chanRP = ? WHERE idS = ?"
+           idS= ctx.guild.id
+           var=("0", idS)
+           c.execute(sql, var)
+           db.commit()
+           c.close()
+        q = await ctx.send("Voulez-vous que les Personae soit ")
         
     
     @commands.command(
