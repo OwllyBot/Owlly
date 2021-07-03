@@ -41,13 +41,13 @@ def getprefix(bot, message):
 initial_extensions = [
     "cogs.clean_db",
     "cogs.utils",
-    "cogs.menu",
+    "cogs.chan_creator",
     "cogs.author_cmd",
     "cogs.member",
     "cogs.config_general",
     "cogs.error_handler",
     "cogs.fiche",
-    "cogs.admin_fiche",
+    "cogs.administration.admin_fiche",
 ]
 repo_name = Repository(".").head.shorthand
 bot = commands.Bot(

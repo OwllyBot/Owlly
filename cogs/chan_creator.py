@@ -7,12 +7,12 @@ import sqlite3
 import re
 from discord import Colour
 from discord.ext.commands import ColourConverter
-from cogs.Menu_fonction import config_creators as cfg
-from cogs.Menu_fonction import edit_creator as edit
-from cogs.Menu_fonction import list_creator as listing
+from cogs.chan_creator import config_creators as cfg
+from cogs.chan_creator import edit_creator as edit
+from cogs.chan_creator import list_creator as listing
 
 
-class menu(
+class ChanCreator(
     commands.Cog,
     name="Créateur",
     description="Affiche le menu afin de permettre la création, l'édition mais aussi lister les créateurs de tickets.",
@@ -202,6 +202,57 @@ class menu(
             await ctx.send("Annulation", delete_after=30)
             return
 
+    @commands.has_permissions(administrator=True)
+    @commands.command(
+        aliases=["count", "edit_count"],
+        brief="Permet de changer le compteur des ticket",
+        help="Permet de reset, ou changer manuellement le numéro d'un créateur de ticket.",
+        usage="nombre id_message_createur",
+    )
+    async def recount(self, ctx, arg, ticket_id):
+        await ctx.message.delete()
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        search_db = "SELECT num FROM TICKET WHERE idM=?"
+        sql = "UPDATE TICKET SET num = ? WHERE idM=?"
+        search_regex_arg = re.search(
+               "(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$", str(arg)
+               )
+        if search_regex_arg is None:
+            search_regex_arg = re.search(
+                "(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$",
+                str(ticket_id),
+            )
+            if search_regex_arg is None:
+                await ctx.send(
+                    "Aucun de vos arguments ne correspond à l'ID du message du créateur de ticket...",
+                    delete_after=30,
+                )
+                c.close()
+                db.close()
+                return
+            else:
+                arg = int(arg)
+                ticket_id = int(ticket_id)
+        else:
+            silent = int(ticket_id)
+            ticket_id = int(arg)
+            arg = silent
+            c.execute(search_db, (ticket_id,))
+            search = c.fetchone()
+            if search is None:
+                await ctx.send("Aucun ne ticket ne possède ce numéro.")
+                c.close()
+                db.close()
+                return
+            else:
+                var = (arg, (ticket_id))
+                c.execute(sql, var)
+                db.commit()
+                c.close()
+                db.close()
+                await ctx.send(f"Le compte a été fixé à : {arg}")
+
 
 def setup(bot):
-    bot.add_cog(menu(bot))
+    bot.add_cog(ChanCreator(bot))

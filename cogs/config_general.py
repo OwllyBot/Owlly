@@ -1,11 +1,13 @@
 import discord
 from discord import role
+from discord.colour import Color
 from discord.ext import commands, tasks
 import sqlite3
 import re
 from typing import Optional
 from discord.ext.commands import CommandError
 from discord.ext.commands.errors import RoleNotFound
+from cogs.Administration import config_member as member
 import unidecode
 import os
 import ast
@@ -29,6 +31,63 @@ class CogAdmins(
             return chan
 
     @commands.command(
+     name= "config",
+     help="Permet de faire la configuration générale du bot.",
+     brief="Configuration du bot.",
+     )
+    @commands.has_permissions(administrator=True)
+    async def config (self, ctx):
+        emoji=["✅", "❌"]
+        def checkRep(message):
+            return message.author == ctx.message.author and ctx.message.channel == message.channel
+
+        def checkValid(reaction, user):
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and (str(reaction.emoji) in emoji)
+            )
+        q = await ctx.send("Configuration du bot. Tout d'abord, définissez le préfix du bot.\n `0` pour garder par défaut ; `cancel` ou `stop` pour annuler.")
+        rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+        if rep.content.lower() == "stop" or rep.content.lower() == "cancel":
+            await q.delete()
+            await ctx.send("Annulation", delete_after=30)
+            await rep.delete()
+            return
+        elif rep.content != "0" :
+            await self.set_prefix(ctx, rep.content.lower())
+        q = await ctx.send("Voulez-vous configurez les rôles mis automatiquement par la commande DB ?")
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        if reaction.emoji == "✅":
+            await q.clear_reactions()
+            await q.edit(content="Merci d'envoyer les rôles que vous voulez rajouter.")
+            rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+            roliste = rep.content.split(" ")
+            await member.roliste_init(ctx, roliste, "roliste", self.bot)
+            q= await ctx.send("Voulez-vous supprimez des rôles lorsqu'un joueur devient membre du RP ?")
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "✅":
+                await q.clear_reactions()
+                await q.edit(content="Merci d'envoyer les rôles que vous souhaitez faire supprimer.")
+                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                rolerm = rep.content.split(" ")
+                await member.roliste_init(ctx, rolerm, "rolerm", self.bot)
+        q= await ctx.send("Voulez-vous configurer un chan servant de lexique, pour la commande `search` ? ")
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction,user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        if reaction.emoji == "✅":
+            q=q.clear_reactions()
+            rep=await q.edit(content="Merci de donner le channel voulu, sous forme de mention, nom ou ID.")
+            await self.notes_config(ctx, rep.content)        
+            
+        
+    
+    @commands.command(
         name="set_prefix",
         help="Permet de changer le prefix du bot.",
         brief="Changement du prefix.",
@@ -44,6 +103,7 @@ class CogAdmins(
         db.commit()
         c.close()
         db.close()
+
 
     @commands.command(
         aliases=["lexique_config"],
@@ -65,44 +125,6 @@ class CogAdmins(
         await ctx.send(f"Le channels des notes est donc {chan}", delete_after=30)
         await ctx.message.delete()
 
-    async def roliste_init(self, ctx, role, type_db):
-        db = sqlite3.connect("owlly.db", timeout=3000)
-        c = db.cursor()
-        type_db=type_db
-        sql = "UPDATE SERVEUR SET "+type_db+" = ? WHERE idS = ?"
-        role_list = []
-        if (len(role)) > 1:
-            for i in role:
-                try:
-                    roles = await commands.RoleConverter().convert(ctx, i)
-                    role_list.append(str(roles.id))
-                except RoleNotFound:
-                    pass
-        else:
-            try:
-                role_str = await commands.RoleConverter().convert(ctx, role[0])
-                role_str = str(role_str.id)
-            except RoleNotFound:
-                pass
-        phrase = []
-        for i in role:
-            try:
-                roles = await commands.RoleConverter().convert(ctx, i)
-                phrase.append(roles.name)
-            except RoleNotFound:
-                pass
-        phrase = ", ".join(phrase)
-        if (len(phrase)) == "0":
-            await ctx.send("Erreur ! Aucun rôle n'a été reconnu.")
-            return
-        await ctx.send(f"Les rôles {phrase} ont bien été enregistré dans la base de données")
-        role_str = ",".join((role_list))
-        var = (role_str, ctx.guild.id)
-        c.execute(sql, var)
-        db.commit()
-        c.close()
-        db.close()
-
     @commands.has_permissions(administrator=True)
     @commands.command(
         help="Permet d'enregistrer / réenregistrer la liste des rôles données par la commandes member, sans passer par le menu de configuration.",
@@ -111,26 +133,7 @@ class CogAdmins(
         aliases=["init_role", "assign_init"],
     )
     async def role_init(self, ctx, *role: discord.Role):
-        db = sqlite3.connect("owlly.db", timeout=3000)
-        c = db.cursor()
-        sql = "UPDATE SERVEUR SET roliste = ? WHERE idS = ?"
-        role_list = []
-        if (len(role)) > 1:
-            for i in role:
-                role_list.append(str(i.id))
-            role_str = ",".join((role_list))
-        else:
-            role_str = str(role[0].id)
-        var = (role_str, ctx.guild.id)
-        c.execute(sql, var)
-        phrase = []
-        for i in role:
-            phrase.append(i.name)
-        phrase = ", ".join(phrase)
-        await ctx.send(f"Les rôles {phrase} ont bien été enregistré dans la base de données")
-        db.commit()
-        c.close()
-        db.close()
+        await member.role_init(ctx, role, self.bot)
 
     @commands.has_permissions(administrator=True)
     @commands.command(
@@ -140,138 +143,7 @@ class CogAdmins(
         aliases=["init_rm", "assign_rm"],
     )
     async def init_role_rm(self, ctx, *role: discord.Role):
-        db = sqlite3.connect("owlly.db", timeout=3000)
-        c = db.cursor()
-        sql = "UPDATE SERVEUR SET rolerm = ? WHERE idS = ?"
-        role_list = []
-        if (len(role)) > 1:
-            for i in role:
-                role_list.append(str(i.id))
-            role_str = ",".join((role_list))
-        else:
-            role_str = str(role[0].id)
-        print(role_str)
-        var = (role_str, ctx.guild.id)
-        c.execute(sql, var)
-        phrase = []
-        for i in role:
-            phrase.append(i.name)
-        phrase = ", ".join(phrase)
-        await ctx.send(f"Les rôles {phrase} ont bien été enregistré dans la base de données")
-        db.commit()
-        c.close()
-        db.close()
-
-    async def inscription_role(self, ctx, type_db):
-        db = sqlite3.connect("owlly.db", timeout=3000)
-        c = db.cursor()
-        if type_db == "rm":
-            sql = "SELECT rolerm FROM SERVEUR WHERE idS =?"
-            type_db = "rolerm"
-        else:
-            sql = "SELECT roliste FROM SERVEUR WHERE idS=?"
-            type_db = "roliste"
-        c.execute(sql, (ctx.guild.id,))
-        role_list = c.fetchone()
-
-        def checkValid(reaction, user):
-            return (
-                ctx.message.author == user
-                and q.id == reaction.message.id
-                and (str(reaction.emoji) in emoji)
-            )
-
-        def checkRep(message):
-            return message.author == ctx.message.author and ctx.message.channel == message.channel
-
-        emoji = ["1️⃣", "2️⃣", "3️⃣", "✅", "❌"]
-        if role_list is not None:
-            role_list = role_list[0].split(",")
-            role_phrase = ""
-            for i in role_list:
-                try:
-                    role_phrase = (
-                        str(await commands.RoleConverter().convert(ctx, i)) + " / " + role_phrase
-                    )
-                except RoleNotFound:
-                    role_phrase= "Role Supprimé : id - " + i +" / " + role_phrase
-            q = await ctx.send(
-                f"Vous avez actuellement des rôles enregistrés : {role_phrase}\n Voulez-vous :\n 1️⃣ - Rajouter un rôle \n 2️⃣ - Supprimer un rôle \n 3️⃣ - Recommencer votre inscription \n ❌ - Annuler. "
-            )
-            for i in emoji:
-                if i != "✅":
-                    await q.add_reaction(i)
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
-            if reaction.emoji == "1️⃣":
-                await q.clear_reactions()
-                await q.edit(content="Quel est le rôle que vous voulez rajouter ?")
-                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-                if rep.content.lower() == "stop":
-                    await ctx.send("Annulation")
-                    await q.delete()
-                else:
-                    try:
-                        add_role = await commands.RoleConverter().convert(ctx, rep.content.lower())
-                    except RoleNotFound:
-                        await ctx.send("Erreur ! Ce rôle n'existe pas.")
-                        await q.delete()
-                        await rep.delete()
-                        return
-                    if str(add_role.id) not in role_list:
-                        role_list.append(str(add_role.id))
-                        role_list_str = ",".join(role_list)
-                        sql = "UPDATE SERVEUR SET "+type_db+" = ? WHERE idS = ?"
-                        var = (role_list_str, ctx.guild.id)
-                        c.execute(sql, var)
-                        await q.edit(content="La liste a été mise à jour !")
-                        await rep.delete()
-                        db.commit()
-                        c.close()
-                        return
-                    else:
-                        await ctx.send("Ce rôle est déjà dans la liste !")
-                        await q.delete()
-                        await rep.delete()
-                        return
-            elif reaction.emoji == "2️⃣":
-                await q.clear_reactions()
-                await q.edit(content="Quel est le rôle que vous voulez supprimer ?")
-                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-                if rep.content.lower() == "stop":
-                    await ctx.send("Annulation")
-                    await q.delete()
-                else:
-                    try:
-                        rm_role = await commands.RoleConverter().convert(ctx, rep.content.lower())
-                        rm=str(rm_role.id)
-                    except RoleNotFound:
-                        rm=str(rep.content.lower())
-                    if rm in role_list:
-                        role_list.remove(rm)
-                        role_list_str = ",".join(role_list)
-                        sql = f"UPDATE SERVEUR SET "+type_db+" = ? WHERE idS = ?"
-                        var = (role_list_str, ctx.guild.id)
-                        c.execute(sql, var)
-                        await q.edit(content="La liste a été mise à jour !")
-                        await rep.delete()
-                        db.commit()
-                        c.close()
-                        return
-                    else:
-                        await q.delete()
-                        await ctx.send("Ce rôle n'est pas enregistré.")
-                        await rep.delete()
-                        return
-            elif reaction.emoji == "3️⃣":
-                await q.clear_reactions()
-                await q.edit(content="Merci d'envoyer les rôles que vous voulez rajouter.")
-                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-                roliste = rep.content.split(" ")
-                await self.roliste_init(ctx, roliste, type_db)
-            else:
-                await q.delete()
-                await ctx.send("Annulation", delete_after=30)
-                return
+       await member.init_role_rm(ctx, role, self.bot)
 
     @commands.has_permissions(administrator=True)
     @commands.command(
@@ -280,7 +152,7 @@ class CogAdmins(
         aliases=["rm_role", "role_remove", "remover_member"],
     )
     async def role_rm(self, ctx):
-        await self.inscription_role(ctx, "rm")
+        await member.inscription_role(self.bot, ctx, "rm")
 
     @commands.has_permissions(administrator=True)
     @commands.command(
@@ -289,59 +161,8 @@ class CogAdmins(
         aliases=["role_config", "roliste_config", "assign"],
     )
     async def roliste(self, ctx):
-        await self.inscription_role(ctx, "roliste")
+        await member.inscription_role(self.bot, ctx, "roliste")
 
-    @commands.has_permissions(administrator=True)
-    @commands.command(
-        aliases=["count", "edit_count"],
-        brief="Permet de changer le compteur des ticket",
-        help="Permet de reset, ou changer manuellement le numéro d'un créateur de ticket.",
-        usage="nombre id_message_createur",
-    )
-    async def recount(self, ctx, arg, ticket_id):
-        await ctx.message.delete()
-        db = sqlite3.connect("owlly.db", timeout=3000)
-        c = db.cursor()
-        search_db = "SELECT num FROM TICKET WHERE idM=?"
-        sql = "UPDATE TICKET SET num = ? WHERE idM=?"
-        search_regex_arg = re.search(
-            "(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$", str(arg)
-        )
-        if search_regex_arg is None:
-            search_regex_arg = re.search(
-                "(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$",
-                str(ticket_id),
-            )
-            if search_regex_arg is None:
-                await ctx.send(
-                    "Aucun de vos arguments ne correspond à l'ID du message du créateur de ticket...",
-                    delete_after=30,
-                )
-                c.close()
-                db.close()
-                return
-            else:
-                arg = int(arg)
-                ticket_id = int(ticket_id)
-        else:
-            silent = int(ticket_id)
-            ticket_id = int(arg)
-            arg = silent
-            c.execute(search_db, (ticket_id,))
-            search = c.fetchone()
-            if search is None:
-                await ctx.send("Aucun ne ticket ne possède ce numéro.")
-                c.close()
-                db.close()
-                return
-            else:
-                var = (arg, (ticket_id))
-                c.execute(sql, var)
-                db.commit()
-                c.close()
-                db.close()
-                await ctx.send(f"Le compte a été fixé à : {arg}")
-
-
+    
 def setup(bot):
     bot.add_cog(CogAdmins(bot))
