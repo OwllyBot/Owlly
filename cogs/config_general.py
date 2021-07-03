@@ -221,6 +221,32 @@ class CogAdmins(
     async def roliste(self, ctx):
         await member.inscription_role(self.bot, ctx, "roliste")
 
-    
+    @commands.has_permissions(administrator=True)
+    @commands.command(
+        help= "Menu de configuration des Channels et catégories de RP",
+        brief="Configuration des channels RP.",
+        aliases=["chanRP", "config_chanRP"])
+    async def chanHRP_menu(self, ctx):
+        emoji=["1️⃣", "2️⃣", "3️⃣", "❌", "✅"]
+        q=await ctx.send("1️⃣| Ajout d'un channel\n2️⃣| Suppression d'un channel\n3️⃣| Reconfiguration")
+        await q.add_reaction("1️⃣")
+        await q.add_reaction("2️⃣")
+        await q.add_reaction("3️⃣")
+        def checkRep(message):
+            return message.author == ctx.message.author and ctx.message.channel == message.channel
+
+        def checkValid(reaction, user):
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and (str(reaction.emoji) in emoji)
+            )
+        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        if reaction.emoji == "3️⃣":
+            await q.clear_reactions()
+            await webhook.chanRp(ctx, self.bot)
+        elif reaction.emoji == "1️⃣":
+            await q.clear_reactions()
+            await webhook.ajoutHRP(ctx, self.bot)
 def setup(bot):
     bot.add_cog(CogAdmins(bot))

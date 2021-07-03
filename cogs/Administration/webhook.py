@@ -142,7 +142,21 @@ async def chanRp (ctx, bot):
     c.execute(sql, var)
     db.commit()
     c.close()
-                        
+
+async def ajoutHRP(ctx, bot):
+    def checkRep(message):
+        return message.author == ctx.message.author and ctx.message.channel == message.channel
+    q = await ctx.send("Merci de donner l'ID ou le nom du channel/catégorie que vous souhaitez rajouter.")
+    rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+    if rep.content.lower() == "stop":
+       await q.delete()
+       await rep.delete()
+       await ctx.send("Annulation !", delete_after=30)
+       return
+    else:
+        if rep.content.isnumeric():
+            chan = int(rep.content)
+            check_id = get(ctx.message.guild.categories, id=chan)
 async def maxDC (ctx, bot):
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
