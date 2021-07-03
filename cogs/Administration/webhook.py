@@ -164,4 +164,56 @@ async def maxDC (ctx, bot):
         db.commit()
         c.close()
         
-    
+async def sticky(ctx, bot, sticky):
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    if sticky == "0": #false
+        sql = "UPDATE SERVEUR SET sticky = ? WHERE idS = ?"
+        var=(0, ctx.guild.id) 
+    else:
+        sql="UPDATE SERVEUR SET sticky = ? WHERE idS =?"
+        var=(1, ctx.guild.id)
+    c.execute(sql, var)
+    db.commit()
+    c.close()  
+
+async def tokenHRP(ctx, bot, token):
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    if token != "0":
+        token = token.replace("[text]", "(.*)/")
+        token = "^/" + token + "$"
+    sql="UPDATE SERVEUR SET tokenHRP = ? WHERE idS= ?"
+    var=(token, ctx.guild.id)
+    c.execute(sql, var)
+    db.commit()
+    c.close()
+
+async def deleteHRP(ctx, bot, config):
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+
+    def checkRep(message):
+        return message.author == ctx.message.author and ctx.message.channel == message.channel
+    timer = 0
+    if config != "0":
+        config = 1
+        q = await ctx.send("Au bout de combien de temps les messages doivent-il être effacé ? Merci de mettre le temps en secondes.")
+        rep = await bot.wait_for("message", timeout=300, check=checkRep)
+        if rep.content.isnumeric():
+            timer= int(rep.content.lower())
+        else:
+            await ctx.send("Erreur ! Ce n'est pas un nombre. Il n'y aura donc pas de suppression.")
+            timer = 0
+    else:
+        config = 0
+        timer = 0
+    sql="UPDATE SERVEUR SET delete_HRP = ?, delay_HRP = ? WHERE idS=?"
+    var=(config, timer, ctx.guild.id)
+    c.execute(sql, var)
+    db.commit()
+    c.close()
+    db.close()
+    await q.delete()
+    await rep.delete()
+            

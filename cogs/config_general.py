@@ -110,9 +110,41 @@ class CogAdmins(
            c.execute(sql, var)
            db.commit()
            c.close()
-        q = await ctx.send("Voulez-vous que les Personae soit ")
-        
-    
+           db.close()
+        q = await ctx.send("Voulez-vous que les Personae soit sticky, c'est à dire qu'il suffit de parler une fois avec pour que les messages soient automatiquement changés, jusqu'au changement de token, ou l'utilisation de `\` avant un message ?")
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        if reaction.emoji == "✅":
+            await webhook.sticky(ctx, self.bot, "1")
+        else:
+            await webhook.sticky(ctx, self.bot, "0")
+        await q.clear_reactions()
+        q = await ctx.send("Voulez-vous avoir un tag HRP ? Tous les messages utilisant ce token ne seront pas converti alors que vous avez sélectionné un Persona.")
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        if reaction.emoji == "✅":
+            await q.clear_reactions()
+            q = await ctx.send("Voici les différentes manières de définir un pattern :\n :white_small_square: /[text]/\n/[text]\n[text]/.\n Vous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre [text]! ")
+            rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+            token = rep.content.lower()
+            while "[text]" not in token:
+                await ctx.send("Erreur ! Vous avez oublié `[text]`")
+                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                token = rep.content.lower()
+            await webhook.tokenHRP(ctx, self.bot, token)
+            q=await ctx.send("Voulez-vous faire supprimer tous les messages contenant le token suivant un temps configuré ?")
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "✅":
+                await webhook.deleteHRP(ctx, self.bot, "1")
+        else:
+            await webhook.tokenHRP(ctx, self.bot, "0")
+            await webhook.deleteHRP(ctx, self.bot, "0")
+        await ctx.send("La configuration du serveur est maintenant terminé ! Vous pouvez éditer chaque paramètres séparément.")
+            
     @commands.command(
         name="set_prefix",
         help="Permet de changer le prefix du bot.",
