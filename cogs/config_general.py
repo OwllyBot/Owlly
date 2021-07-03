@@ -247,6 +247,9 @@ class CogAdmins(
             await webhook.chanRp(ctx, self.bot)
         elif reaction.emoji == "1️⃣":
             await q.clear_reactions()
-            await webhook.ajoutHRP(ctx, self.bot)
+            await webhook.chanHRP_add(ctx, self.bot)
+        elif reaction.emoji == "2️⃣":
+            await q.clear_reactions()
+            await webhook.chanHRP_rm(ctx, self.bot)
 def setup(bot):
     bot.add_cog(CogAdmins(bot))

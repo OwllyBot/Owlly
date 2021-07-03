@@ -145,7 +145,7 @@ async def chanRp (ctx, bot):
     c.close()
     db.close()
 
-async def ajoutHRP(ctx, bot):
+async def chanHRP_add(ctx, bot):
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     sql= "SELECT chanRP FROM SERVEUR WHERE idS = ?"
@@ -195,6 +195,11 @@ async def ajoutHRP(ctx, bot):
         db.commit()
         c.close()
         db.close()
+
+
+async def chanHRP_rm(ctx, bot):
+    pass
+
                     
 async def maxDC (ctx, bot):
     def checkRep(message):
