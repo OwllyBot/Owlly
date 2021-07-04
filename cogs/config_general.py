@@ -126,20 +126,29 @@ class CogAdmins(
         reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
         if reaction.emoji == "✅":
             await q.clear_reactions()
-            q = await ctx.send("Voici les différentes manières de définir un pattern :\n :white_small_square: /[text]/\n/[text]\n[text]/.\n Vous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre [text]! ")
+            q = await ctx.send("Voici les différentes manières de définir un pattern :\n :white_small_square: /[text]/\n/[text]\n[text]/.\n Vous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre [text]! \n Vous pouvez annuler avec `0`, `stop` ou `cancel`.")
             rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
             token = rep.content.lower()
-            while "[text]" not in token:
-                await ctx.send("Erreur ! Vous avez oublié `[text]`")
-                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-                token = rep.content.lower()
-            await webhook.tokenHRP(ctx, self.bot, token)
-            q=await ctx.send("Voulez-vous faire supprimer tous les messages contenant le token suivant un temps configuré ?")
-            await q.add_reaction("✅")
-            await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
-            if reaction.emoji == "✅":
-                await webhook.deleteHRP(ctx, self.bot, "1")
+            if token == "0" or token == "cancel" or token == "stop":
+                await ctx.send("Annulation")
+                await webhook.tokenHRP(ctx, self.bot, "0")
+                await webhook.deleteHRP(ctx, self.bot, "0")
+            else:
+                while "[text]" not in token:
+                    await ctx.send("Erreur ! Vous avez oublié `[text]`")
+                    rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                    token = rep.content.lower()
+                    if token.lower() == "stop" or token.lower() == "cancel":
+                        await ctx.send("Annulation", delete_after=30)
+                        await rep.delete()
+                        return
+                await webhook.tokenHRP(ctx, self.bot, token)
+                q=await ctx.send("Voulez-vous faire supprimer tous les messages contenant le token suivant un temps configuré ?")
+                await q.add_reaction("✅")
+                await q.add_reaction("❌")
+                reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                if reaction.emoji == "✅":
+                    await webhook.deleteHRP(ctx, self.bot, "1")
         else:
             await webhook.tokenHRP(ctx, self.bot, "0")
             await webhook.deleteHRP(ctx, self.bot, "0")
@@ -251,5 +260,165 @@ class CogAdmins(
         elif reaction.emoji == "2️⃣":
             await q.clear_reactions()
             await webhook.chanHRP_rm(ctx, self.bot)
+
+    @commands.has_permissions(administrator=True)
+    @commands.command(
+     help="Permet d'activer ou désactiver le mode sticky.",
+     brief="Configuration du Sticky",
+     aliases=["sticky_config", "config_sticky"])
+    async def sticky_mode(self, ctx):
+        def checkValid(reaction, user):
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+            )
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        sql= "SELECT sticky FROM SERVEUR WHERE idS = ?"
+        c.execute(sql, (ctx.guild.id,))
+        mode = c.fetchone()
+        if mode is None:
+            mode = 0
+        else:
+            mode=mode[0]
+        if mode == 0:
+            q=await ctx.send("Actuellement, le sticky est désactivé. Voulez-vous l'activer ?")
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "✅":
+                await q.delete()
+                mode = 1
+                await webhook.sticky(ctx, self.bot, mode)
+                await ctx.send("Changement effectué.")
+                return
+            else:
+                await q.delete()
+                await ctx.send("Annulation.")
+                return
+        else:
+            q= await ctx.send("Actuellement, le sticky est activé. Voulez-vous le désactiver ?")
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "✅":
+                mode = 0
+                await webhook.sticky(ctx, self.bot, mode)
+                await q.delete()
+                await ctx.send("Changement effectué.")
+                return
+            else:
+                await q.delete()
+                await ctx.send("Annulation.")
+                return
+
+    @commands.has_permissions(administrator=True)
+    @commands.command(
+        help="Permet de configurer le HRP", 
+        brief="Configuration du HRP")
+    async def patternHRP(self, ctx):
+        def checkRep(message):
+            return message.author == ctx.message.author and ctx.message.channel == message.channel
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        sql= "SELECT tokenHRP FROM SERVEUR where idS=?"
+        c.execute(sql,(ctx.guild.id,))
+        tokenHRP = c.fetchone()
+        if tokenHRP is None:
+            tokenHRP = "0"
+        else:
+            tokenHRP=tokenHRP[0]
+        if tokenHRP == "0":
+            info="Actuellement, vous n'avez pas de pattern.\n"
+        else:
+            info = f"Actuellement, votre pattern est {tokenHRP}.\n Pour supprimer le pattern, écrivez `0`."
+        await ctx.send(f"{info}Voici les différentes manières de définir un pattern :\n :white_small_square: /[text]/\n/[text]\n[text]/.\n Vous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre [text]! ")
+        rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+        token = rep.content.lower()
+        if "0" in token:
+            await ctx.send(f"Suppression du pattern.")
+            await webhook.tokenHRP(ctx, self.bot, "0")
+            await webhook.deleteHRP(ctx, self.bot, "0")
+            return
+        else:
+            while "[text]" not in token :
+                await ctx.send("Erreur ! Vous avez oublié `[text]`")
+                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                token = rep.content.lower()
+                if token.lower() == "stop" or token.lower() == "cancel":
+                    await ctx.send("Annulation", delete_after=30)
+                    await rep.delete()
+                    return
+            await webhook.tokenHRP(ctx, self.bot, token)
+            await ctx.send("Changement effectué.")
+            return
+
+    @commands.has_permissions(administrator=True)
+    @commands.command(
+        help="Permet de configurer le délais de suppression du HRP",
+        brief="Configuration du délais HRP.")
+    async def delay_hrp(self, ctx):
+        def checkRep(message):
+            return message.author == ctx.message.author and ctx.message.channel == message.channel
+        emoji=["✅","❌", "1️⃣", "2️⃣"]
+
+        def checkValid(reaction, user):
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and str(reaction.emoji) in emoji
+            )
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        sql="SELECT delete_HRP, delay_HRP WHERE idS=?"
+        c.execute(sql,(ctx.guild.id,))
+        data=c.fetchone()
+        if data is None:
+            delete=0
+            delay_HRP=0
+        else:
+            delete=data[0]
+            delay_HRP=data[1]
+        if delete == 0:
+            q=await ctx.send("Actuellement, il n'y a pas de suppression automatique du HRP. Voulez-vous l'activez ?")
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction,user= await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "✅":
+                config="1"
+                await webhook.deleteHRP(ctx, self.bot, config)
+                await q.delete()
+                await ctx.send("Changement effectué.")
+                return
+            else:
+                await ctx.send("Annulation")
+                await q.delete()
+                return
+        else:
+            q=await ctx.send(f"Actuellement, la suppression automatique est activé, et son délais est de {delay_HRP}s. Que souhaitez vous changer ?\n1️⃣ - Enlever la suppression automatique \n2️⃣ - Régler le délais")        
+            await q.add_reaction("1️⃣")
+            await q.add_reaction("2️⃣")
+            await q.add_reaction("❌")
+            reaction,user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "1️⃣":
+                await q.delete()
+                await webhook.deleteHRP(ctx, self.bot, "0")
+                await ctx.send("Changement effectué, le HRP ne sera plus supprimé.")
+                return
+            elif reaction.emoji == "2️⃣":
+                await q.delete
+                await webhook.deleteHRP(ctx, self.bot, "1")
+                await ctx.send("Changement effectué")
+                return
+            else:
+                await ctx.send("Annulation")
+                await q.delete()
+                return
+                
+                
+        
+        
+
 def setup(bot):
     bot.add_cog(CogAdmins(bot))
