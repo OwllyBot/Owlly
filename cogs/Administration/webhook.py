@@ -80,7 +80,7 @@ async def search_chan(ctx, chan):
         chan = "Error"
         return chan
 
-async def chanRp (ctx, bot):
+async def chanRp (ctx, bot, config):
     def checkValid(reaction, user):
         return (
             ctx.message.author == user
@@ -90,54 +90,56 @@ async def chanRp (ctx, bot):
 
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
-
-    db = sqlite3.connect("owlly.db", timeout=3000)
-    c = db.cursor()
-    chan = []
-    q = await ctx.send("Merci d'envoyer les catégories ou Channel que vous souhaitez utiliser.\n:white_small_square: `stop` : Valide la saisie\n:white_small_square: `cancel` : Annule la commande. ")
-    while True:
-        channels = await bot.wait_for("message", timeout=300, check=checkRep)
-        chan_search = channels.content
-        if chan_search.lower() == "stop":
-            await ctx.send("Validation en cours !", delete_after=5)
-            await channels.delete()
-            break
-        elif chan_search.lower() == "cancel":
-            await channels.delete()
-            await ctx.send("Annulation !", delete_after=30)
-            await q.delete()
-            return
-        else:
-            await channels.add_reaction("✅")
-            if chan_search.isnumeric():
-                chan_search = int(chan_search)
-                check_id = get(ctx.message.guild.categories, id=chan_search)
-                if check_id is None or check_id == "None":
-                    check_id = bot.get_channel(chan_search)
+    if config != "0":
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        chan = []
+        q = await ctx.send("Merci d'envoyer les catégories ou Channel que vous souhaitez utiliser.\n:white_small_square: `stop` : Valide la saisie\n:white_small_square: `cancel` : Annule la commande. ")
+        while True:
+            channels = await bot.wait_for("message", timeout=300, check=checkRep)
+            chan_search = channels.content
+            if chan_search.lower() == "stop":
+                await ctx.send("Validation en cours !", delete_after=5)
+                await channels.delete()
+                break
+            elif chan_search.lower() == "cancel":
+                await channels.delete()
+                await ctx.send("Annulation !", delete_after=30)
+                await q.delete()
+                return
+            else:
+                await channels.add_reaction("✅")
+                if chan_search.isnumeric():
+                    chan_search = int(chan_search)
+                    check_id = get(ctx.message.guild.categories, id=chan_search)
                     if check_id is None or check_id == "None":
-                        await ctx.send("Erreur ! Ce channel ou cette catégorie n'existe pas !", delete_after=30)
-                        await q.delete()
-                        await channels.delete()
+                        check_id = bot.get_channel(chan_search)
+                        if check_id is None or check_id == "None":
+                            await ctx.send("Erreur ! Ce channel ou cette catégorie n'existe pas !", delete_after=30)
+                            await q.delete()
+                            await channels.delete()
+                        else:
+                            chan.append(str(chan_search))
+                    else: 
+                        chan.append(str(chan_search))
+                else:
+                    chan_search = await search_cat_name(ctx, chan_search, bot)
+                    if chan_search == 12:
+                        chan_search = await search_chan(ctx, chan_search)
+                        if chan_search == "Error":
+                            await ctx.send("Erreur, ce channel ou cette catégorie n'existe pas.", delete_after=30)
+                            await q.delete()
+                            await channels.delete()
+                            return
+                        else:
+                            chan.append(str(chan_search.id))
                     else:
                         chan.append(str(chan_search))
-                else: 
-                    chan.append(str(chan_search))
-            else:
-                chan_search = await search_cat_name(ctx, chan_search, bot)
-                if chan_search == 12:
-                    chan_search = await search_chan(ctx, chan_search)
-                    if chan_search == "Error":
-                        await ctx.send("Erreur, ce channel ou cette catégorie n'existe pas.", delete_after=30)
-                        await q.delete()
-                        await channels.delete()
-                        return
-                    else:
-                        chan.append(str(chan_search.id))
-                else:
-                    chan.append(str(chan_search))
-        await channels.delete(delay=10)
-    idS= ctx.guild.id
-    chanRP=",".join(chan)
+            await channels.delete(delay=10)
+        idS= ctx.guild.id
+        chanRP=",".join(chan)
+    else:
+     chanRP = "0"
     sql= "UPDATE SERVEUR SET chanRP = ? WHERE idS = ?"
     var=(chanRP, idS)
     c.execute(sql, var)
@@ -326,6 +328,4 @@ async def deleteHRP(ctx, bot, config):
     db.commit()
     c.close()
     db.close()
-    await q.delete()
-    await rep.delete()
             

@@ -9,7 +9,7 @@ from discord.ext.commands import CommandError
 from discord.ext.commands.errors import RoleNotFound
 from cogs.Administration import config_member as member
 from cogs.Administration import admin_fiche as fiche
-from cogs.Administration import webhook 
+from cogs.Administration import webhook
 import unidecode
 import os
 import ast
@@ -33,17 +33,18 @@ class CogAdmins(
             return chan
 
     @commands.command(
-     name= "config",
+     name="config",
      help="Permet de faire la configuration générale du bot.",
      brief="Configuration du bot.",
      )
     @commands.has_permissions(administrator=True)
-    async def config (self, ctx):
+    async def config(self, ctx):
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
         fi = self.bot.get_cog("Fiche")
         adminfi = self.bot.get_cog("Administration des fiches")
-        emoji=["✅", "❌"]
+        emoji = ["✅", "❌"]
+
         def checkRep(message):
             return message.author == ctx.message.author and ctx.message.channel == message.channel
 
@@ -60,9 +61,9 @@ class CogAdmins(
             await ctx.send("Annulation", delete_after=30)
             await rep.delete()
             return
-        elif rep.content != "0" :
+        elif rep.content != "0":
             await self.set_prefix(ctx, rep.content.lower())
-        q = await ctx.send("Voulez-vous configurez les rôles mis automatiquement par la commande DB ?")
+        q = await ctx.send("Voulez-vous configurez les rôles mis automatiquement par la commande `member` ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
         reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
@@ -72,7 +73,7 @@ class CogAdmins(
             rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
             roliste = rep.content.split(" ")
             await member.roliste_init(ctx, roliste, "roliste", self.bot)
-            q= await ctx.send("Voulez-vous supprimez des rôles lorsqu'un joueur devient membre du RP ?")
+            q = await ctx.send("Voulez-vous supprimez des rôles lorsqu'un joueur devient membre du RP ?")
             await q.add_reaction("✅")
             await q.add_reaction("❌")
             reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
@@ -82,14 +83,23 @@ class CogAdmins(
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
                 rolerm = rep.content.split(" ")
                 await member.roliste_init(ctx, rolerm, "rolerm", self.bot)
-        q= await ctx.send("Voulez-vous configurer un chan servant de lexique, pour la commande `search` ? ")
+        q = await ctx.send("Voulez-vous configurer un chan servant de lexique, pour la commande `search` ? ")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction,user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
         if reaction.emoji == "✅":
-            q.clear_reactions()
-            q=await q.edit(content="Merci de donner le channel voulu, sous forme de mention, nom ou ID.")
-            await self.notes_config(ctx, rep.content)        
+            await q.clear_reactions()
+            q = await q.edit(content="Merci de donner le channel voulu, sous forme de mention, nom ou ID.")
+            rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+            chan = await self.search_chan(ctx, rep.content)
+            
+            if chan != "Error":
+                await self.notes_config(ctx, chan)
+            else:
+                await ctx.send("Channel introuvable.")
+                await self.notes_config(ctx, "0")
+        else:
+            await self.notes_config(ctx,"0")
         q = await ctx.send("Voulez-vous configurer les channels des fiches de présentation ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
@@ -101,16 +111,12 @@ class CogAdmins(
         await q.add_reaction("✅")
         await q.add_reaction("❌")
         reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        config="0"
         if reaction.emoji == "✅":
-            await webhook.chanRp(ctx, self.bot)
+            config="1"
         else:
-           sql= "UPDATE SERVEUR SET chanRP = ? WHERE idS = ?"
-           idS= ctx.guild.id
-           var=("0", idS)
-           c.execute(sql, var)
-           db.commit()
-           c.close()
-           db.close()
+           config="0"
+        await webhook.chanRp(ctx, self.bot, config)
         q = await ctx.send("Voulez-vous que les Personae soit sticky, c'est à dire qu'il suffit de parler une fois avec pour que les messages soient automatiquement changés, jusqu'au changement de token, ou l'utilisation de `\` avant un message ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
@@ -188,17 +194,22 @@ class CogAdmins(
     )
     @commands.has_permissions(administrator=True)
     async def notes_config(self, ctx, chan: discord.TextChannel):
-        server = ctx.guild.id
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
+        server = ctx.guild.id
+        if chan != "0":
+            chanID = chan.id
+            phrase = f"Le channel des notes est donc {chan}"
+        else:
+            chanID=0 
+            phrase = f"Le lexique n'est pas configuré."   
         sql = "UPDATE SERVEUR SET notes=? WHERE idS=?"
-        chanID = chan.id
         var = (chanID, server)
         c.execute(sql, var)
         db.commit()
         c.close()
         db.close()
-        await ctx.send(f"Le channels des notes est donc {chan}", delete_after=30)
+        await ctx.send(phrase, delete_after=30)
         await ctx.message.delete()
 
     @commands.has_permissions(administrator=True)
@@ -261,8 +272,18 @@ class CogAdmins(
             )
         reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
         if reaction.emoji == "3️⃣":
-            await q.clear_reactions()
-            await webhook.chanRp(ctx, self.bot)
+            await q.delete()
+            q=await ctx.send("Voulez-vous avoir des channels HRP pour les webhook ?")
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "✅":
+                config="1"
+            else:
+                await q.delete()
+                await ctx.send("Aucun channel ne sera configuré.")
+                config="0"
+            await webhook.chanRp(ctx, self.bot, config)
         elif reaction.emoji == "1️⃣":
             await q.clear_reactions()
             await webhook.chanHRP_add(ctx, self.bot)
