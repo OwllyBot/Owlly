@@ -97,7 +97,7 @@ class CogAdmins(
         if reaction.emoji == "✅":
             await adminfi.chan_fiche(ctx)
             await ctx.send("Faites la commande `config_fiche` pour configurer les champs des fiches.")
-        q = await ctx.send("Voulez-vous configurez les channels RP ? Cela permettra d'utiliser les Personae plus tard.")
+        q = await ctx.send("Voulez-vous configurez les channels RP ? Cela permettra d'utiliser les Personae plus tard.\n *Les Personae peuvent agir comme des doubles comptes : ils peuvent parler à votre place en remplaçant vos messages dans les salons RP, via l'utilisation d'un préfix/suffixe que vous aurez configuré.*")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
         reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
@@ -152,6 +152,15 @@ class CogAdmins(
         else:
             await webhook.tokenHRP(ctx, self.bot, "0")
             await webhook.deleteHRP(ctx, self.bot, "0")
+
+        q = await ctx.send("Voulez-vous limiter le nombre de Personae de vos joueurs ?")
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        if reaction.emoji == "✅":
+            await webhook.maxDC(ctx, self.bot, "1")
+        else:
+            await webhook.maxDC(ctx, self.bot, "0")
         await ctx.send("La configuration du serveur est maintenant terminé ! Vous pouvez éditer chaque paramètres séparément.")
             
     @commands.command(
@@ -415,10 +424,46 @@ class CogAdmins(
                 await ctx.send("Annulation")
                 await q.delete()
                 return
-                
-                
-        
-        
+
+    @commands.command(
+        help="Permet de configurer le nombre maximum de Personae qu'un joueur peut créer et utiliser.",
+        brief="Permet de configurer le maximum de Personae.",
+        alias=["config_max", "maxDC", "maxdc_config"])
+    @commands.has_permissions(administrator=True)
+    async def max_config(self, ctx):
+        def checkValid(reaction, user):
+            return (
+            ctx.message.author == user
+            and q.id == reaction.message.id
+            and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+        )
+        def checkRep(message):
+            return message.author == ctx.message.author and ctx.message.channel == message.channel
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        sql="SELECT maxDC FROM SERVEUR WHERE idS=?"
+        c.execute(sql, (ctx.guild.id))
+        maxDC = c.fetchone()
+        if maxDC is None:
+            maxDC=0
+        else:
+            maxDC = maxDC[0]
+        if maxDC == 0:
+            phrase = f"Actuellement, le nombre de Persona est illimité. Voulez-vous le limiter ?"
+        else:
+            phrase=f"Actuellement, le nombre de Persona est limité à {maxDC}, voulez-vous le changer ?"
+        q= await ctx.send(phrase)    
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        if reaction.emoji == "✅":
+            await webhook.maxDC(ctx, self.bot, "1")
+            await ctx.send("Changement effectué")
+            return
+        else:
+            await ctx.send("Annulation")
+            return
+    
 
 def setup(bot):
     bot.add_cog(CogAdmins(bot))

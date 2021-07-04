@@ -248,31 +248,31 @@ async def chanHRP_rm(ctx, bot):
         db.commit()
         c.close()
         db.close()
-                        
-                
 
-
-                    
-async def maxDC (ctx, bot):
+                              
+async def maxDC (ctx, bot, config):
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
-    q= await ctx.send("Quel est le nombre maximum de Personae voulez-vous autoriser pour les joueurs ?. \n `0`: illimité")
-    rep = await bot.wait_for("message", timeout=300, check=checkRep)
-    maxDC=rep.content.lower()
-    if not maxDC.isnumeric():
-        await ctx.send("Erreur, c'est pas un nombre !", delete_after=30)
-        await q.delete()
-        return
+    if config != "0":
+        q= await ctx.send("Quel est le nombre maximum de Personae voulez-vous autoriser pour les joueurs ?. \n `0`: illimité")
+        rep = await bot.wait_for("message", timeout=300, check=checkRep)
+        maxDC=rep.content.lower()
+        if not maxDC.isnumeric() :
+            await ctx.send("Erreur, c'est pas un nombre !\nAnnulation.", delete_after=30)
+            maxDC=0
+        else:
+            maxDC=int(max)
     else:
-        maxDC=int(max)
-        sql="UPDATE SERVEUR SET maxDC = ? WHERE idS = ?"
-        idS = ctx.guild.id
-        var=(maxDC, idS)
-        c.execute(sql, var)
-        db.commit()
-        c.close()
+        maxDC=0
+    sql="UPDATE SERVEUR SET maxDC = ? WHERE idS = ?"
+    idS = ctx.guild.id
+    var=(maxDC, idS)
+    c.execute(sql, var)
+    db.commit()
+    c.close()
+    return
         
 async def sticky(ctx, bot, sticky):
     db = sqlite3.connect("owlly.db", timeout=3000)
@@ -285,7 +285,8 @@ async def sticky(ctx, bot, sticky):
         var=(1, ctx.guild.id)
     c.execute(sql, var)
     db.commit()
-    c.close()  
+    c.close()
+    db.close()  
 
 async def tokenHRP(ctx, bot, token):
     db = sqlite3.connect("owlly.db", timeout=3000)
@@ -298,6 +299,7 @@ async def tokenHRP(ctx, bot, token):
     c.execute(sql, var)
     db.commit()
     c.close()
+    db.close()
 
 async def deleteHRP(ctx, bot, config):
     db = sqlite3.connect("owlly.db", timeout=3000)
