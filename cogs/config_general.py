@@ -201,8 +201,21 @@ class CogAdmins(
             chanID = chan.id
             phrase = f"Le channel des notes est donc {chan}"
         else:
-            chanID=0 
-            phrase = f"Le lexique n'est pas configuré."   
+            sql= "SELECT notes FROM SERVEUR WHERE idS = ?"
+            c.execute(sql, (server,))
+            chanID = c.fetchone()
+            if chanID is not None :
+                if chanID[0] != 0:
+                    chanID=chanID[0]
+                    chan_name=self.bot.get_channel(chanID)
+                    chan_name = chan.name
+                    phrase = f"Le channel des notes est donc toujours {chan_name}"
+                else:
+                    chanID= 0
+                    phrase = f"Le lexique n'est pas configuré."
+            else:
+                chanID=0 
+                phrase = f"Le lexique n'est pas configuré."   
         sql = "UPDATE SERVEUR SET notes=? WHERE idS=?"
         var = (chanID, server)
         c.execute(sql, var)

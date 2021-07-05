@@ -81,6 +81,8 @@ async def search_chan(ctx, chan):
         return chan
 
 async def chanRp (ctx, bot, config):
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
     def checkValid(reaction, user):
         return (
             ctx.message.author == user
@@ -91,8 +93,6 @@ async def chanRp (ctx, bot, config):
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
     if config != "0":
-        db = sqlite3.connect("owlly.db", timeout=3000)
-        c = db.cursor()
         chan = []
         q = await ctx.send("Merci d'envoyer les catégories ou Channel que vous souhaitez utiliser.\n:white_small_square: `stop` : Valide la saisie\n:white_small_square: `cancel` : Annule la commande. ")
         while True:
@@ -125,7 +125,7 @@ async def chanRp (ctx, bot, config):
                 else:
                     chan_search = await search_cat_name(ctx, chan_search, bot)
                     if chan_search == 12:
-                        chan_search = await search_chan(ctx, chan_search)
+                        chan_search = await search_chan(ctx, channels.content.lower())
                         if chan_search == "Error":
                             await ctx.send("Erreur, ce channel ou cette catégorie n'existe pas.", delete_after=30)
                             await q.delete()
@@ -136,10 +136,11 @@ async def chanRp (ctx, bot, config):
                     else:
                         chan.append(str(chan_search))
             await channels.delete(delay=10)
-        idS= ctx.guild.id
+        
         chanRP=",".join(chan)
     else:
      chanRP = "0"
+    idS = ctx.guild.id
     sql= "UPDATE SERVEUR SET chanRP = ? WHERE idS = ?"
     var=(chanRP, idS)
     c.execute(sql, var)
@@ -265,7 +266,7 @@ async def maxDC (ctx, bot, config):
             await ctx.send("Erreur, c'est pas un nombre !\nAnnulation.", delete_after=30)
             maxDC=0
         else:
-            maxDC=int(max)
+            maxDC=int(maxDC)
     else:
         maxDC=0
     sql="UPDATE SERVEUR SET maxDC = ? WHERE idS = ?"

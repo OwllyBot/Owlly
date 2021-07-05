@@ -64,9 +64,10 @@ class CommandErrorHandler(commands.Cog):
 
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
+            t = traceback.format_exc()
+            await ctx.send(f"```py\n{str(error)}\n{t}```")
             print("Ignoring exception in command {}:".format(ctx.command), file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-
 
 def setup(bot):
     bot.add_cog(CommandErrorHandler(bot))
