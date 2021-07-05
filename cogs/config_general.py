@@ -1,3 +1,5 @@
+from test import up_DB
+from cogs.clean_db import DB_utils
 import discord
 from discord import role
 from discord.colour import Color
@@ -33,20 +35,24 @@ class CogAdmins(
             return chan
 
     @commands.command(
-     name="config",
-     help="Permet de faire la configuration générale du bot.",
-     brief="Configuration du bot.",
-     )
+        name="config",
+        help="Permet de faire la configuration générale du bot.",
+        brief="Configuration du bot.",
+    )
     @commands.has_permissions(administrator=True)
     async def config(self, ctx):
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
-        fi = self.bot.get_cog("Fiche")
+        utils = self.bot.get_cog("DB_utils")
         adminfi = self.bot.get_cog("Administration des fiches")
         emoji = ["✅", "❌"]
+        server = ctx.guild.id
 
         def checkRep(message):
-            return message.author == ctx.message.author and ctx.message.channel == message.channel
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
 
         def checkValid(reaction, user):
             return (
@@ -54,7 +60,10 @@ class CogAdmins(
                 and q.id == reaction.message.id
                 and (str(reaction.emoji) in emoji)
             )
-        q = await ctx.send("Configuration du bot. Tout d'abord, définissez le préfix du bot.\n `0` pour garder par défaut ; `cancel` ou `stop` pour annuler.")
+
+        q = await ctx.send(
+            "Configuration du bot. Tout d'abord, définissez le préfix du bot.\n `0` pour garder par défaut ; `cancel` ou `stop` pour annuler."
+        )
         rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
         if rep.content.lower() == "stop" or rep.content.lower() == "cancel":
             await q.delete()
@@ -63,76 +72,119 @@ class CogAdmins(
             return
         elif rep.content != "0":
             await self.set_prefix(ctx, rep.content.lower())
-        q = await ctx.send("Voulez-vous configurez les rôles mis automatiquement par la commande `member` ?")
+        q = await ctx.send(
+            "Voulez-vous configurez les rôles mis automatiquement par la commande `member` ?"
+        )
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "✅":
             await q.clear_reactions()
             await q.edit(content="Merci d'envoyer les rôles que vous voulez rajouter.")
             rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
             roliste = rep.content.split(" ")
             await member.roliste_init(ctx, roliste, "roliste", self.bot)
-            q = await ctx.send("Voulez-vous supprimez des rôles lorsqu'un joueur devient membre du RP ?")
+            q = await ctx.send(
+                "Voulez-vous supprimez des rôles lorsqu'un joueur devient membre du RP ?"
+            )
             await q.add_reaction("✅")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "✅":
                 await q.clear_reactions()
-                await q.edit(content="Merci d'envoyer les rôles que vous souhaitez faire supprimer.")
+                await q.edit(
+                    content="Merci d'envoyer les rôles que vous souhaitez faire supprimer."
+                )
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
                 rolerm = rep.content.split(" ")
                 await member.roliste_init(ctx, rolerm, "rolerm", self.bot)
-        q = await ctx.send("Voulez-vous configurer un chan servant de lexique, pour la commande `search` ? ")
+        else:
+            await utils.init_value("roliste", "SERVEUR", "idS", "0", server)
+            await utils.init_value("rolerm", "SERVEUR", "idS", "0", server)
+        q = await ctx.send(
+            "Voulez-vous configurer un chan servant de lexique, pour la commande `search` ? "
+        )
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "✅":
             await q.clear_reactions()
-            q = await q.edit(content="Merci de donner le channel voulu, sous forme de mention, nom ou ID.")
+            q = await q.edit(
+                content="Merci de donner le channel voulu, sous forme de mention, nom ou ID."
+            )
             rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
             chan = await self.search_chan(ctx, rep.content)
-            
+
             if chan != "Error":
                 await self.notes_config(ctx, chan)
             else:
                 await ctx.send("Channel introuvable.")
                 await self.notes_config(ctx, "0")
         else:
-            await self.notes_config(ctx,"0")
-        q = await ctx.send("Voulez-vous configurer les channels des fiches de présentation ?")
+            await utils.init_value("notes", "SERVEUR", "idS", 0, server)
+        q = await ctx.send(
+            "Voulez-vous configurer les channels des fiches de présentation ?"
+        )
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "✅":
             await adminfi.chan_fiche(ctx)
-            await ctx.send("Faites la commande `config_fiche` pour configurer les champs des fiches.")
-        q = await ctx.send("Voulez-vous configurez les channels RP ? Cela permettra d'utiliser les Personae plus tard.\n *Les Personae peuvent agir comme des doubles comptes : ils peuvent parler à votre place en remplaçant vos messages dans les salons RP, via l'utilisation d'un préfix/suffixe que vous aurez configuré.*")
-        await q.add_reaction("✅")
-        await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
-        config="0"
-        if reaction.emoji == "✅":
-            config="1"
+            await ctx.send(
+                "Faites la commande `config_fiche` pour configurer les champs des fiches."
+            )
         else:
-           config="0"
-        await webhook.chanRp(ctx, self.bot, config)
-        q = await ctx.send("Voulez-vous que les Personae soit sticky, c'est à dire qu'il suffit de parler une fois avec pour que les messages soient automatiquement changés, jusqu'au changement de token, ou l'utilisation de `\` avant un message ?")
+            await utils.init_value("fiche_pj", "FICHE", "idS", 0, server)
+            await utils.init_value("fiche_pnj", "FICHE", "idS", 0, server)
+            await utils.init_value("fiche_validation", "FICHE", "idS", 0, server)
+
+        q = await ctx.send(
+            "Voulez-vous configurez les channels RP ? Cela permettra d'utiliser les Personae plus tard.\n *Les Personae peuvent agir comme des doubles comptes : ils peuvent parler à votre place en remplaçant vos messages dans les salons RP, via l'utilisation d'un préfix/suffixe que vous aurez configuré.*"
+        )
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
+        if reaction.emoji == "✅":
+            await webhook.chanRp(ctx, self.bot, "1")
+        else:
+            await utils.init_value("chanRP", "SERVEUR", "idS", "0", server)
+
+        q = await ctx.send(
+            "Voulez-vous que les Personae soit sticky, c'est à dire qu'il suffit de parler une fois avec pour que les messages soient automatiquement changés, jusqu'au changement de token, ou l'utilisation de `\` avant un message ?"
+        )
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "✅":
             await webhook.sticky(ctx, self.bot, "1")
         else:
-            await webhook.sticky(ctx, self.bot, "0")
+            await utils.init_value("sticky", "SERVEUR", "idS", 0, server)
         await q.clear_reactions()
-        q = await ctx.send("Voulez-vous avoir un tag HRP ? Tous les messages utilisant ce token ne seront pas converti alors que vous avez sélectionné un Persona.")
+        q = await ctx.send(
+            "Voulez-vous avoir un tag HRP ? Tous les messages utilisant ce token ne seront pas converti alors que vous avez sélectionné un Persona."
+        )
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "✅":
             await q.clear_reactions()
-            q = await ctx.send("Voici les différentes manières de définir un pattern :\n :white_small_square: /[text]/\n/[text]\n[text]/.\n Vous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre [text]! \n Vous pouvez annuler avec `0`, `stop` ou `cancel`.")
+            q = await ctx.send(
+                "Voici les différentes manières de définir un pattern :\n :white_small_square: /[text]/\n/[text]\n[text]/.\n Vous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre [text]! \n Vous pouvez annuler avec `0`, `stop` ou `cancel`."
+            )
             rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
             token = rep.content.lower()
             if token == "0" or token == "cancel" or token == "stop":
@@ -142,33 +194,44 @@ class CogAdmins(
             else:
                 while "[text]" not in token:
                     await ctx.send("Erreur ! Vous avez oublié `[text]`")
-                    rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                    rep = await self.bot.wait_for(
+                        "message", timeout=300, check=checkRep
+                    )
                     token = rep.content.lower()
                     if token.lower() == "stop" or token.lower() == "cancel":
                         await ctx.send("Annulation", delete_after=30)
                         await rep.delete()
                         return
                 await webhook.tokenHRP(ctx, self.bot, token)
-                q=await ctx.send("Voulez-vous faire supprimer tous les messages contenant le token suivant un temps configuré ?")
+                q = await ctx.send(
+                    "Voulez-vous faire supprimer tous les messages contenant le token suivant un temps configuré ?"
+                )
                 await q.add_reaction("✅")
                 await q.add_reaction("❌")
-                reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                reaction, user = await self.bot.wait_for(
+                    "reaction_add", timeout=300, check=checkValid
+                )
                 if reaction.emoji == "✅":
                     await webhook.deleteHRP(ctx, self.bot, "1")
         else:
-            await webhook.tokenHRP(ctx, self.bot, "0")
-            await webhook.deleteHRP(ctx, self.bot, "0")
+            await utils.init_value("tokenHRP", "SERVEUR", "idS", "0", server)
+            await utils.init_value("delete_HRP", "SERVEUR", "idS", 0, server)
+            await utils.init_value("delay_HRP", "SERVEUR", "idS", 0, server)
 
         q = await ctx.send("Voulez-vous limiter le nombre de Personae de vos joueurs ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "✅":
             await webhook.maxDC(ctx, self.bot, "1")
         else:
-            await webhook.maxDC(ctx, self.bot, "0")
-        await ctx.send("La configuration du serveur est maintenant terminé ! Vous pouvez éditer chaque paramètres séparément.")
-            
+            await utils.init_value("maxDC", "SERVEUR", "idS", 0, server)
+        await ctx.send(
+            "La configuration du serveur est maintenant terminé ! Vous pouvez éditer chaque paramètres séparément."
+        )
+
     @commands.command(
         name="set_prefix",
         help="Permet de changer le prefix du bot.",
@@ -186,7 +249,6 @@ class CogAdmins(
         c.close()
         db.close()
 
-
     @commands.command(
         aliases=["lexique_config"],
         help="Permet de configurer le channel dans lequel la commande `search` va faire ses recherches.",
@@ -201,21 +263,8 @@ class CogAdmins(
             chanID = chan.id
             phrase = f"Le channel des notes est donc {chan}"
         else:
-            sql= "SELECT notes FROM SERVEUR WHERE idS = ?"
-            c.execute(sql, (server,))
-            chanID = c.fetchone()
-            if chanID is not None :
-                if chanID[0] != 0:
-                    chanID=chanID[0]
-                    chan_name=self.bot.get_channel(chanID)
-                    chan_name = chan.name
-                    phrase = f"Le channel des notes est donc toujours {chan_name}"
-                else:
-                    chanID= 0
-                    phrase = f"Le lexique n'est pas configuré."
-            else:
-                chanID=0 
-                phrase = f"Le lexique n'est pas configuré."   
+            chanID = 0
+            phrase = f"Le lexique est désactivé."
         sql = "UPDATE SERVEUR SET notes=? WHERE idS=?"
         var = (chanID, server)
         c.execute(sql, var)
@@ -243,7 +292,7 @@ class CogAdmins(
         aliases=["init_rm", "assign_rm"],
     )
     async def init_role_rm(self, ctx, *role: discord.Role):
-       await member.init_role_rm(ctx, role, self.bot)
+        await member.init_role_rm(ctx, role, self.bot)
 
     @commands.has_permissions(administrator=True)
     @commands.command(
@@ -265,17 +314,24 @@ class CogAdmins(
 
     @commands.has_permissions(administrator=True)
     @commands.command(
-        help= "Menu de configuration des Channels et catégories de RP",
+        help="Menu de configuration des Channels et catégories de RP",
         brief="Configuration des channels RP.",
-        aliases=["chanRP", "config_chanRP"])
+        aliases=["chanRP", "config_chanRP"],
+    )
     async def chanHRP_menu(self, ctx):
-        emoji=["1️⃣", "2️⃣", "3️⃣", "❌", "✅"]
-        q=await ctx.send("1️⃣| Ajout d'un channel\n2️⃣| Suppression d'un channel\n3️⃣| Reconfiguration")
+        emoji = ["1️⃣", "2️⃣", "3️⃣", "❌", "✅"]
+        q = await ctx.send(
+            "1️⃣| Ajout d'un channel\n2️⃣| Suppression d'un channel\n3️⃣| Reconfiguration"
+        )
         await q.add_reaction("1️⃣")
         await q.add_reaction("2️⃣")
         await q.add_reaction("3️⃣")
+
         def checkRep(message):
-            return message.author == ctx.message.author and ctx.message.channel == message.channel
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
 
         def checkValid(reaction, user):
             return (
@@ -283,19 +339,24 @@ class CogAdmins(
                 and q.id == reaction.message.id
                 and (str(reaction.emoji) in emoji)
             )
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "3️⃣":
             await q.delete()
-            q=await ctx.send("Voulez-vous avoir des channels HRP pour les webhook ?")
+            q = await ctx.send("Voulez-vous avoir des channels HRP pour les webhook ?")
             await q.add_reaction("✅")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "✅":
-                config="1"
+                config = "1"
             else:
                 await q.delete()
                 await ctx.send("Aucun channel ne sera configuré.")
-                config="0"
+                config = "0"
             await webhook.chanRp(ctx, self.bot, config)
         elif reaction.emoji == "1️⃣":
             await q.clear_reactions()
@@ -306,9 +367,10 @@ class CogAdmins(
 
     @commands.has_permissions(administrator=True)
     @commands.command(
-     help="Permet d'activer ou désactiver le mode sticky.",
-     brief="Configuration du Sticky",
-     aliases=["sticky_config", "config_sticky"])
+        help="Permet d'activer ou désactiver le mode sticky.",
+        brief="Configuration du Sticky",
+        aliases=["sticky_config", "config_sticky"],
+    )
     async def sticky_mode(self, ctx):
         def checkValid(reaction, user):
             return (
@@ -316,20 +378,25 @@ class CogAdmins(
                 and q.id == reaction.message.id
                 and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
             )
+
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
-        sql= "SELECT sticky FROM SERVEUR WHERE idS = ?"
+        sql = "SELECT sticky FROM SERVEUR WHERE idS = ?"
         c.execute(sql, (ctx.guild.id,))
         mode = c.fetchone()
         if mode is None:
             mode = 0
         else:
-            mode=mode[0]
+            mode = mode[0]
         if mode == 0:
-            q=await ctx.send("Actuellement, le sticky est désactivé. Voulez-vous l'activer ?")
+            q = await ctx.send(
+                "Actuellement, le sticky est désactivé. Voulez-vous l'activer ?"
+            )
             await q.add_reaction("✅")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "✅":
                 await q.delete()
                 mode = 1
@@ -341,10 +408,14 @@ class CogAdmins(
                 await ctx.send("Annulation.")
                 return
         else:
-            q= await ctx.send("Actuellement, le sticky est activé. Voulez-vous le désactiver ?")
+            q = await ctx.send(
+                "Actuellement, le sticky est activé. Voulez-vous le désactiver ?"
+            )
             await q.add_reaction("✅")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "✅":
                 mode = 0
                 await webhook.sticky(ctx, self.bot, mode)
@@ -357,26 +428,30 @@ class CogAdmins(
                 return
 
     @commands.has_permissions(administrator=True)
-    @commands.command(
-        help="Permet de configurer le HRP", 
-        brief="Configuration du HRP")
+    @commands.command(help="Permet de configurer le HRP", brief="Configuration du HRP")
     async def patternHRP(self, ctx):
         def checkRep(message):
-            return message.author == ctx.message.author and ctx.message.channel == message.channel
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
+
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
-        sql= "SELECT tokenHRP FROM SERVEUR where idS=?"
-        c.execute(sql,(ctx.guild.id,))
+        sql = "SELECT tokenHRP FROM SERVEUR where idS=?"
+        c.execute(sql, (ctx.guild.id,))
         tokenHRP = c.fetchone()
         if tokenHRP is None:
             tokenHRP = "0"
         else:
-            tokenHRP=tokenHRP[0]
+            tokenHRP = tokenHRP[0]
         if tokenHRP == "0":
-            info="Actuellement, vous n'avez pas de pattern.\n"
+            info = "Actuellement, vous n'avez pas de pattern.\n"
         else:
             info = f"Actuellement, votre pattern est {tokenHRP}.\n Pour supprimer le pattern, écrivez `0`."
-        await ctx.send(f"{info}Voici les différentes manières de définir un pattern :\n :white_small_square: /[text]/\n/[text]\n[text]/.\n Vous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre [text]! ")
+        await ctx.send(
+            f"{info}Voici les différentes manières de définir un pattern :\n :white_small_square: /[text]/\n/[text]\n[text]/.\n Vous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre [text]! "
+        )
         rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
         token = rep.content.lower()
         if "0" in token:
@@ -385,7 +460,7 @@ class CogAdmins(
             await webhook.deleteHRP(ctx, self.bot, "0")
             return
         else:
-            while "[text]" not in token :
+            while "[text]" not in token:
                 await ctx.send("Erreur ! Vous avez oublié `[text]`")
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
                 token = rep.content.lower()
@@ -400,11 +475,16 @@ class CogAdmins(
     @commands.has_permissions(administrator=True)
     @commands.command(
         help="Permet de configurer le délais de suppression du HRP",
-        brief="Configuration du délais HRP.")
+        brief="Configuration du délais HRP.",
+    )
     async def delay_hrp(self, ctx):
         def checkRep(message):
-            return message.author == ctx.message.author and ctx.message.channel == message.channel
-        emoji=["✅","❌", "1️⃣", "2️⃣"]
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
+
+        emoji = ["✅", "❌", "1️⃣", "2️⃣"]
 
         def checkValid(reaction, user):
             return (
@@ -412,24 +492,29 @@ class CogAdmins(
                 and q.id == reaction.message.id
                 and str(reaction.emoji) in emoji
             )
+
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
-        sql="SELECT delete_HRP, delay_HRP WHERE idS=?"
-        c.execute(sql,(ctx.guild.id,))
-        data=c.fetchone()
+        sql = "SELECT delete_HRP, delay_HRP WHERE idS=?"
+        c.execute(sql, (ctx.guild.id,))
+        data = c.fetchone()
         if data is None:
-            delete=0
-            delay_HRP=0
+            delete = 0
+            delay_HRP = 0
         else:
-            delete=data[0]
-            delay_HRP=data[1]
+            delete = data[0]
+            delay_HRP = data[1]
         if delete == 0:
-            q=await ctx.send("Actuellement, il n'y a pas de suppression automatique du HRP. Voulez-vous l'activez ?")
+            q = await ctx.send(
+                "Actuellement, il n'y a pas de suppression automatique du HRP. Voulez-vous l'activez ?"
+            )
             await q.add_reaction("✅")
             await q.add_reaction("❌")
-            reaction,user= await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "✅":
-                config="1"
+                config = "1"
                 await webhook.deleteHRP(ctx, self.bot, config)
                 await q.delete()
                 await ctx.send("Changement effectué.")
@@ -439,11 +524,15 @@ class CogAdmins(
                 await q.delete()
                 return
         else:
-            q=await ctx.send(f"Actuellement, la suppression automatique est activé, et son délais est de {delay_HRP}s. Que souhaitez vous changer ?\n1️⃣ - Enlever la suppression automatique \n2️⃣ - Régler le délais")        
+            q = await ctx.send(
+                f"Actuellement, la suppression automatique est activé, et son délais est de {delay_HRP}s. Que souhaitez vous changer ?\n1️⃣ - Enlever la suppression automatique \n2️⃣ - Régler le délais"
+            )
             await q.add_reaction("1️⃣")
             await q.add_reaction("2️⃣")
             await q.add_reaction("❌")
-            reaction,user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "1️⃣":
                 await q.delete()
                 await webhook.deleteHRP(ctx, self.bot, "0")
@@ -462,34 +551,42 @@ class CogAdmins(
     @commands.command(
         help="Permet de configurer le nombre maximum de Personae qu'un joueur peut créer et utiliser.",
         brief="Permet de configurer le maximum de Personae.",
-        alias=["config_max", "maxDC", "maxdc_config"])
+        alias=["config_max", "maxDC", "maxdc_config"],
+    )
     @commands.has_permissions(administrator=True)
     async def max_config(self, ctx):
         def checkValid(reaction, user):
             return (
-            ctx.message.author == user
-            and q.id == reaction.message.id
-            and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
-        )
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+            )
+
         def checkRep(message):
-            return message.author == ctx.message.author and ctx.message.channel == message.channel
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
+
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
-        sql="SELECT maxDC FROM SERVEUR WHERE idS=?"
+        sql = "SELECT maxDC FROM SERVEUR WHERE idS=?"
         c.execute(sql, (ctx.guild.id))
         maxDC = c.fetchone()
         if maxDC is None:
-            maxDC=0
+            maxDC = 0
         else:
             maxDC = maxDC[0]
         if maxDC == 0:
             phrase = f"Actuellement, le nombre de Persona est illimité. Voulez-vous le limiter ?"
         else:
-            phrase=f"Actuellement, le nombre de Persona est limité à {maxDC}, voulez-vous le changer ?"
-        q= await ctx.send(phrase)    
+            phrase = f"Actuellement, le nombre de Persona est limité à {maxDC}, voulez-vous le changer ?"
+        q = await ctx.send(phrase)
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "✅":
             await webhook.maxDC(ctx, self.bot, "1")
             await ctx.send("Changement effectué")
@@ -497,7 +594,7 @@ class CogAdmins(
         else:
             await ctx.send("Annulation")
             return
-    
+
 
 def setup(bot):
     bot.add_cog(CogAdmins(bot))

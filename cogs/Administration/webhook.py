@@ -84,6 +84,7 @@ async def chanRp (ctx, bot, config):
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
     def checkValid(reaction, user):
+        
         return (
             ctx.message.author == user
             and q.id == reaction.message.id
@@ -136,7 +137,6 @@ async def chanRp (ctx, bot, config):
                     else:
                         chan.append(str(chan_search))
             await channels.delete(delay=10)
-        
         chanRP=",".join(chan)
     else:
      chanRP = "0"
