@@ -11,38 +11,37 @@ import os
 import ast
 from collections import OrderedDict
 
-async def roliste_init(ctx, role, type_db, bot):
+async def roliste_init(ctx, bot, type_db, role):
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
-    type_db = type_db
     sql = "UPDATE SERVEUR SET "+type_db+" = ? WHERE idS = ?"
     role_list = []
+    phrase=[]
     if (len(role)) > 1:
         for i in role:
             try:
                 roles = await commands.RoleConverter().convert(ctx, i)
                 role_list.append(str(roles.id))
+                phrase.append(roles.name)
             except RoleNotFound:
                 pass
     else:
         try:
-            role_str = await commands.RoleConverter().convert(ctx, role[0])
-            role_str = str(role_str.id)
-        except RoleNotFound:
-            pass
-    phrase = []
-    for i in role:
-        try:
-            roles = await commands.RoleConverter().convert(ctx, i)
+            roles = await commands.RoleConverter().convert(ctx, role[0])
+            role_str = str(roles.id)
             phrase.append(roles.name)
         except RoleNotFound:
             pass
-    phrase = ", ".join(phrase)
+    if len(phrase) > 1:
+    	phrase = ", ".join(phrase)
+    else:
+        phrase= phrase[0]
     if (len(phrase)) == "0":
         await ctx.send("Erreur ! Aucun rôle n'a été reconnu.")
         return
     await ctx.send(f"Les rôles {phrase} ont bien été enregistré dans la base de données")
-    role_str = ",".join((role_list))
+    if len(role_list)>0:
+        role_str = ",".join((role_list))
     var = (role_str, ctx.guild.id)
     c.execute(sql, var)
     db.commit()

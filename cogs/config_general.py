@@ -85,7 +85,7 @@ class CogAdmins(
             await q.edit(content="Merci d'envoyer les rôles que vous voulez rajouter.")
             rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
             roliste = rep.content.split(" ")
-            await member.roliste_init(ctx, roliste, "roliste", self.bot)
+            await member.roliste_init(ctx, self.bot, "roliste", roliste)
             q = await ctx.send(
                 "Voulez-vous supprimez des rôles lorsqu'un joueur devient membre du RP ?"
             )
@@ -101,7 +101,7 @@ class CogAdmins(
                 )
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
                 rolerm = rep.content.split(" ")
-                await member.roliste_init(ctx, rolerm, "rolerm", self.bot)
+                await member.roliste_init(ctx, self.bot, "rolerm", rolerm)
         else:
             await utils.init_value("roliste", "SERVEUR", "idS", "0", server)
             await utils.init_value("rolerm", "SERVEUR", "idS", "0", server)
@@ -287,7 +287,7 @@ class CogAdmins(
     @commands.has_permissions(administrator=True)
     @commands.command(
         help="Permet d'enregistrer / réenregistrer la liste des rôles retirés par la commandes member, sans passer par le menu de configuration.",
-        brief="Enregistrement de rôles pour la commande member, sans passer par le menu.",
+        brief="Enregistrement des rôles retirés pour la commande member, sans passer par le menu.",
         usage="@mention/ID des rôles à enregistrer",
         aliases=["init_rm", "assign_rm"],
     )
