@@ -12,6 +12,7 @@ from discord.ext.commands.errors import CommandError
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
+#CECI EST UN TEST DE PUSH DE SUBREPO MERCI DE L'IGNORER
 
 class CogUtils(
     commands.Cog,
