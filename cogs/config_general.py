@@ -595,6 +595,88 @@ class CogAdmins(
             await ctx.send("Annulation")
             return
 
+    @commands.command(
+        help="Affiche le menu de configuration des Personae, permettant de modifier les différents paramètres à partir de choix.",
+        brief="Affiche le menu d'administration des Personae.",
+    )
+    @commands.has_permissions(manage_nicknames=True)
+    async def admin_persona(self, ctx):
+        await ctx.message.delete()
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "❌", "✅"]
+
+        def checkValid(reaction, user):
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and str(reaction.emoji) in emoji
+            )
+
+        def checkRep(message):
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
+
+        embed = discord.Embed(title="PERSONAE ADMINISTRATION", color=Color.dark_teal())
+        embed.add_field(
+            name="1️⃣ - Gestion des channels",
+            value="Permet d'ajouter ou supprimers les channels de RP",
+            inline=False,
+        )
+        embed.add_field(
+            name="2️⃣ - Sticky",
+            value="Permet d'activer ou désactiver le mode sticky.",
+            inline=False,
+        )
+        embed.add_field(
+            name="3️⃣ - Maximum de personnages",
+            value="Permet de régler le nombre maximum de personnages autorisés par joueurs.",
+            inline=False,
+        )
+        embed.add_field(
+            name="4️⃣ - Tag automatique",
+            value="Permet d'activer un tag avant le nom du personnage, préconfiguré.",
+            inline=False,
+        )
+        embed.add_field(
+            name="5️⃣ - Token HRP",
+            value="Permet de régler le token pour le HRP.",
+            inline=False,
+        )
+        embed.set_footer(
+            text="Cliquez sur la réaction pour choisir !\n ❌ permet d'annuler. "
+        )
+        q = await ctx.send(embed)
+        i = 0
+        while emoji[i] != "✅":
+            await q.add_reaction(emoji[i])
+            i += 1
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
+        if reaction.emoji == "1️⃣":
+            # Gestion des channels.
+            pass
+        elif reaction.emoji == "2️⃣":
+            # Sticky
+            pass
+        elif reaction.emoji == "3️⃣":
+            # MaxDC
+            pass
+        elif reaction.emoji == "4️⃣":
+            # Tag "forcé" ! Proposer des mises en forme ? Pour le moment uniquement le pseudo du créateur.
+            # Ajouter possibilité de mise en forme : [@user] ou (@user) voire @user -
+            #  Enregistrer sous la même forme avec un keyword particulier, genre [@user] ; Simplement replace le @user ;)
+            pass
+        elif reaction.emoji == "5️⃣":
+            # tag HRP
+            pass
+        else:
+            await ctx.send("Annulation !", delete_after=30)
+            return
+
 
 def setup(bot):
     bot.add_cog(CogAdmins(bot))
