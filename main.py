@@ -298,5 +298,5 @@ async def on_guild_remove(guild):
 if repo_name == "main":
     token = os.environ.get("DISCORD_BOT_TOKEN")
 else:
-    token = "ODA1MTU4MDY4OTg3NDk0NDEz.YBWz4g.eJ2NqgLHx6LyZO3ZI3jLfdufDJw"
+    token = os.environ.get("DISCORD_BOT_TOKEN_TESTING")
 bot.run(token)

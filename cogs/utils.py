@@ -12,9 +12,6 @@ from discord.ext.commands.errors import CommandError
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
-#TEST DOUBLE REPO PLEASE IGNORE MEGIT
-
-
 class CogUtils(
     commands.Cog,
     name="Utilitaire",
