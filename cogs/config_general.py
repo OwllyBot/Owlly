@@ -650,6 +650,9 @@ class CogAdmins(
                 sql="UPDATE chanRP set chanRP=? WHERE idS=?"
                 var=("0", ctx.guild.id)
                 c.execute(sql, var)
+                db.commit()
+                c.close()
+                db.close()
                 q=await ctx.send("Il n'y a plus aucun channel enregistrés. Voulez-vous en enregistrer ?")
                 await q.add_reaction("✅")
                 await q.add_reaction("❌")
@@ -721,10 +724,30 @@ class CogAdmins(
                 await ctx.send("Annulation", delete_after=30)
                 return
         elif reaction.emoji == "4️⃣":
-            # Tag "forcé" ! Proposer des mises en forme ? Pour le moment uniquement le pseudo du créateur.
-            # Ajouter possibilité de mise en forme : [@user] ou (@user) voire @user -
-            #  Enregistrer sous la même forme avec un keyword particulier, genre [@user] ; Simplement replace le @user ;)
-            pass
+            await q.clear_reactions()
+            menu = discord.Embed(
+                title=embed.title, color=embed.color, description="Les tags sont des mots préconfigurés (nom du serveur / nom du joueur / ID du Persona) se plaçant dans le nom du Persona, afin de donner des informations à propos du joueur; serveur ; ou id." )
+            menu.add_field(
+                name="1️⃣ - Modification du Tag",
+                value="Permet de modifier ou d'ajouter un tag.")
+            menu.add_field(
+                name="2️⃣ - Suppression du tag",
+                value="Permet de supprimer le tag.")
+            await q.edit(embed=menu)
+            await q.add_reaction("1️⃣")
+            await q.add_reaction("2️⃣")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "1️⃣":
+                await q.delete()
+                await webhook.tag_Personae(ctx, self.bot, "1")
+            elif reaction.emoji == "2️⃣":
+                await q.delete()
+                await webhook.tag_Personae(ctx, self.bot, "0")
+            else:
+                await q.delete()
+                await ctx.send("Annulation, aucun changement effectué.")
+                return
         elif reaction.emoji == "5️⃣":
             await q.clear_reactions()
             menu= discord.Embed(
@@ -757,6 +780,7 @@ class CogAdmins(
                 await ctx.send("Annulation.")
                 return
         else:
+            await q.delete()
             await ctx.send("Annulation !", delete_after=30)
             return
 

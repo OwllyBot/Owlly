@@ -329,8 +329,13 @@ async def tokenHRP(ctx, bot, token):
                     await ctx.send("Annulation", delete_after=30)
                     await rep.delete()
                     return
-            token = token.replace("text", "(.*)/")
-            token = "^/" + token + "$"
+                elif token.lower() == "0":
+                    token = "0"
+                    await ctx.send("Suppression du pattern.")
+                    break
+            if token.lower() != "0":        
+                token = token.replace("text", "(.*)/")
+                token = "^/" + token + "$"
     sql="UPDATE SERVEUR SET tokenHRP = ? WHERE idS= ?"
     var=(token, ctx.guild.id)
     c.execute(sql, var)
@@ -365,4 +370,78 @@ async def deleteHRP(ctx, bot, config):
     db.close()
             
 async def tag_Personae(ctx, bot, config):
-    pass
+    db = sqlite3.connect("owlly.db", timeout=3000)
+    c = db.cursor()
+    emoji = ["1️⃣", "2️⃣", "3️⃣", "❌", "✅"]
+    def checkValid(reaction, user):  
+        return (ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji  )
+    def checkRep(message):  
+        return message.author == ctx.message.author and ctx.message.channel == message.channel
+    sql="SELECT tag FROM SERVEUR WHERE idS =?"
+    c.execute(sql, (ctx.guild.id,))
+    tagPerso= c.fetchone()
+    sql = "UPDATE SERVEUR SET tag = ? WHERE idS = ?"
+    if tagPerso is None:
+        tagPerso = "0"
+        var=("0", ctx.guild.id)
+        c.execute(sql, var)
+        db.commit()
+        await ctx.send("Actuellement, aucun tag n'est configuré.")
+    else:
+        tagPerso=tagPerso[0]
+        await ctx.send(f"Actuellement, votre tag est {tagPerso}.")
+    if config == "1":
+        q= await ctx.send("Où voulez-vous que le tag soit affiché ?\n1️⃣ - Avant le nom du personnage\n 2️⃣ - Après le nom du personnage")
+        await q.add_reaction("1️⃣")
+        await q.add_reaction("2️⃣")
+        await q.add_reaction("❌")
+        reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        if reaction.emoji == "1️⃣":
+            await q.delete()
+            tag=">"
+        elif reaction.emoji == "2️⃣":
+            await q.delete()
+            tag="<"
+        else:
+            await q.delete()
+            await ctx.send("Annulation, aucun changement effectué.")
+            return
+        q = await ctx.send("Il existe plusieurs configuration possible :\n▫️ Pseudo du joueur : `@user` \n▫️ Nom du serveur : `@serveur`\n▫️ ID du Persona : `@persona`\n\n Vous pouvez configurer la mise en forme comme vous le souhaitez. Ainsi,une mise en forme possible peut être : `[@user]`, mais aussi `@user -`....")
+        rep = await bot.wait_for("message", timeout=300, check=checkRep)
+        tagPerso= rep.content.lower()
+        if tagPerso == "stop" or tagPerso == "cancel":
+            await ctx.send("Annulation, changement non effectué.")
+            await q.delete()
+            await rep.delete()
+            c.close()
+            db.close()
+            return
+        while "@user" not in tagPerso or "@serveur" not in tagPerso or "@persona" not in tagPerso:
+            q=await ctx.send("Erreur ! Vous n'avez pas mis le bon token de reconnaissance. Ce token peut être : \n▫️ Pseudo du joueur : `@user` \n▫️ Nom du serveur : `@serveur`\n▫️ ID du Persona : `@persona`")
+            rep = await bot.wait_for("message", timeout=300, check=checkRep)
+            tagPerso= rep.content.lower()
+            if tagPerso == "stop" or tagPerso == "cancel":
+                await ctx.send("Annulation, changement non effectué.")
+                await rep.delete()
+                await q.delete()
+                c.close()
+                db.close()
+                return
+            elif tagPerso == "0":
+                await ctx.send("Suppression du tag")
+                break
+        q=await ctx.send(f"Votre tag est donc {tagPerso}.")
+        if tagPerso != "0":
+            tagPerso=tag+tagPerso
+        var=(tagPerso, ctx.guild.id)
+        c.execute(sql, var)
+        db.commit()
+    elif config == "0":
+        await ctx.send("Suppression du tag.")
+        tagPerso="0"
+        var = (tagPerso, ctx.guild.id)
+        c.execute(sql, var)
+        db.commit()
+    c.close()
+    db.close()
+    return
