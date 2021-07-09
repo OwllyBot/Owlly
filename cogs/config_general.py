@@ -209,6 +209,15 @@ class CogAdmins(
             await webhook.maxDC(ctx, self.bot, "1")
         else:
             await utils.init_value("maxDC", "SERVEUR", "idS", 0, server)
+
+        q = await ctx.send("Voulez-vous avoir un tag avant le nom des persona ?\n Les tags sont des patterns préconfigurés donnant diverses informations, que ce soit le nom du joueur, le nom du serveur...")
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        if reaction.emoji == "✅":
+            await webhook.tag_Personae(ctx, self.bot, "1")
+        else:
+            await utils.init_value("tag", "SERVEUR", "idS", "0", server)
         await ctx.send(
             "La configuration du serveur est maintenant terminé ! Vous pouvez éditer chaque paramètres séparément."
         )
@@ -529,7 +538,7 @@ class CogAdmins(
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
         sql = "SELECT maxDC FROM SERVEUR WHERE idS=?"
-        c.execute(sql, (ctx.guild.id))
+        c.execute(sql, (ctx.guild.id,))
         maxDC = c.fetchone()
         if maxDC is None:
             maxDC = 0
@@ -784,6 +793,67 @@ class CogAdmins(
             await ctx.send("Annulation !", delete_after=30)
             return
 
+    @commands.has_permissions(administrator=True)
+    @commands.command(
+        help="Permet de configurer le tag des Persona.",
+        description="Les tags sont des patterns préconfigurés qui permettent d'indiquer diverses informations quant à l'utilisateur du Persona.",
+        brief="Configuration des tags de Personae.",
+    )
+    async def tag_persona(self, ctx):
+        emoji = ["1️⃣", "2️⃣", "3️⃣", "❌"]
+        def checkRep(message):  
+            return message.author == ctx.message.author and ctx.message.channel == message.channel
+        def checkValid(reaction, user):  
+            return ( ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji)
+        db = sqlite3.connect("owlly.db", timeout=3000)
+        c = db.cursor()
+        sql="SELECT tag FROM SERVEUR WHERE idS = ?"
+        c.execute(sql, (ctx.guild.id,))
+        tag=c.fetchone()
+        if tag is None:
+            tag= "0"
+            msg="Actuellement, aucun tag n'est configuré."
+        else:
+            tag=tag[0]
+            if tag != "0":
+                msg=f"Actuellement, votre tag est {tag}"
+            else:
+                msg=f"Actuellement, aucun tag n'est configuré."
+        q=await ctx.send(f"{msg}\n Voulez-vous changer les paramètres ?")
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        if reaction.emoji == "✅":
+            if tag != "0":
+                await ctx.send("Modification du tag")
+                await webhook.tag(ctx, self.bot, "1")
+            else:
+                await ctx.send("1️⃣ - Modification du tag\n2️⃣ - Suppression du tag")
+                await q.add_reaction("1️⃣")
+                await q.add_reaction("2️⃣")
+                await q.add_reaction("❌")
+                reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                if reaction.emoji == "1️⃣":
+                    await q.delete()
+                    await webhook.tag_Personae(ctx, self.bot, "1")
+                    return
+                elif reaction.emoji == "2️⃣":
+                    await q.delete()
+                    await webhook.tag_Personae(ctx, self.bot, "0")
+                    await ctx.send("Changement effectué, la fonction est désactivée.")
+                    return
+                else:
+                    await q.delete()
+                    await ctx.send("Annulation, aucun changement effectué.")
+                    return
+        else:
+            await q.delete()
+            await ctx.send("Annulation, aucun changement effectué.")
+            return    
+        
+        
+        
+        
 
 def setup(bot):
     bot.add_cog(CogAdmins(bot))
