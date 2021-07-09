@@ -11,7 +11,7 @@ from discord.ext.commands import CommandError
 from discord.ext.commands.errors import RoleNotFound
 from cogs.Administration import config_member as member
 from cogs.Administration import admin_fiche as fiche
-from cogs.Administration import webhook
+from cogs.Administration import webhook_config as webhook
 import unidecode
 import os
 import ast
@@ -181,38 +181,19 @@ class CogAdmins(
             "reaction_add", timeout=300, check=checkValid
         )
         if reaction.emoji == "✅":
-            await q.clear_reactions()
+            await webhook.tokenHRP(ctx, self.bot, "1")
             q = await ctx.send(
-                "Voici les différentes manières de définir un pattern :\n :white_small_square: /[text]/\n/[text]\n[text]/.\n Vous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre [text]! \n Vous pouvez annuler avec `0`, `stop` ou `cancel`."
+                "Voulez-vous faire supprimer tous les messages contenant le token suivant un temps configuré ?"
             )
-            rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-            token = rep.content.lower()
-            if token == "0" or token == "cancel" or token == "stop":
-                await ctx.send("Annulation")
-                await webhook.tokenHRP(ctx, self.bot, "0")
-                await webhook.deleteHRP(ctx, self.bot, "0")
-            else:
-                while "[text]" not in token:
-                    await ctx.send("Erreur ! Vous avez oublié `[text]`")
-                    rep = await self.bot.wait_for(
-                        "message", timeout=300, check=checkRep
-                    )
-                    token = rep.content.lower()
-                    if token.lower() == "stop" or token.lower() == "cancel":
-                        await ctx.send("Annulation", delete_after=30)
-                        await rep.delete()
-                        return
-                await webhook.tokenHRP(ctx, self.bot, token)
-                q = await ctx.send(
-                    "Voulez-vous faire supprimer tous les messages contenant le token suivant un temps configuré ?"
-                )
-                await q.add_reaction("✅")
-                await q.add_reaction("❌")
-                reaction, user = await self.bot.wait_for(
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for(
                     "reaction_add", timeout=300, check=checkValid
-                )
-                if reaction.emoji == "✅":
-                    await webhook.deleteHRP(ctx, self.bot, "1")
+            )
+            if reaction.emoji == "✅":
+                await webhook.deleteHRP(ctx, self.bot, "1")
+            else:
+                await webhook.deleteHRP(ctx, self.bot, "0")
         else:
             await utils.init_value("tokenHRP", "SERVEUR", "idS", "0", server)
             await utils.init_value("delete_HRP", "SERVEUR", "idS", 0, server)
@@ -430,12 +411,6 @@ class CogAdmins(
     @commands.has_permissions(administrator=True)
     @commands.command(help="Permet de configurer le HRP", brief="Configuration du HRP")
     async def patternHRP(self, ctx):
-        def checkRep(message):
-            return (
-                message.author == ctx.message.author
-                and ctx.message.channel == message.channel
-            )
-
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
         sql = "SELECT tokenHRP FROM SERVEUR where idS=?"
@@ -448,29 +423,12 @@ class CogAdmins(
         if tokenHRP == "0":
             info = "Actuellement, vous n'avez pas de pattern.\n"
         else:
-            info = f"Actuellement, votre pattern est {tokenHRP}.\n Pour supprimer le pattern, écrivez `0`."
-        await ctx.send(
-            f"{info}Voici les différentes manières de définir un pattern :\n :white_small_square: /[text]/\n/[text]\n[text]/.\n Vous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre [text]! "
-        )
-        rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-        token = rep.content.lower()
-        if "0" in token:
-            await ctx.send(f"Suppression du pattern.")
-            await webhook.tokenHRP(ctx, self.bot, "0")
-            await webhook.deleteHRP(ctx, self.bot, "0")
-            return
-        else:
-            while "[text]" not in token:
-                await ctx.send("Erreur ! Vous avez oublié `[text]`")
-                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-                token = rep.content.lower()
-                if token.lower() == "stop" or token.lower() == "cancel":
-                    await ctx.send("Annulation", delete_after=30)
-                    await rep.delete()
-                    return
-            await webhook.tokenHRP(ctx, self.bot, token)
-            await ctx.send("Changement effectué.")
-            return
+            info = f"Actuellement, votre pattern est {tokenHRP}.\n"
+        await ctx.send(info)
+        await webhook.tokenHRP(ctx, self, "1")
+        c.close()
+        db.close()
+        return
 
     @commands.has_permissions(administrator=True)
     @commands.command(
@@ -657,22 +615,147 @@ class CogAdmins(
             "reaction_add", timeout=300, check=checkValid
         )
         if reaction.emoji == "1️⃣":
-            # Gestion des channels.
-            pass
+            await q.clear_reactions()
+            menu_channel=discord.Embed(title=embed.title, color=embed.color)
+            menu_channel.add_field(
+                name="1️⃣ - Ajouter des channels.",
+                value="Permet de rajouter des channels (ou catégorie) dans la configuration, sans effacer les précédents.",
+                inline=False)
+            menu_channel.add_field(
+                name="2️⃣ - Supprimer des channels",
+                value="Permet de supprimer un channel (ou une catégorie) de la configuration.",
+                inline=False)
+            menu_channel.add_field(
+                name="3️⃣ - Reset",
+                value="Permet d'effacer tous les channels (et/ou catégories) enregistré. ",
+                inline=False)
+            await q.edit(embed=menu_channel)
+            await q.add_reaction("1️⃣")
+            await q.add_reaction("2️⃣")
+            await q.add_reaction("3️⃣")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "1️⃣":
+                await q.delete()
+                await webhook.chanHRP_add(ctx, self.bot)
+                return
+            elif reaction.emoji == "2️⃣":
+                await q.delete()
+                await webhook.chanHRP_rm(ctx, self.bot)
+                return
+            elif reaction.emoji == "3️⃣":
+                await q.delete()
+                db = sqlite3.connect("owlly.db", timeout=3000)
+                c = db.cursor()
+                sql="UPDATE chanRP set chanRP=? WHERE idS=?"
+                var=("0", ctx.guild.id)
+                c.execute(sql, var)
+                q=await ctx.send("Il n'y a plus aucun channel enregistrés. Voulez-vous en enregistrer ?")
+                await q.add_reaction("✅")
+                await q.add_reaction("❌")
+                reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                if reaction.emoji == "✅":
+                    await webhook.chanHRP_add(ctx, self.bot)
+                    return
+                else:
+                    await q.delete()
+                    await ctx.send("Aucun channel n'est configuré.\n Fin de la configuration.")
+                    return
         elif reaction.emoji == "2️⃣":
-            # Sticky
-            pass
+            await q.clear_reactions()
+            menu_sticky = discord.Embed(title=embed.title, color=embed.color)
+            menu_sticky.add_field(
+                name="1️⃣ - Activation",
+                value="Permet d'activer le mode sticky.",
+                inline=False)
+            menu_sticky.add_field(
+                name="2️⃣ - Désactivation",
+                value="Permet de désactiver le mode sticky.",
+                inline=False)
+            await q.edit(embed=menu_sticky)
+            await q.add_reaction("1️⃣")
+            await q.add_reaction("2️⃣")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "1️⃣":
+                await q.delete()
+                await webhook.sticky(ctx, self.bot,"0" )
+                return
+            elif reaction.emoji == "2️⃣":
+                await q.delete()
+                await webhook.sticky(ctx, self.bot, "1")
+                return
+            else:
+                await q.delete()
+                await ctx.send("Annulation", delete_after=30)
+                return
         elif reaction.emoji == "3️⃣":
-            # MaxDC
-            pass
+            await q.clear_reactions()
+            menu= discord.Embed(
+                title=embed.title, 
+                color=embed.color
+                )
+            menu.add_field(
+                name="1️⃣ - Désactivation",
+                value="Permet de désactiver la limite.",
+                inline=False)
+            menu.add_field(
+                name="2️⃣ - Changement",
+                value="Permet d'éditer la limite.",
+                inline=False)
+            await q.edit(embed=embed)
+            await q.add_reaction("1️⃣")
+            await q.add_reaction("2️⃣")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "1️⃣":
+                await q.delete()
+                await webhook.maxDC(ctx, self.bot, "0")
+                return
+            elif reaction.emoji == "2️⃣":
+                await q.delete()
+                await webhook.maxDC(ctx, self.bot, "1")
+                return
+            else:
+                await q.delete()
+                await ctx.send("Annulation", delete_after=30)
+                return
         elif reaction.emoji == "4️⃣":
             # Tag "forcé" ! Proposer des mises en forme ? Pour le moment uniquement le pseudo du créateur.
             # Ajouter possibilité de mise en forme : [@user] ou (@user) voire @user -
             #  Enregistrer sous la même forme avec un keyword particulier, genre [@user] ; Simplement replace le @user ;)
             pass
         elif reaction.emoji == "5️⃣":
-            # tag HRP
-            pass
+            await q.clear_reactions()
+            menu= discord.Embed(
+                title=embed.title, color=embed.color)
+            menu.add_field(
+                name="1️⃣ - Supprimer le pattern",
+                value="Permet de désactiver la fonction.",
+                inline=False)
+            menu.add_field(
+                name="2️⃣ - Changer le pattern",
+                value="Permet d'éditer le pattern HRP.",
+                inline=False)
+            await q.edit(embed=menu)
+            await q.add_reaction("1️⃣")
+            await q.add_reaction("2️⃣")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            if reaction.emoji == "1️⃣":
+                await q.delete()
+                await webhook.tokenHRP(ctx, self.bot, "0")
+                await ctx.send("Suppression du pattern, la fonction n'est plus configurée.")
+                return
+            elif reaction.emoji == "2️⃣":
+                await q.delete()
+                await webhook.tokenHRP(ctx, self.bot, "1")
+                await ctx.send("Changement effectué")
+                return
+            else:
+                await q.delete()
+                await ctx.send("Annulation.")
+                return
         else:
             await ctx.send("Annulation !", delete_after=30)
             return

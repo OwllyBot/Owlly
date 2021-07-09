@@ -153,8 +153,11 @@ async def chanHRP_add(ctx, bot):
     c = db.cursor()
     sql= "SELECT chanRP FROM SERVEUR WHERE idS = ?"
     c.execute(sql, (ctx.guild.id,))
-    cat=c.fetchone()[0].split(",")
-        
+    cat=c.fetchone()
+    if cat is not None or cat != "0":
+        cat=c.fetchone()[0].split(",")
+    else:
+        cat=[]
     def checkRep(message):
         return message.author == ctx.message.author and ctx.message.channel == message.channel
     q = await ctx.send("Merci de donner l'ID ou le nom du channel/catégorie que vous souhaitez rajouter.")
@@ -292,11 +295,42 @@ async def sticky(ctx, bot, sticky):
     db.close()  
 
 async def tokenHRP(ctx, bot, token):
+    def checkRep(message):  
+        return message.author == ctx.message.author and ctx.message.channel == message.channel
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
+    sql = "SELECT tokenHRP FROM SERVEUR where idS=?"
+    c.execute(sql, (ctx.guild.id,))
+    tokenHRP = c.fetchone()
+    if tokenHRP is None:
+        sql="UPDATE SERVEUR SET tokenHRP = ? WHERE idS = ?"
+        var=("0", ctx.guild.id)
+        c.execute(sql, var)
+        db.commit()
     if token != "0":
-        token = token.replace("[text]", "(.*)/")
-        token = "^/" + token + "$"
+        q = await ctx.send("Voici les différentes manières de définir un pattern :\n :white_small_square: `/text/`\n:white_small_square: `/text`\n:white_small_square: `text/`.\nVous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre `text` ! \n Vous pouvez supprimer le pattern avec `0`\n `stop` ou `cancel` permettent d'annuler la configuration.")
+        rep = await bot.wait_for("message", timeout=300, check=checkRep)
+        token = rep.content.lower()
+        if token == "cancel" or token == "stop":
+            await ctx.send("Annulation du paramétrage", delete_after=30)
+            return
+        elif token == "0" : 
+            token == "0"
+            if tokenHRP is not None:
+                await ctx.send("Suppression du pattern.")
+        else:
+            while "text" not in token:
+                await ctx.send("Erreur ! Vous avez oublié `text`")
+                rep = await bot.wait_for(
+                    "message", timeout=300, check=checkRep
+                )
+                token = rep.content.lower()
+                if token.lower() == "stop" or token.lower() == "cancel":
+                    await ctx.send("Annulation", delete_after=30)
+                    await rep.delete()
+                    return
+            token = token.replace("text", "(.*)/")
+            token = "^/" + token + "$"
     sql="UPDATE SERVEUR SET tokenHRP = ? WHERE idS= ?"
     var=(token, ctx.guild.id)
     c.execute(sql, var)
@@ -330,3 +364,5 @@ async def deleteHRP(ctx, bot, config):
     c.close()
     db.close()
             
+async def tag_Personae(ctx, bot, config):
+    pass
