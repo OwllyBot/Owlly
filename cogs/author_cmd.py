@@ -35,7 +35,9 @@ class controlleur(
             await channel.edit(topic=arg)
             await ctx.send("Changé !", delete_after=10)
         else:
-            ctx.send("Erreur, vous n'êtes pas l'auteur de ce channel !", delete_after=30)
+            ctx.send(
+                "Erreur, vous n'êtes pas l'auteur de ce channel !", delete_after=30
+            )
         c.close()
         db.close()
 
@@ -109,7 +111,9 @@ class controlleur(
             await channel.edit(name=arg)
             await ctx.send("Changé !", delete_after=10)
         else:
-            await ctx.send("Erreur, vous n'êtes pas l'auteur de ce channel !", delete_after=30)
+            await ctx.send(
+                "Erreur, vous n'êtes pas l'auteur de ce channel !", delete_after=30
+            )
         c.close()
         db.close()
 

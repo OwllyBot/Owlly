@@ -23,7 +23,9 @@ class Personnage(object):
         return str(self.champ)
 
 
-class memberUtils(commands.Cog, name="Membre", description="Des commandes gérants les membres."):
+class memberUtils(
+    commands.Cog, name="Membre", description="Des commandes gérants les membres."
+):
     def __init__(self, bot):
         self.bot = bot
 
@@ -123,17 +125,19 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
         )
 
         await ctx.message.delete()
-        await ctx.send(f"Début de la création de la fiche ! \n {user.mention} regardez vos DM !")
+        await ctx.send(
+            f"Début de la création de la fiche ! \n {user.mention} regardez vos DM !"
+        )
         await fi.pj(ctx, user)
 
-
     @commands.command(
-       usage="@mention *role",
-       brief="Permet de rajouter des rôles à un membres",
-       help="Permet à un administrateur de rajouter des roles rapidements.",
-       aliases=["setrr", "give_role", "set", "role"])
+        usage="@mention *role",
+        brief="Permet de rajouter des rôles à un membres",
+        help="Permet à un administrateur de rajouter des roles rapidements.",
+        aliases=["setrr", "give_role", "set", "role"],
+    )
     @commands.has_permissions(manage_nicknames=True)
-    async def set_role (self, ctx, user: discord.Member, *role: str):
+    async def set_role(self, ctx, user: discord.Member, *role: str):
         addRole = []
         infoNew = []
         for i in role:
@@ -168,7 +172,8 @@ class memberUtils(commands.Cog, name="Membre", description="Des commandes géran
         await ctx.send(
             f"{user.mention} a reçu de nouveau rôle : {roleInfo}",
             delete_after=60,
-            )
-    
+        )
+
+
 def setup(bot):
     bot.add_cog(memberUtils(bot))

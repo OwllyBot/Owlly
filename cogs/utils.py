@@ -12,6 +12,7 @@ from discord.ext.commands.errors import CommandError
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
+
 class CogUtils(
     commands.Cog,
     name="Utilitaire",
@@ -46,7 +47,7 @@ class CogUtils(
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
         sql = "INSERT INTO SERVEUR (prefix, idS, roliste, notes, rolerm, chanRP, maxDC, sticky, tag, tokenHRP, delete_HRP, delay_HRP) VALUES (?, ?, ?, ?,?,?,?,?,?,?,?,?)"
-        var = ("?", guild.id, "0", 0,"0", "0",0,0,"0","0",0,0)
+        var = ("?", guild.id, "0", 0, "0", "0", 0, 0, "0", "0", 0, 0)
         c.execute(sql, var)
         sql = "INSERT INTO FICHE (idS, fiche_pj, fiche_pnj, fiche_validation, champ_general, champ_physique) VALUES (?, ?, ?, ?,?,?)"
         var = (guild.id, 0, 0, 0, "0", "0")

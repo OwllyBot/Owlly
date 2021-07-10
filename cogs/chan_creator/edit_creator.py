@@ -119,7 +119,10 @@ async def edit_ticket(ctx, idM, bot):
         )
 
     def checkRep(message):
-        return message.author == ctx.message.author and ctx.message.channel == message.channel
+        return (
+            message.author == ctx.message.author
+            and ctx.message.channel == message.channel
+        )
 
     q = await ctx.send(
         "Merci de choisir le paramètre à éditer : \n1️⃣ : Nom du channel \n2️⃣ : Numéros, modulo, limitation \n3️⃣: Catégorie de création.\n ❌ : Annulation"
@@ -144,7 +147,9 @@ async def edit_ticket(ctx, idM, bot):
         await q.add_reaction("1️⃣")
         await q.add_reaction("2️⃣")
         await q.add_reaction("3️⃣")
-        reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "1️⃣":
             await q.clear_reactions()
             sql = "SELECT num FROM TICKET WHERE idM=?"
@@ -302,7 +307,9 @@ async def edit_ticket(ctx, idM, bot):
                 ticket = int(ticket)
                 cat_name = get(ctx.message.guild.categories, id=ticket)
                 if cat_name is None:
-                    await ctx.send("Erreur ! Cette catégorie n'existe pas.", delete_after=30)
+                    await ctx.send(
+                        "Erreur ! Cette catégorie n'existe pas.", delete_after=30
+                    )
                     await q.delete()
                     return
             else:
@@ -344,7 +351,10 @@ async def edit_category(ctx, idM, bot):
         )
 
     def checkRep(message):
-        return message.author == ctx.message.author and ctx.message.channel == message.channel
+        return (
+            message.author == ctx.message.author
+            and ctx.message.channel == message.channel
+        )
 
     q = await ctx.send(
         "Merci de choisir le paramètre à éditer :\n 1️⃣ : Nom du Channel \n 2️⃣ : Liste des catégories \n ❌ : Annulation"
@@ -364,7 +374,9 @@ async def edit_category(ctx, idM, bot):
             )
             await q.add_reaction("✅")
             await q.add_reaction("❌")
-            reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "✅":
                 await q.edit(
                     content="Le nom des channels sera maintenant déterminé par le nom du personnage."
@@ -382,7 +394,9 @@ async def edit_category(ctx, idM, bot):
             )
             await q.add_reaction("✅")
             await q.add_reaction("❌")
-            reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "✅":
                 config = 1
                 await q.clear_reactions()
@@ -411,7 +425,9 @@ async def edit_category(ctx, idM, bot):
         await q.add_reaction("2️⃣")
         await q.add_reaction("3️⃣")
         await q.add_reaction("❌")
-        reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "1️⃣":
             await q.clear_reactions()
             await q.edit(
@@ -428,7 +444,9 @@ async def edit_category(ctx, idM, bot):
                     chan = int(rep.content)
                     cat_name = get(ctx.message.guild.categories, id=chan)
                     if cat_name is None or cat_name == "None":
-                        await ctx.send("Erreur ! Cette catégorie n'existe pas.", delete_after=30)
+                        await ctx.send(
+                            "Erreur ! Cette catégorie n'existe pas.", delete_after=30
+                        )
                         await q.delete()
                         await rep.delete()
                         return
@@ -468,7 +486,9 @@ async def edit_category(ctx, idM, bot):
                     chan = int(chan)
                     cat_name = get(ctx.message.guild.categories, id=chan)
                     if cat_name is None or cat_name == "None":
-                        await ctx.send("Erreur ! Cette catégorie n'existe pas.", delete_after=30)
+                        await ctx.send(
+                            "Erreur ! Cette catégorie n'existe pas.", delete_after=30
+                        )
                         await q.delete()
                         await rep.delete()
                         return
@@ -488,7 +508,9 @@ async def edit_category(ctx, idM, bot):
             try:
                 cat.remove(chan)
             except ValueError:
-                await ctx.send("Cette catégorie n'existe pas dans la liste.", delete_after=30)
+                await ctx.send(
+                    "Cette catégorie n'existe pas dans la liste.", delete_after=30
+                )
                 await q.delete()
                 return
             await q.edit(content=f"La catégorie {cat_name} a été supprimé de la liste.")
@@ -557,7 +579,9 @@ async def edit_category(ctx, idM, bot):
             msg = "\n".join(namelist)
             await q.delete()
             parameters_save = f"Votre channel sera donc créé dans une des catégories suivantes:\n{msg}\n\nLe choix final de la catégories se fait lors des réactions."
-            q = await ctx.send(f"Vos channels seront enregistré dans :{parameters_save}\n")
+            q = await ctx.send(
+                f"Vos channels seront enregistré dans :{parameters_save}\n"
+            )
             chan = ",".join(chan)
             sql = "UPDATE CATEGORY SET category_list = ? WHERE idM=?"
             var = (chan, idM)

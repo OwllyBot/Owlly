@@ -47,7 +47,7 @@ initial_extensions = [
     "cogs.config_general",
     "cogs.error_handler",
     "cogs.fiche",
-    "cogs.Administration.admin_fiche"
+    "cogs.Administration.admin_fiche",
 ]
 repo_name = Repository(".").head.shorthand
 bot = commands.Bot(
@@ -199,7 +199,9 @@ async def on_raw_reaction_add(payload):
         overwrite.manage_channels = True
         overwrite.manage_messages = True
         await new_chan.set_permissions(user, overwrite=overwrite)
-        sql = "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
+        sql = (
+            "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
+        )
         var = (new_chan.id, user.id, idS, payload.message_id)
         c.execute(sql, var)
         db.commit()

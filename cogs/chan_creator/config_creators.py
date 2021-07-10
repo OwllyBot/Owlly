@@ -106,7 +106,10 @@ async def create_ticket(self, ctx, bot):
         )
 
     def checkRep(message):
-        return message.author == ctx.message.author and ctx.message.channel == message.channel
+        return (
+            message.author == ctx.message.author
+            and ctx.message.channel == message.channel
+        )
 
     guild = ctx.message.guild
     db = sqlite3.connect("owlly.db", timeout=3000)
@@ -147,7 +150,9 @@ async def create_ticket(self, ctx, bot):
             ticket_chan_content = int(ticket_chan_content)
             cat_name = get(guild.categories, id=ticket_chan_content)
             if cat_name == "None" or cat_name is None:
-                await ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
+                await ctx.send(
+                    "Erreur : Cette catégorie n'existe pas !", delete_after=30
+                )
                 await q.delete()
                 return
         else:
@@ -203,7 +208,9 @@ async def create_ticket(self, ctx, bot):
         else:
             img_content = checkImg(ctx, img_content)
             if img_content.lower() == "error":
-                await ctx.send("Erreur ! Votre lien n'est pas une image valide.", delete_after=60)
+                await ctx.send(
+                    "Erreur ! Votre lien n'est pas une image valide.", delete_after=60
+                )
                 await q.delete()
                 await rep.delete()
                 return
@@ -233,7 +240,9 @@ async def create_ticket(self, ctx, bot):
         )
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "✅":
             await q.clear_reactions()
             await q.edit(content="Quel est le nom que vous voulez utiliser ?")
@@ -247,7 +256,9 @@ async def create_ticket(self, ctx, bot):
         await q.edit(content="Voulez-vous que les tickets soient comptés ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         limit_content = 0
         mod_content = 0
         nb_dep_content = "Aucun"
@@ -256,7 +267,9 @@ async def create_ticket(self, ctx, bot):
             await q.edit(content="Voulez-vous fixer un nombre de départ ?")
             await q.add_reaction("✅")
             await q.add_reaction("❌")
-            reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "✅":
                 await q.clear_reactions()
                 await q.edit(content="Merci d'indiquer le nombre de départ.")
@@ -278,7 +291,9 @@ async def create_ticket(self, ctx, bot):
             )
             await q.add_reaction("✅")
             await q.add_reaction("❌")
-            reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "✅":
                 await q.clear_reactions()
                 await q.edit(content="Merci d'indiquer la limite.")
@@ -393,7 +408,10 @@ async def create_category(self, ctx, bot):
         )
 
     def checkRep(message):
-        return message.author == ctx.message.author and ctx.message.channel == message.channel
+        return (
+            message.author == ctx.message.author
+            and ctx.message.channel == message.channel
+        )
 
     emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
     db = sqlite3.connect("owlly.db", timeout=3000)
@@ -420,7 +438,9 @@ async def create_category(self, ctx, bot):
                 chan_search = int(chan_search)
                 check_id = get(ctx.message.guild.categories, id=chan_search)
                 if check_id is None or check_id == "None":
-                    await ctx.send("Erreur : Cette catégorie n'existe pas !", delete_after=30)
+                    await ctx.send(
+                        "Erreur : Cette catégorie n'existe pas !", delete_after=30
+                    )
                     await q.delete()
                     await channels.delete()
                 else:
@@ -477,7 +497,9 @@ async def create_category(self, ctx, bot):
         titre = rep.content
         await rep.add_reaction("✅")
         await rep.delete()
-    await q.edit(content="Quelle couleur voulez vous utiliser ?\n 0 donnera une couleur aléatoire")
+    await q.edit(
+        content="Quelle couleur voulez vous utiliser ?\n 0 donnera une couleur aléatoire"
+    )
     rep = await bot.wait_for("message", timeout=300, check=checkRep)
     col = rep.content
     if col.lower() == "stop":
@@ -520,7 +542,9 @@ async def create_category(self, ctx, bot):
         else:
             img_content = checkImg(ctx, img_content)
             if img_content.lower() == "error":
-                await ctx.send("Erreur ! Votre lien n'est pas une image valide.", delete_after=60)
+                await ctx.send(
+                    "Erreur ! Votre lien n'est pas une image valide.", delete_after=60
+                )
                 await q.delete()
                 await rep.delete()
                 return

@@ -71,19 +71,29 @@ class DB_utils(commands.Cog):
                 f"Commande inconnue ! \n Pour avoir la liste des commandes utilisables, utilise `{p}help` ou `{p}command`"
             )
 
-    async def init_value(self, selection, base, id,var, idw):
+    async def init_value(self, selection, base, id, var, idw):
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
         idw = str(idw)
-        sql = "SELECT "+selection+" FROM "+base+" WHERE "+id+" = "+idw+""
+        sql = (
+            "SELECT " + selection + " FROM " + base + " WHERE " + id + " = " + idw + ""
+        )
         c.execute(sql)
         result = c.fetchone()
         if result is None:
-            sql="UPDATE +base+ SET "+selection+" = "+var+" WHERE "+id+" = "+idw+""
+            sql = (
+                "UPDATE +base+ SET "
+                + selection
+                + " = "
+                + var
+                + " WHERE "
+                + id
+                + " = "
+                + idw
+                + ""
+            )
             c.execute(sql)
-            
-        
-            
+
 
 def setup(bot):
     bot.add_cog(DB_utils(bot))

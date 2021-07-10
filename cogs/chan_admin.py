@@ -39,7 +39,10 @@ class ChanCreator(
             )
 
         def checkRep(message):
-            return message.author == ctx.message.author and ctx.message.channel == message.channel
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
 
         embed = discord.Embed(title="Menu des tickets", color=Color.blurple())
         embed.add_field(
@@ -65,7 +68,9 @@ class ChanCreator(
         await q.add_reaction("2️⃣")
         await q.add_reaction("3️⃣")
         await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "1️⃣":
             await q.delete()
             await cfg.create_ticket(self, ctx, self.bot)
@@ -130,7 +135,10 @@ class ChanCreator(
             )
 
         def checkRep(message):
-            return message.author == ctx.message.author and ctx.message.channel == message.channel
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
 
         embed = discord.Embed(title="Menu des billets", color=Color.blurple())
         embed.add_field(
@@ -156,7 +164,9 @@ class ChanCreator(
         await q.add_reaction("2️⃣")
         await q.add_reaction("3️⃣")
         await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "1️⃣":
             await q.delete()
             await cfg.create_category(self, ctx, self.bot)
@@ -216,8 +226,8 @@ class ChanCreator(
         search_db = "SELECT num FROM TICKET WHERE idM=?"
         sql = "UPDATE TICKET SET num = ? WHERE idM=?"
         search_regex_arg = re.search(
-               "(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$", str(arg)
-               )
+            "(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$", str(arg)
+        )
         if search_regex_arg is None:
             search_regex_arg = re.search(
                 "(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$",

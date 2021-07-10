@@ -37,7 +37,10 @@ class adminfiche(
     )
     async def chan_fiche(self, ctx):
         def checkRep(message):
-            return message.author == ctx.message.author and ctx.message.channel == message.channel
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
 
         def checkValid(reaction, user):
             return (
@@ -45,10 +48,13 @@ class adminfiche(
                 and q.id == reaction.message.id
                 and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
             )
+
         cl = ctx.guild.id
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
-        q = await ctx.send("Dans quel channel voulez-vous que soit envoyé les fiches à valider ?")
+        q = await ctx.send(
+            "Dans quel channel voulez-vous que soit envoyé les fiches à valider ?"
+        )
         rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
         if rep.content.lower() == "stop":
             await q.delete()
@@ -81,7 +87,9 @@ class adminfiche(
         await q.edit(content="Voulez-vous configurer le channel des PNJ ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "✅":
             await q.clear_reactions()
             await q.edit(
@@ -127,7 +135,9 @@ class adminfiche(
             save.close()
         else:
             try:
-                os.path.isfile(f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt")
+                os.path.isfile(
+                    f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt"
+                )
                 save = open(
                     f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
                     "r",
@@ -173,7 +183,9 @@ class adminfiche(
             save.close()
         else:
             try:
-                os.path.isfile(f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt")
+                os.path.isfile(
+                    f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt"
+                )
                 save = open(
                     f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
                     "r",
@@ -255,7 +267,10 @@ class adminfiche(
             )
 
         def checkRep(message):
-            return message.author == ctx.message.author and ctx.message.channel == message.channel
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
 
         cl = ctx.guild.id
         db = sqlite3.connect("owlly.db", timeout=3000)
@@ -269,7 +284,9 @@ class adminfiche(
         for i in emoji:
             if i != "✅":
                 await q.add_reaction(i)
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "1️⃣":
             if len(os.listdir("fiche")) > 1:
                 await ctx.send(
@@ -287,7 +304,9 @@ class adminfiche(
             )
             general = []
             while True:
-                general_rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                general_rep = await self.bot.wait_for(
+                    "message", timeout=300, check=checkRep
+                )
                 general_champ = general_rep.content
                 if general_champ.lower() == "stop":
                     await ctx.send("Validation en cours !", delete_after=5)
@@ -310,7 +329,9 @@ class adminfiche(
             )
             physique = []
             while True:
-                physique_rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                physique_rep = await self.bot.wait_for(
+                    "message", timeout=300, check=checkRep
+                )
                 physique_champ = physique_rep.content
                 if physique_champ.lower() == "stop":
                     await ctx.send("Validation en cours !", delete_after=5)
@@ -333,9 +354,13 @@ class adminfiche(
             )
             await q.add_reaction("✅")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "✅":
-                sql = "UPDATE FICHE SET champ_general = ?, champ_physique = ? WHERE idS=?"
+                sql = (
+                    "UPDATE FICHE SET champ_general = ?, champ_physique = ? WHERE idS=?"
+                )
                 var = (general, physique, cl)
                 c.execute(sql, var)
                 db.commit()
@@ -443,7 +468,9 @@ class adminfiche(
                     await ctx.send("Annulation", delete_after=30)
                     return
                 champ_general = [
-                    rep.content.capitalize() if champ == unidecode.unidecode(x.lower()) else x
+                    rep.content.capitalize()
+                    if champ == unidecode.unidecode(x.lower())
+                    else x
                     for x in champ_general
                 ]
                 part = "general"
@@ -457,7 +484,9 @@ class adminfiche(
                     await ctx.send("Annulation", delete_after=30)
                     return
                 champ_physique = [
-                    rep.content.capitalize() if champ == unidecode.unidecode(x.lower()) else x
+                    rep.content.capitalize()
+                    if champ == unidecode.unidecode(x.lower())
+                    else x
                     for x in champ_physique
                 ]
                 part = "physique"
@@ -495,7 +524,9 @@ class adminfiche(
             await q.add_reaction("1️⃣")
             await q.add_reaction("2️⃣")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "1️⃣":
                 sql = "SELECT champ_general FROM FICHE WHERE idS=?"
                 c.execute(sql, (cl,))

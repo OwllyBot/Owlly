@@ -188,7 +188,7 @@ class CogAdmins(
             await q.add_reaction("✅")
             await q.add_reaction("❌")
             reaction, user = await self.bot.wait_for(
-                    "reaction_add", timeout=300, check=checkValid
+                "reaction_add", timeout=300, check=checkValid
             )
             if reaction.emoji == "✅":
                 await webhook.deleteHRP(ctx, self.bot, "1")
@@ -210,10 +210,14 @@ class CogAdmins(
         else:
             await utils.init_value("maxDC", "SERVEUR", "idS", 0, server)
 
-        q = await ctx.send("Voulez-vous avoir un tag avant le nom des persona ?\n Les tags sont des patterns préconfigurés donnant diverses informations, que ce soit le nom du joueur, le nom du serveur...")
+        q = await ctx.send(
+            "Voulez-vous avoir un tag avant le nom des persona ?\n Les tags sont des patterns préconfigurés donnant diverses informations, que ce soit le nom du joueur, le nom du serveur..."
+        )
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "✅":
             await webhook.tag_Personae(ctx, self.bot, "1")
         else:
@@ -625,25 +629,30 @@ class CogAdmins(
         )
         if reaction.emoji == "1️⃣":
             await q.clear_reactions()
-            menu_channel=discord.Embed(title=embed.title, color=embed.color)
+            menu_channel = discord.Embed(title=embed.title, color=embed.color)
             menu_channel.add_field(
                 name="1️⃣ - Ajouter des channels.",
                 value="Permet de rajouter des channels (ou catégorie) dans la configuration, sans effacer les précédents.",
-                inline=False)
+                inline=False,
+            )
             menu_channel.add_field(
                 name="2️⃣ - Supprimer des channels",
                 value="Permet de supprimer un channel (ou une catégorie) de la configuration.",
-                inline=False)
+                inline=False,
+            )
             menu_channel.add_field(
                 name="3️⃣ - Reset",
                 value="Permet d'effacer tous les channels (et/ou catégories) enregistré. ",
-                inline=False)
+                inline=False,
+            )
             await q.edit(embed=menu_channel)
             await q.add_reaction("1️⃣")
             await q.add_reaction("2️⃣")
             await q.add_reaction("3️⃣")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "1️⃣":
                 await q.delete()
                 await webhook.chanHRP_add(ctx, self.bot)
@@ -656,22 +665,28 @@ class CogAdmins(
                 await q.delete()
                 db = sqlite3.connect("owlly.db", timeout=3000)
                 c = db.cursor()
-                sql="UPDATE chanRP set chanRP=? WHERE idS=?"
-                var=("0", ctx.guild.id)
+                sql = "UPDATE chanRP set chanRP=? WHERE idS=?"
+                var = ("0", ctx.guild.id)
                 c.execute(sql, var)
                 db.commit()
                 c.close()
                 db.close()
-                q=await ctx.send("Il n'y a plus aucun channel enregistrés. Voulez-vous en enregistrer ?")
+                q = await ctx.send(
+                    "Il n'y a plus aucun channel enregistrés. Voulez-vous en enregistrer ?"
+                )
                 await q.add_reaction("✅")
                 await q.add_reaction("❌")
-                reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                reaction, user = await self.bot.wait_for(
+                    "reaction_add", timeout=300, check=checkValid
+                )
                 if reaction.emoji == "✅":
                     await webhook.chanHRP_add(ctx, self.bot)
                     return
                 else:
                     await q.delete()
-                    await ctx.send("Aucun channel n'est configuré.\n Fin de la configuration.")
+                    await ctx.send(
+                        "Aucun channel n'est configuré.\n Fin de la configuration."
+                    )
                     return
         elif reaction.emoji == "2️⃣":
             await q.clear_reactions()
@@ -679,19 +694,23 @@ class CogAdmins(
             menu_sticky.add_field(
                 name="1️⃣ - Activation",
                 value="Permet d'activer le mode sticky.",
-                inline=False)
+                inline=False,
+            )
             menu_sticky.add_field(
                 name="2️⃣ - Désactivation",
                 value="Permet de désactiver le mode sticky.",
-                inline=False)
+                inline=False,
+            )
             await q.edit(embed=menu_sticky)
             await q.add_reaction("1️⃣")
             await q.add_reaction("2️⃣")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "1️⃣":
                 await q.delete()
-                await webhook.sticky(ctx, self.bot,"0" )
+                await webhook.sticky(ctx, self.bot, "0")
                 return
             elif reaction.emoji == "2️⃣":
                 await q.delete()
@@ -703,23 +722,24 @@ class CogAdmins(
                 return
         elif reaction.emoji == "3️⃣":
             await q.clear_reactions()
-            menu= discord.Embed(
-                title=embed.title, 
-                color=embed.color
-                )
+            menu = discord.Embed(title=embed.title, color=embed.color)
             menu.add_field(
                 name="1️⃣ - Désactivation",
                 value="Permet de désactiver la limite.",
-                inline=False)
+                inline=False,
+            )
             menu.add_field(
                 name="2️⃣ - Changement",
                 value="Permet d'éditer la limite.",
-                inline=False)
+                inline=False,
+            )
             await q.edit(embed=embed)
             await q.add_reaction("1️⃣")
             await q.add_reaction("2️⃣")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "1️⃣":
                 await q.delete()
                 await webhook.maxDC(ctx, self.bot, "0")
@@ -735,18 +755,24 @@ class CogAdmins(
         elif reaction.emoji == "4️⃣":
             await q.clear_reactions()
             menu = discord.Embed(
-                title=embed.title, color=embed.color, description="Les tags sont des mots préconfigurés (nom du serveur / nom du joueur / ID du Persona) se plaçant dans le nom du Persona, afin de donner des informations à propos du joueur; serveur ; ou id." )
+                title=embed.title,
+                color=embed.color,
+                description="Les tags sont des mots préconfigurés (nom du serveur / nom du joueur / ID du Persona) se plaçant dans le nom du Persona, afin de donner des informations à propos du joueur; serveur ; ou id.",
+            )
             menu.add_field(
                 name="1️⃣ - Modification du Tag",
-                value="Permet de modifier ou d'ajouter un tag.")
+                value="Permet de modifier ou d'ajouter un tag.",
+            )
             menu.add_field(
-                name="2️⃣ - Suppression du tag",
-                value="Permet de supprimer le tag.")
+                name="2️⃣ - Suppression du tag", value="Permet de supprimer le tag."
+            )
             await q.edit(embed=menu)
             await q.add_reaction("1️⃣")
             await q.add_reaction("2️⃣")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "1️⃣":
                 await q.delete()
                 await webhook.tag_Personae(ctx, self.bot, "1")
@@ -759,25 +785,30 @@ class CogAdmins(
                 return
         elif reaction.emoji == "5️⃣":
             await q.clear_reactions()
-            menu= discord.Embed(
-                title=embed.title, color=embed.color)
+            menu = discord.Embed(title=embed.title, color=embed.color)
             menu.add_field(
                 name="1️⃣ - Supprimer le pattern",
                 value="Permet de désactiver la fonction.",
-                inline=False)
+                inline=False,
+            )
             menu.add_field(
                 name="2️⃣ - Changer le pattern",
                 value="Permet d'éditer le pattern HRP.",
-                inline=False)
+                inline=False,
+            )
             await q.edit(embed=menu)
             await q.add_reaction("1️⃣")
             await q.add_reaction("2️⃣")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "1️⃣":
                 await q.delete()
                 await webhook.tokenHRP(ctx, self.bot, "0")
-                await ctx.send("Suppression du pattern, la fonction n'est plus configurée.")
+                await ctx.send(
+                    "Suppression du pattern, la fonction n'est plus configurée."
+                )
                 return
             elif reaction.emoji == "2️⃣":
                 await q.delete()
@@ -801,28 +832,40 @@ class CogAdmins(
     )
     async def tag_persona(self, ctx):
         emoji = ["1️⃣", "2️⃣", "3️⃣", "❌"]
-        def checkRep(message):  
-            return message.author == ctx.message.author and ctx.message.channel == message.channel
-        def checkValid(reaction, user):  
-            return ( ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji)
+
+        def checkRep(message):
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
+
+        def checkValid(reaction, user):
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and str(reaction.emoji) in emoji
+            )
+
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
-        sql="SELECT tag FROM SERVEUR WHERE idS = ?"
+        sql = "SELECT tag FROM SERVEUR WHERE idS = ?"
         c.execute(sql, (ctx.guild.id,))
-        tag=c.fetchone()
+        tag = c.fetchone()
         if tag is None:
-            tag= "0"
-            msg="Actuellement, aucun tag n'est configuré."
+            tag = "0"
+            msg = "Actuellement, aucun tag n'est configuré."
         else:
-            tag=tag[0]
+            tag = tag[0]
             if tag != "0":
-                msg=f"Actuellement, votre tag est {tag}"
+                msg = f"Actuellement, votre tag est {tag}"
             else:
-                msg=f"Actuellement, aucun tag n'est configuré."
-        q=await ctx.send(f"{msg}\n Voulez-vous changer les paramètres ?")
+                msg = f"Actuellement, aucun tag n'est configuré."
+        q = await ctx.send(f"{msg}\n Voulez-vous changer les paramètres ?")
         await q.add_reaction("✅")
         await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
         if reaction.emoji == "✅":
             if tag != "0":
                 await ctx.send("Modification du tag")
@@ -832,7 +875,9 @@ class CogAdmins(
                 await q.add_reaction("1️⃣")
                 await q.add_reaction("2️⃣")
                 await q.add_reaction("❌")
-                reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+                reaction, user = await self.bot.wait_for(
+                    "reaction_add", timeout=300, check=checkValid
+                )
                 if reaction.emoji == "1️⃣":
                     await q.delete()
                     await webhook.tag_Personae(ctx, self.bot, "1")
@@ -849,11 +894,8 @@ class CogAdmins(
         else:
             await q.delete()
             await ctx.send("Annulation, aucun changement effectué.")
-            return    
-        
-        
-        
-        
+            return
+
 
 def setup(bot):
     bot.add_cog(CogAdmins(bot))

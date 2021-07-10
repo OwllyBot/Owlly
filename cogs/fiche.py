@@ -21,7 +21,9 @@ class Personnage(object):
         return str(self.champ)
 
 
-class fiches(commands.Cog, name="Fiche", description="Permet la création, édition, de fiche RP."):
+class fiches(
+    commands.Cog, name="Fiche", description="Permet la création, édition, de fiche RP."
+):
     def __init__(self, bot):
         self.bot = bot
 
@@ -36,15 +38,20 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
 
     async def checkTriggers(self, rep, c, member: discord.Member):
         def checkRep(message):
-            return message.author == member and isinstance(message.channel, discord.DMChannel)
+            return message.author == member and isinstance(
+                message.channel, discord.DMChannel
+            )
+
         reponse = rep.content.replace("'", "\\'")
         if "&" in c:
             while not (
                 (rep.attachments)
                 or ("discordapp" in reponse)
-                or (any (x in reponse for x in ["jpg", "png", "jpeg", "gif"]))
+                or (any(x in reponse for x in ["jpg", "png", "jpeg", "gif"]))
             ):
-                await member.send(f"Erreur, ce champ doit être une image (pièce-jointe / lien)")
+                await member.send(
+                    f"Erreur, ce champ doit être une image (pièce-jointe / lien)"
+                )
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
                 reponse = rep.content
             if rep.attachments:
@@ -57,7 +64,7 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                 imgur = im.upload_image(url=reponse)
                 reponse = imgur.link
         elif "$" in c:
-            while ("http" not in reponse):
+            while "http" not in reponse:
                 await member.send(f"Erreur, ce champ doit être un lien.")
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
                 reponse = rep.content
@@ -67,8 +74,9 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
         f = open(
             f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
             "r",
-            encoding="utf-8")
-        perso={}
+            encoding="utf-8",
+        )
+        perso = {}
         data = f.readlines()
         f.close()
         msg = "error forme msg"
@@ -79,11 +87,13 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
         else:
             try:
                 os.path.isfile(
-                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt")
+                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                )
                 save = open(
                     f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
                     "r",
-                    encoding="utf-8")
+                    encoding="utf-8",
+                )
                 save_data = save.readlines()
                 save.close()
                 if len(save_data) > 0:
@@ -223,7 +233,9 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
         last = list(template)[-1]
 
         def checkRep(message):
-            return message.author == member and isinstance(message.channel, discord.DMChannel)
+            return message.author == member and isinstance(
+                message.channel, discord.DMChannel
+            )
 
         emoji = ["✅", "❌"]
 
@@ -298,7 +310,9 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                     await member.send(msg)
                     c = c.replace("'", "\\'")
                     c = c.replace("\\", "")
-                    rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                    rep = await self.bot.wait_for(
+                        "message", timeout=300, check=checkRep
+                    )
                     try:
                         if rep.content.lower() == "stop":
                             await member.send(
@@ -310,7 +324,9 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                         elif rep.content.lower() == "cancel":
                             await member.send("Annulation de la présentation.")
                             f.close()
-                            os.remove(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
+                            os.remove(
+                                f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                            )
                             try:
                                 os.remove(
                                     f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
@@ -363,9 +379,13 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
             )
             await q.add_reaction("✅")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "✅":
-                await q.edit(content=f"Fin de la présentation ! Merci de votre coopération.")
+                await q.edit(
+                    content=f"Fin de la présentation ! Merci de votre coopération."
+                )
                 return "done"
             else:
                 await q.edit(
@@ -394,16 +414,18 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                 and str(reaction.emoji) in emoji
             )
 
-        if os.path.isfile(f"fiche/{member.id}_pj_{member.name}_{idS}.txt") and os.path.isfile(
-            f"fiche/{member.id}_pnj_{member.name}_{idS}.txt"
-        ):
+        if os.path.isfile(
+            f"fiche/{member.id}_pj_{member.name}_{idS}.txt"
+        ) and os.path.isfile(f"fiche/{member.id}_pnj_{member.name}_{idS}.txt"):
             q = await ctx.send(
                 "Voulez-vous modifier la fiche du PNJ ou PJ ?\n 1️⃣ : PJ\n 2️⃣ : PNJ"
             )
             await q.add_reaction("1️⃣")
             await q.add_reaction("2️⃣")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "1️⃣":
                 chartype = "pj"
                 await q.delete()
@@ -441,7 +463,9 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
             save.close()
         else:
             try:
-                os.path.isfile(f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt")
+                os.path.isfile(
+                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                )
                 save = open(
                     f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
                     "r",
@@ -470,7 +494,9 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
             q = await ctx.send(embed=menu)
             for i in emoji:
                 await q.add_reaction(i)
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "1️⃣":
                 await q.delete()
                 q = await ctx.send(
@@ -486,7 +512,9 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                 await rep.delete()
                 found = "not"
                 for k in perso.keys():
-                    if unidecode.unidecode(k.lower()) in unidecode.unidecode(value.lower()):
+                    if unidecode.unidecode(k.lower()) in unidecode.unidecode(
+                        value.lower()
+                    ):
                         q = await ctx.send(
                             f"Par quoi voulez-vous modifier {value.capitalize()} ? \n Actuellement, sa valeur est {perso.get(k)}"
                         )
@@ -518,7 +546,9 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                         )
                         f.write(str(perso))
                         f.close()
-                        q = await q.edit(content=f"{value.capitalize()} a bien été modifié !")
+                        q = await q.edit(
+                            content=f"{value.capitalize()} a bien été modifié !"
+                        )
                         found = "yes"
                         break
                 if found == "not":
@@ -529,7 +559,9 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                 await q.delete()
                 os.remove(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
                 try:
-                    os.remove(f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt")
+                    os.remove(
+                        f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                    )
                 except OSError:
                     pass
                 await ctx.send(f"La présentation de {member.name} a été supprimé.")
@@ -564,16 +596,18 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                 and str(reaction.emoji) in emoji
             )
 
-        if os.path.isfile(f"fiche/{member.id}_pj_{member.name}_{idS}.txt") and os.path.isfile(
-            f"fiche/{member.id}_pnj_{member.name}_{idS}.txt"
-        ):
+        if os.path.isfile(
+            f"fiche/{member.id}_pj_{member.name}_{idS}.txt"
+        ) and os.path.isfile(f"fiche/{member.id}_pnj_{member.name}_{idS}.txt"):
             q = await ctx.send(
                 "Voulez-vous modifier la fiche de votre PNJ ou PJ ?\n 1️⃣ : PJ\n 2️⃣ : PNJ"
             )
             await q.add_reaction("1️⃣")
             await q.add_reaction("2️⃣")
             await q.add_reaction("❌")
-            reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=checkValid)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
             if reaction.emoji == "1️⃣":
                 chartype = "pj"
                 await q.delete()
@@ -611,7 +645,9 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
             save.close()
         else:
             try:
-                os.path.isfile(f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt")
+                os.path.isfile(
+                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                )
                 save = open(
                     f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
                     "r",
@@ -633,7 +669,9 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
         )
 
         def checkRep(message):
-            return message.author == member and isinstance(message.channel, discord.DMChannel)
+            return message.author == member and isinstance(
+                message.channel, discord.DMChannel
+            )
 
         def checkRepChan(message):
             return message.author == member and ctx.message.channel == message.channel
@@ -662,9 +700,15 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                     "reaction_add", timeout=300, check=checkValid
                 )
                 if reaction.emoji == "1️⃣":
-                    await member.send(f"Actuellement, votre fiche ressemble à ceci :\n {msg}")
-                    q = await member.send("Quel est le champ que vous voulez modifier ?")
-                    rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                    await member.send(
+                        f"Actuellement, votre fiche ressemble à ceci :\n {msg}"
+                    )
+                    q = await member.send(
+                        "Quel est le champ que vous voulez modifier ?"
+                    )
+                    rep = await self.bot.wait_for(
+                        "message", timeout=300, check=checkRep
+                    )
                     if rep.content.lower() == "stop":
                         await q.delete()
                         await rep.delete()
@@ -673,11 +717,15 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                     value = rep.content
                     found = "not"
                     for k in perso.keys():
-                        if unidecode.unidecode(value.lower()) in unidecode.unidecode(k.lower()):
+                        if unidecode.unidecode(value.lower()) in unidecode.unidecode(
+                            k.lower()
+                        ):
                             q = await member.send(
                                 f"Par quoi voulez-vous modifier {value.capitalize()} ?\n Actuellement, elle a pour valeur {perso.get(k)}."
                             )
-                            rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                            rep = await self.bot.wait_for(
+                                "message", timeout=300, check=checkRep
+                            )
                             if rep.content.lower() == "stop":
                                 await q.delete()
                                 await member.send("Annulation")
@@ -707,11 +755,15 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
                             )
                             f.write(str(perso))
                             f.close()
-                            q = await q.edit(content=f"{value.capitalize()} a bien été modifié !")
+                            q = await q.edit(
+                                content=f"{value.capitalize()} a bien été modifié !"
+                            )
                             found = "yes"
                             break
                     if found == "not":
-                        await ctx.send(f"{value} n'a pas été trouvé dans votre fiche...")
+                        await ctx.send(
+                            f"{value} n'a pas été trouvé dans votre fiche..."
+                        )
                         return
                 elif reaction.emoji == "2️⃣":
                     os.remove(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
@@ -742,7 +794,8 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
         usage="@mention",
         brief="Lance la création d'une fiche",
         help="Permet à un joueur ayant sa fiche valider de faire sa présentation.",
-        aliases=["add_pj", "validation", "add_pres", "add_presentation"])
+        aliases=["add_pj", "validation", "add_pres", "add_presentation"],
+    )
     @commands.has_permissions(manage_nicknames=True)
     async def pj(self, ctx, member: discord.Member):
         chartype = "pj"
@@ -768,7 +821,6 @@ class fiches(commands.Cog, name="Fiche", description="Permet la création, édit
         if pres == "done":
             fiche, img = await self.forme(ctx, member, chartype, ctx.guild.id)
             await self.validation(ctx, fiche, img, chartype, member)
-
 
 
 def setup(bot):
