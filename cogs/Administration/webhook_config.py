@@ -170,11 +170,11 @@ async def chanHRP_add(ctx, bot):
     sql = "SELECT chanRP FROM SERVEUR WHERE idS = ?"
     c.execute(sql, (ctx.guild.id,))
     cat = c.fetchone()
-    if cat is not None :
+    if cat is not None:
         if cat[0] != "0":
             cat = cat[0].split(",")
         else:
-            cat=[]
+            cat = []
     else:
         cat = []
 
@@ -243,13 +243,15 @@ async def chanHRP_rm(ctx, bot):
     if c.fetchone() is not None:
         cat = c.fetchone()[0].split(",")
     else:
-        cat="0"
+        cat = "0"
+
     def checkRep(message):
         return (
             message.author == ctx.message.author
             and ctx.message.channel == message.channel
         )
-    if cat != "0" :
+
+    if cat != "0":
         q = await ctx.send(
             "Merci de joindre l'ID/le nom du channel ou de la catégorie que vous souhaitez supprimer de la liste."
         )
@@ -291,14 +293,15 @@ async def chanHRP_rm(ctx, bot):
                 cat.remove(chan)
             except ValueError:
                 await ctx.send(
-                    "Cette catégorie / channel n'est pas dans la liste.", delete_after=30
+                    "Cette catégorie / channel n'est pas dans la liste.",
+                    delete_after=30,
                 )
                 await q.delete()
                 return
             await q.edit(content="La catégorie/channel a été supprimé de la liste.")
             if (len(cat)) < 1:
                 await ctx.send("Il n'y a maintenant plus de channel configuré.")
-                cat_sql= "0"
+                cat_sql = "0"
             else:
                 cat_sql = ",".join(cat)
             sql = "UPDATE SERVEUR SET chanRP = ? WHERE idS=?"
@@ -309,6 +312,7 @@ async def chanHRP_rm(ctx, bot):
             db.close()
     else:
         await ctx.send("Il n'y a rien à supprimer !")
+
 
 async def maxDC(ctx, bot, config):
     def checkRep(message):
@@ -325,7 +329,7 @@ async def maxDC(ctx, bot, config):
         )
         rep = await bot.wait_for("message", timeout=300, check=checkRep)
         maxDC = rep.content.lower()
-        if not maxDC.lstrip('-').isdigit():
+        if not maxDC.lstrip("-").isdigit():
             await ctx.send(
                 "Erreur, c'est pas un nombre !\nAnnulation.", delete_after=30
             )
@@ -334,7 +338,7 @@ async def maxDC(ctx, bot, config):
             maxDC = int(maxDC)
     if config == "-1":
         await ctx.send("Désactivation des Personae.")
-        maxDC=-1
+        maxDC = -1
     else:
         maxDC = 0
     sql = "UPDATE SERVEUR SET maxDC = ? WHERE idS = ?"
@@ -379,7 +383,7 @@ async def tokenHRP(ctx, bot, token):
         c.execute(sql, var)
         db.commit()
     else:
-        token=token[0]
+        token = token[0]
     if token != "0":
         q = await ctx.send(
             "Voici les différentes manières de définir un pattern :\n :white_small_square: `/text/`\n:white_small_square: `/text`\n:white_small_square: `text/`.\nVous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre `text` ! \n Vous pouvez supprimer le pattern avec `0`\n `stop` ou `cancel` permettent d'annuler la configuration."
@@ -493,10 +497,10 @@ async def tag_Personae(ctx, bot, config):
         reaction, user = await bot.wait_for(
             "reaction_add", timeout=300, check=checkValid
         )
-        if reaction.emoji == "1️⃣": #Avant
+        if reaction.emoji == "1️⃣":  # Avant
             await q.delete()
             tag = ">"
-        elif reaction.emoji == "2️⃣": #Après
+        elif reaction.emoji == "2️⃣":  # Après
             await q.delete()
             tag = "<"
         else:

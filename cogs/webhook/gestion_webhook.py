@@ -25,17 +25,20 @@ def number_check(ctx):
     list_perso = c.fetchall()
     if ctx.message.author.guild_permissions.manage_nicknames:
         maxDC = 0
-    if list_perso is not None:
-        number = len(list_perso)
-        if maxDC != 0:
-            if number >= maxDC:
-                return "Error"
+    if maxDC != -1:
+        if list_perso is not None:
+            number = len(list_perso)
+            if maxDC != 0:
+                if number >= maxDC:
+                    return "Error"
+                else:
+                    return "ok"
             else:
                 return "ok"
         else:
             return "ok"
     else:
-        return "ok"
+        return "inactive"
 
 
 def name_persona(ctx, nom, id_Persona):
@@ -73,8 +76,8 @@ async def image_persona(ctx, bot, image):
         )
 
     image_url = image.content()
-    if image.content.lower() == "stop" or image.content.lower() == "cancel":   
-        await ctx.send("Annulation !", delete_after=30)   
+    if image.content.lower() == "stop" or image.content.lower() == "cancel":
+        await ctx.send("Annulation !", delete_after=30)
         return "stop"
     else:
         while not (
@@ -99,9 +102,12 @@ async def image_persona(ctx, bot, image):
 
 
 async def token_Persona(ctx, bot):
-    def checkRep(message):  
-        return message.author == ctx.message.author and ctx.message.channel == message.channel
-    
+    def checkRep(message):
+        return (
+            message.author == ctx.message.author
+            and ctx.message.channel == message.channel
+        )
+
     q = await ctx.send(
         "Les patterns permettent de sélectionner et parler avec un personnage. Le pattern doit être composé du mot `text` entouré par un ou plusieurs caractères, d'un côté ou les deux.\n *__Par exemple__ :* `text<` et `>text<` ou encore `N:/text` sont tous les trois valides. "
     )
@@ -130,6 +136,9 @@ async def webhook_create(ctx, bot):
     if check == "Error":
         await ctx.send("Vous avez trop de personnages !")
         return
+    elif check == "inactive":
+        await ctx.send("Les Personae sont désactivés sur le serveur.")
+        return
     else:
         id_Persona = str(uuid.uuid4())
         id_Persona = id_Persona.split("-")[0]
@@ -156,9 +165,9 @@ async def webhook_create(ctx, bot):
         )
         rep = await bot.wait_for("message", timeout=300, check=checkRep)
         image = await image_persona(ctx, bot, rep)
-        if image == "stop" : 
+        if image == "stop":
             return
-        token= await token_Persona(ctx, bot)
+        token = await token_Persona(ctx, bot)
         if token == "stop":
             return
         sql = "INSERT INTO DC (idDC, idS, idU, Nom, Avatar, Token, active) VALUES (?,?,?,?,?,?,?)"
@@ -209,15 +218,17 @@ def search_Persona(ctx, nom):
     else:
         return perso[0]
 
+
 async def webhook_edit(ctx, bot, idDC, config):
     def checkRep(message):
         return (
             message.author == ctx.message.author
             and ctx.message.channel == message.channel
         )
+
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
-    
+
     if config == "1":  # Edition nom
         q = await ctx.send("Merci d'entrer le nouveau nom du personnage.")
         rep = await bot.wait_for("message", timeout=300, check=checkRep)
@@ -226,9 +237,9 @@ async def webhook_edit(ctx, bot, idDC, config):
             await q.delete()
             await rep.delete()
             return
-        name=name_persona(ctx, rep.content, idDC)
-        sql="UPDATE DC SET Nom = ? WHERE idDC = ?"
-        var=(name, idDC)
+        name = name_persona(ctx, rep.content, idDC)
+        sql = "UPDATE DC SET Nom = ? WHERE idDC = ?"
+        var = (name, idDC)
         c.execute(sql, var)
         db.commit()
         c.close()
@@ -236,19 +247,19 @@ async def webhook_edit(ctx, bot, idDC, config):
         await ctx.send("Modification enregistrée !")
         return
 
-    elif config=="2": #Avatar
-        q=await ctx.send("Merci d'envoyer la nouvelle image.")
+    elif config == "2":  # Avatar
+        q = await ctx.send("Merci d'envoyer la nouvelle image.")
         rep = await bot.wait_for("message", timeout=300, check=checkRep)
         if rep.content.lower() == "stop" or rep.content.lower() == "cancel":
             await ctx.send("Annulation !", delete_after=30)
             await q.delete()
             await rep.delete()
             return
-        image=image_persona(ctx, bot, rep)
+        image = image_persona(ctx, bot, rep)
         if image == "stop":
             return
-        sql="UPDATE DC SET Avatar = ? WHERE idDC = ?"
-        var=(image, idDC)
+        sql = "UPDATE DC SET Avatar = ? WHERE idDC = ?"
+        var = (image, idDC)
         c.execute(sql, var)
         db.commit()
         c.close()
@@ -256,12 +267,12 @@ async def webhook_edit(ctx, bot, idDC, config):
         await ctx.send("Modification enregistrée !")
         return
 
-    elif config=="3": #Token
-        token=token_Persona(ctx,bot)
+    elif config == "3":  # Token
+        token = token_Persona(ctx, bot)
         if token == "stop":
             return
-        sql="UPDATE DC SET token=? WHERE idDC = ?"
-        var=(token, idDC)
+        sql = "UPDATE DC SET token=? WHERE idDC = ?"
+        var = (token, idDC)
         c.execute(sql, var)
         db.commit()
         c.close()

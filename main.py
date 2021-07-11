@@ -48,7 +48,7 @@ initial_extensions = [
     "cogs.error_handler",
     "cogs.fiche",
     "cogs.Administration.admin_fiche",
-    "cogs.webhook"
+    "cogs.webhook",
 ]
 repo_name = Repository(".").head.shorthand
 bot = commands.Bot(
