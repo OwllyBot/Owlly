@@ -102,7 +102,12 @@ class CogAdmins(
                 rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
                 rolerm = rep.content.split(" ")
                 await member.roliste_init(ctx, self.bot, "rolerm", rolerm)
+            else:
+                await q.clear_reactions()
+                await utils.init_value("rolerm","SERVEUR", "idS", "0", server)
+                       
         else:
+            await q.clear_reactions()
             await utils.init_value("roliste", "SERVEUR", "idS", "0", server)
             await utils.init_value("rolerm", "SERVEUR", "idS", "0", server)
         q = await ctx.send(
@@ -127,6 +132,7 @@ class CogAdmins(
                 await ctx.send("Channel introuvable.")
                 await self.notes_config(ctx, "0")
         else:
+            await q.clear_reactions()
             await utils.init_value("notes", "SERVEUR", "idS", 0, server)
         q = await ctx.send(
             "Voulez-vous configurer les channels des fiches de présentation ?"
@@ -137,53 +143,36 @@ class CogAdmins(
             "reaction_add", timeout=300, check=checkValid
         )
         if reaction.emoji == "✅":
+            await q.clear_reactions()
             await adminfi.chan_fiche(ctx)
             await ctx.send(
                 "Faites la commande `config_fiche` pour configurer les champs des fiches."
             )
         else:
+            await q.clear_reactions()
             await utils.init_value("fiche_pj", "FICHE", "idS", 0, server)
             await utils.init_value("fiche_pnj", "FICHE", "idS", 0, server)
             await utils.init_value("fiche_validation", "FICHE", "idS", 0, server)
+        q = await ctx.send("Voulez-vous configurez les Personae ?\n *Les Personae peuvent agir comme des doubles comptes : ils peuvent parler à votre place en remplaçant vos messages dans les salons RP, via l'utilisation d'un préfix/suffixe que vous aurez configuré.*")
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for("add_reaction", timeout=300, check=checkValid)
+        if reaction.emoji == "✅":
+            q = await ctx.send("Voulez-vous limiter le nombre de Personae de vos joueurs ?")
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
+            if reaction.emoji == "✅":
+                await q.clear_reactions()
+                await webhook.maxDC(ctx, self.bot, "1")
+            else:
+                await q.clear_reactions()
+                await utils.init_value("maxDC", "SERVEUR", "idS", 0, server)
 
-        q = await ctx.send(
-            "Voulez-vous configurez les channels RP ? Cela permettra d'utiliser les Personae plus tard.\n *Les Personae peuvent agir comme des doubles comptes : ils peuvent parler à votre place en remplaçant vos messages dans les salons RP, via l'utilisation d'un préfix/suffixe que vous aurez configuré.*"
-        )
-        await q.add_reaction("✅")
-        await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for(
-            "reaction_add", timeout=300, check=checkValid
-        )
-        if reaction.emoji == "✅":
-            await webhook.chanRp(ctx, self.bot, "1")
-        else:
-            await utils.init_value("chanRP", "SERVEUR", "idS", "0", server)
-
-        q = await ctx.send(
-            "Voulez-vous que les Personae soit sticky, c'est à dire qu'il suffit de parler une fois avec pour que les messages soient automatiquement changés, jusqu'au changement de token, ou l'utilisation de `\` avant un message ?"
-        )
-        await q.add_reaction("✅")
-        await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for(
-            "reaction_add", timeout=300, check=checkValid
-        )
-        if reaction.emoji == "✅":
-            await webhook.sticky(ctx, self.bot, "1")
-        else:
-            await utils.init_value("sticky", "SERVEUR", "idS", 0, server)
-        await q.clear_reactions()
-        q = await ctx.send(
-            "Voulez-vous avoir un tag HRP ? Tous les messages utilisant ce token ne seront pas converti alors que vous avez sélectionné un Persona."
-        )
-        await q.add_reaction("✅")
-        await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for(
-            "reaction_add", timeout=300, check=checkValid
-        )
-        if reaction.emoji == "✅":
-            await webhook.tokenHRP(ctx, self.bot, "1")
             q = await ctx.send(
-                "Voulez-vous faire supprimer tous les messages contenant le token suivant un temps configuré ?"
+                "Voulez-vous avoir un tag avant le nom des persona ?\n Les tags sont des patterns préconfigurés donnant diverses informations, que ce soit le nom du joueur, le nom du serveur..."
             )
             await q.add_reaction("✅")
             await q.add_reaction("❌")
@@ -191,27 +180,64 @@ class CogAdmins(
                 "reaction_add", timeout=300, check=checkValid
             )
             if reaction.emoji == "✅":
+                await q.clear_reactions()
+                await webhook.tag_Personae(ctx, self.bot, "1")
+            else:
+                await q.clear_reactions()
+                await utils.init_value("tag", "SERVEUR", "idS", "0", server)
+
+            q = await ctx.send(
+                "Voulez-vous que les Personae soit sticky, c'est à dire qu'il suffit de parler une fois avec pour que les messages soient automatiquement changés, jusqu'au changement de token, ou l'utilisation de `\` avant un message ?"
+            )
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
+            )
+            if reaction.emoji == "✅":
+                await webhook.sticky(ctx, self.bot, "1")
+            else:
+                await utils.init_value("sticky", "SERVEUR", "idS", 0, server)
+            await q.clear_reactions()
+        else:
+            await q.clear_reactions()
+            await utils.init_value("sticky", "SERVEUR", "idS", 0, server)
+            await utils.init_value("tag", "SERVEUR", "idS", "0", server)
+            await utils.init_value("maxDC", "SERVEUR", "idS", -1, server)
+            await ctx.send("Les Personae sont donc désactivés sur ce serveur.")
+            
+        q = await ctx.send(
+            "Voulez-vous avoir un tag HRP ?\n Cela permet :\n:white_small_square: Que tous les messages utilisant ce token ne soient pas converti alors que vous avez sélectionné un Persona.\n:white_small_square: De faire supprimer automatiquement le HRP suivant un temps configuré."
+        )
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
+        if reaction.emoji == "✅":
+            await q.clear_reactions()
+            q = await ctx.send(
+           "Quel est le temps que vous voulez configurer ?"
+           )
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for(
+               "reaction_add", timeout=300, check=checkValid
+            )
+            if reaction.emoji == "✅":
+                await q.clear_reactions()
                 await webhook.deleteHRP(ctx, self.bot, "1")
             else:
+                await q.clear_reactions()
                 await webhook.deleteHRP(ctx, self.bot, "0")
         else:
+            await q.clear_reactions()
             await utils.init_value("tokenHRP", "SERVEUR", "idS", "0", server)
             await utils.init_value("delete_HRP", "SERVEUR", "idS", 0, server)
-            await utils.init_value("delay_HRP", "SERVEUR", "idS", 0, server)
-
-        q = await ctx.send("Voulez-vous limiter le nombre de Personae de vos joueurs ?")
-        await q.add_reaction("✅")
-        await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for(
-            "reaction_add", timeout=300, check=checkValid
-        )
-        if reaction.emoji == "✅":
-            await webhook.maxDC(ctx, self.bot, "1")
-        else:
-            await utils.init_value("maxDC", "SERVEUR", "idS", 0, server)
+            await utils.init_value("delay_HRP", "SERVEUR", "idS", 0, server)       
 
         q = await ctx.send(
-            "Voulez-vous avoir un tag avant le nom des persona ?\n Les tags sont des patterns préconfigurés donnant diverses informations, que ce soit le nom du joueur, le nom du serveur..."
+            "Voulez-vous configurez les channels et catégories RP ? Cela définira les channels où les Personae peuvent être utilisés, et où le HRP sera supprimé."
         )
         await q.add_reaction("✅")
         await q.add_reaction("❌")
@@ -219,13 +245,18 @@ class CogAdmins(
             "reaction_add", timeout=300, check=checkValid
         )
         if reaction.emoji == "✅":
-            await webhook.tag_Personae(ctx, self.bot, "1")
+            await q.clear_reactions()
+            await webhook.chanRp(ctx, self.bot, "1")
         else:
-            await utils.init_value("tag", "SERVEUR", "idS", "0", server)
+            await q.clear_reactions()
+            await utils.init_value("chanRP", "SERVEUR", "idS", "0", server)
+            await webhook.tokenHRP(ctx, self.bot, "1")
+        
         await ctx.send(
             "La configuration du serveur est maintenant terminé ! Vous pouvez éditer chaque paramètres séparément."
         )
 
+            
     @commands.command(
         name="set_prefix",
         help="Permet de changer le prefix du bot.",
@@ -550,6 +581,8 @@ class CogAdmins(
             maxDC = maxDC[0]
         if maxDC == 0:
             phrase = f"Actuellement, le nombre de Persona est illimité. Voulez-vous le limiter ?"
+        if maxDC == -1:
+            phrase=f"Actuellement, les Personae sont désactivés sur le serveur. Voulez-vous le changer ?"
         else:
             phrase = f"Actuellement, le nombre de Persona est limité à {maxDC}, voulez-vous le changer ?"
         q = await ctx.send(phrase)
@@ -571,11 +604,11 @@ class CogAdmins(
         brief="Affiche le menu d'administration des Personae.",
     )
     @commands.has_permissions(manage_nicknames=True)
-    async def admin_persona(self, ctx):
+    async def admin_rp(self, ctx):
         await ctx.message.delete()
         db = sqlite3.connect("owlly.db", timeout=3000)
         c = db.cursor()
-        emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "❌", "✅"]
+        emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "❌", "✅"]
 
         def checkValid(reaction, user):
             return (
@@ -614,6 +647,11 @@ class CogAdmins(
         embed.add_field(
             name="5️⃣ - Token HRP",
             value="Permet de régler le token pour le HRP.",
+            inline=False,
+        )
+        embed.add_field(
+            name="6️⃣ - Activation | Désactivation des Personae",
+            value="Permet de désactiver/activer de manière générale les Personae.",
             inline=False,
         )
         embed.set_footer(
@@ -819,6 +857,37 @@ class CogAdmins(
                 await q.delete()
                 await ctx.send("Annulation.")
                 return
+        elif reaction.emoji == "6️⃣":
+            await q.delete()
+            db = sqlite3.connect("owlly.db", timeout=3000)
+            c = db.cursor()
+            sql="SELECT maxDC FROM SERVEUR WHERE idS = ?"
+            c.execute(sql, (ctx.guild.id,))
+            maxDC= c.fetchone()
+            if maxDC is None:
+                maxDC="0"
+            else:
+                maxDC= maxDC[0]
+            if maxDC != -1:
+                phrase="Désactivation des Personae"
+                config=-1
+            elif maxDC == -1:
+                phrase="Activation des Personae"
+                config=0
+            q=await ctx.send(f"{phrase}\nSouhaitez-vous continuer ?")
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for("add_reaction", timeout=300, check=checkValid)
+            if reaction.emoji == "✅":
+                await q.delete()
+                utils = self.bot.get_cog("DB_utils")
+                await utils.init_value("maxDC", "SERVEUR", "idS", config, ctx.guild.id)
+                await ctx.send("Modification enregistrée.")
+                return
+            else:
+                await q.delete()
+                await ctx.send("Annulation", delete_after=30)
+                return
         else:
             await q.delete()
             await ctx.send("Annulation !", delete_after=30)
@@ -896,6 +965,17 @@ class CogAdmins(
             await ctx.send("Annulation, aucun changement effectué.")
             return
 
+    @commands.has_permissions(administrator=True)
+    @commands.command(
+        help="Active ou désactive les Personae sur tout le serveur. Permet aussi de configurer le maximum de Personae.",
+        brief="Activation/désactivation des Personae",
+        usage="<0 : Désactivation> <1 : Activation>  "
+    )
+    async def active_persona(self, ctx, config):
+        if config == "1":
+            await webhook.maxDC(ctx, self.bot, "1")
+        elif config == "1":
+            await webhook.maxDC(ctx, self.bot, "-1")
 
 def setup(bot):
     bot.add_cog(CogAdmins(bot))

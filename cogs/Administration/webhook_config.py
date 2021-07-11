@@ -170,8 +170,11 @@ async def chanHRP_add(ctx, bot):
     sql = "SELECT chanRP FROM SERVEUR WHERE idS = ?"
     c.execute(sql, (ctx.guild.id,))
     cat = c.fetchone()
-    if cat is not None or cat != "0":
-        cat = c.fetchone()[0].split(",")
+    if cat is not None :
+        if cat[0] != "0":
+            cat = cat[0].split(",")
+        else:
+            cat=[]
     else:
         cat = []
 
@@ -237,68 +240,75 @@ async def chanHRP_rm(ctx, bot):
     c = db.cursor()
     sql = "SELECT chanRP FROM SERVEUR WHERE idS = ?"
     c.execute(sql, (ctx.guild.id,))
-    cat = c.fetchone()[0].split(",")
-
+    if c.fetchone() is not None:
+        cat = c.fetchone()[0].split(",")
+    else:
+        cat="0"
     def checkRep(message):
         return (
             message.author == ctx.message.author
             and ctx.message.channel == message.channel
         )
-
-    q = await ctx.send(
-        "Merci de joindre l'ID/le nom du channel ou de la catégorie que vous souhaitez supprimer de la liste."
-    )
-    rep = await bot.wait_for("message", timeout=300, check=checkRep)
-    if rep.content.lower() == "stop":
-        await q.delete()
-        await rep.delete()
-        await ctx.send("Annulation !", delete_after=30)
-    else:
-        chan = rep.content
-        if chan.isnumeric():
-            chan = int(chan)
-            check_id = get(ctx.message.guild.categories, id=chan)
-            if check_id is None or check_id == "None":
-                check_id = bot.get_channel(chan)
+    if cat != "0" :
+        q = await ctx.send(
+            "Merci de joindre l'ID/le nom du channel ou de la catégorie que vous souhaitez supprimer de la liste."
+        )
+        rep = await bot.wait_for("message", timeout=300, check=checkRep)
+        if rep.content.lower() == "stop":
+            await q.delete()
+            await rep.delete()
+            await ctx.send("Annulation !", delete_after=30)
+        else:
+            chan = rep.content
+            if chan.isnumeric():
+                chan = int(chan)
+                check_id = get(ctx.message.guild.categories, id=chan)
                 if check_id is None or check_id == "None":
-                    await ctx.send(
-                        "Erreur, ce channel ou cette catégorie n'existe pas !",
-                        delete_after=30,
-                    )
-                    await q.delete()
-                    await rep.delete()
-                    return
-            else:
-                chan = await search_cat_name(ctx, rep.content.lower(), bot)
-                if chan == 12:
-                    chan = await search_chan(ctx, rep.content.lower())
-                    if chan == "Error":
+                    check_id = bot.get_channel(chan)
+                    if check_id is None or check_id == "None":
                         await ctx.send(
-                            "Erreur, ce channel ou cette catégorie n'existe pas",
+                            "Erreur, ce channel ou cette catégorie n'existe pas !",
                             delete_after=30,
                         )
                         await q.delete()
                         await rep.delete()
                         return
-                    else:
-                        chan = chan.id
-        try:
-            cat.remove(chan)
-        except ValueError:
-            await ctx.send(
-                "Cette catégorie / channel n'est pas dans la liste.", delete_after=30
-            )
-            await q.delete()
-            return
-        await q.edit(content="La catégorie/channel a été supprimé de la liste.")
-        cat_sql = ",".join(cat)
-        sql = "UPDATE SERVEUR SET chanRP = ? WHERE idS=?"
-        var = (cat_sql, ctx.guild.id)
-        c.execute(sql, var)
-        db.commit()
-        c.close()
-        db.close()
-
+                else:
+                    chan = await search_cat_name(ctx, rep.content.lower(), bot)
+                    if chan == 12:
+                        chan = await search_chan(ctx, rep.content.lower())
+                        if chan == "Error":
+                            await ctx.send(
+                                "Erreur, ce channel ou cette catégorie n'existe pas",
+                                delete_after=30,
+                            )
+                            await q.delete()
+                            await rep.delete()
+                            return
+                        else:
+                            chan = chan.id
+            try:
+                cat.remove(chan)
+            except ValueError:
+                await ctx.send(
+                    "Cette catégorie / channel n'est pas dans la liste.", delete_after=30
+                )
+                await q.delete()
+                return
+            await q.edit(content="La catégorie/channel a été supprimé de la liste.")
+            if (len(cat)) < 1:
+                await ctx.send("Il n'y a maintenant plus de channel configuré.")
+                cat_sql= "0"
+            else:
+                cat_sql = ",".join(cat)
+            sql = "UPDATE SERVEUR SET chanRP = ? WHERE idS=?"
+            var = (cat_sql, ctx.guild.id)
+            c.execute(sql, var)
+            db.commit()
+            c.close()
+            db.close()
+    else:
+        await ctx.send("Il n'y a rien à supprimer !")
 
 async def maxDC(ctx, bot, config):
     def checkRep(message):
@@ -309,19 +319,22 @@ async def maxDC(ctx, bot, config):
 
     db = sqlite3.connect("owlly.db", timeout=3000)
     c = db.cursor()
-    if config != "0":
+    if config != "0" and config != "-1":
         q = await ctx.send(
-            "Quel est le nombre maximum de Personae voulez-vous autoriser pour les joueurs ?. \n `0`: illimité"
+            "Quel est le nombre maximum de Personae voulez-vous autoriser pour les joueurs ?. \n `0`: illimité\n Désactiver les webhook : `-1`"
         )
         rep = await bot.wait_for("message", timeout=300, check=checkRep)
         maxDC = rep.content.lower()
-        if not maxDC.isnumeric():
+        if not maxDC.lstrip('-').isdigit():
             await ctx.send(
                 "Erreur, c'est pas un nombre !\nAnnulation.", delete_after=30
             )
             maxDC = 0
         else:
             maxDC = int(maxDC)
+    if config == "-1":
+        await ctx.send("Désactivation des Personae.")
+        maxDC=-1
     else:
         maxDC = 0
     sql = "UPDATE SERVEUR SET maxDC = ? WHERE idS = ?"
@@ -365,6 +378,8 @@ async def tokenHRP(ctx, bot, token):
         var = ("0", ctx.guild.id)
         c.execute(sql, var)
         db.commit()
+    else:
+        token=token[0]
     if token != "0":
         q = await ctx.send(
             "Voici les différentes manières de définir un pattern :\n :white_small_square: `/text/`\n:white_small_square: `/text`\n:white_small_square: `text/`.\nVous pouvez mettre ce que vous voulez à la place des `/` mais vous êtes obligée de mettre `text` ! \n Vous pouvez supprimer le pattern avec `0`\n `stop` ou `cancel` permettent d'annuler la configuration."
@@ -478,10 +493,10 @@ async def tag_Personae(ctx, bot, config):
         reaction, user = await bot.wait_for(
             "reaction_add", timeout=300, check=checkValid
         )
-        if reaction.emoji == "1️⃣":
+        if reaction.emoji == "1️⃣": #Avant
             await q.delete()
             tag = ">"
-        elif reaction.emoji == "2️⃣":
+        elif reaction.emoji == "2️⃣": #Après
             await q.delete()
             tag = "<"
         else:
