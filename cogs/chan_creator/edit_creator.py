@@ -84,7 +84,7 @@ async def editEmbed(ctx, bot, idM):
             await msg.clear_reactions()
         except NotFound:
             return
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT category_list FROM CATEGORY WHERE idM=?"
     c.execute(sql, (idM,))
@@ -107,7 +107,7 @@ async def editEmbed(ctx, bot, idM):
 
 
 async def edit_ticket(ctx, idM, bot):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     emoji = ["1️⃣", "2️⃣", "3️⃣", "✅", "❌"]
 
@@ -339,7 +339,7 @@ async def edit_ticket(ctx, idM, bot):
 
 
 async def edit_category(ctx, idM, bot):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     emoji = ["1️⃣", "2️⃣", "3️⃣", "✅", "❌"]
 

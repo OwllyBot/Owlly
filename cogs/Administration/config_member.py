@@ -13,7 +13,7 @@ from collections import OrderedDict
 
 
 async def roliste_init(ctx, bot, type_db, role):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql = "UPDATE SERVEUR SET " + type_db + " = ? WHERE idS = ?"
     role_list = []
@@ -53,7 +53,7 @@ async def roliste_init(ctx, bot, type_db, role):
 
 
 async def role_init(ctx, *role: discord.Role, bot):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql = "UPDATE SERVEUR SET roliste = ? WHERE idS = ?"
     role_list = []
@@ -78,7 +78,7 @@ async def role_init(ctx, *role: discord.Role, bot):
 
 
 async def init_role_rm(ctx, *role: discord.Role, bot):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql = "UPDATE SERVEUR SET rolerm = ? WHERE idS = ?"
     role_list = []
@@ -104,7 +104,7 @@ async def init_role_rm(ctx, *role: discord.Role, bot):
 
 
 async def inscription_role(bot, ctx, type_db):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     if type_db == "rm":
         sql = "SELECT rolerm FROM SERVEUR WHERE idS =?"

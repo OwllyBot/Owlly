@@ -6,7 +6,7 @@ from discord import NotFound
 
 
 def list_ticket(ctx):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     idS = ctx.guild.id
     sql = "SELECT * FROM TICKET WHERE idS=?"
@@ -43,7 +43,7 @@ def list_ticket(ctx):
 
 
 def list_category(ctx):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     idS = ctx.guild.id
     SQL = "SELECT * FROM CATEGORY WHERE idS=?"

@@ -41,7 +41,7 @@ class CogAdmins(
     )
     @commands.has_permissions(administrator=True)
     async def config(self, ctx):
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         utils = self.bot.get_cog("DB_utils")
         adminfi = self.bot.get_cog("Administration des fiches")
@@ -267,7 +267,7 @@ class CogAdmins(
     )
     @commands.has_permissions(administrator=True)
     async def set_prefix(self, ctx, prefix):
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         sql = "UPDATE SERVEUR SET prefix = ? WHERE idS = ?"
         var = (prefix, ctx.guild.id)
@@ -284,7 +284,7 @@ class CogAdmins(
     )
     @commands.has_permissions(administrator=True)
     async def notes_config(self, ctx, chan: discord.TextChannel):
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         server = ctx.guild.id
         if chan != "0":
@@ -407,7 +407,7 @@ class CogAdmins(
                 and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
             )
 
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         sql = "SELECT sticky FROM SERVEUR WHERE idS = ?"
         c.execute(sql, (ctx.guild.id,))
@@ -458,7 +458,7 @@ class CogAdmins(
     @commands.has_permissions(administrator=True)
     @commands.command(help="Permet de configurer le HRP", brief="Configuration du HRP")
     async def patternHRP(self, ctx):
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         sql = "SELECT tokenHRP FROM SERVEUR where idS=?"
         c.execute(sql, (ctx.guild.id,))
@@ -498,7 +498,7 @@ class CogAdmins(
                 and str(reaction.emoji) in emoji
             )
 
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         sql = "SELECT delete_HRP, delay_HRP WHERE idS=?"
         c.execute(sql, (ctx.guild.id,))
@@ -573,7 +573,7 @@ class CogAdmins(
                 and ctx.message.channel == message.channel
             )
 
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         sql = "SELECT maxDC FROM SERVEUR WHERE idS=?"
         c.execute(sql, (ctx.guild.id,))
@@ -609,7 +609,7 @@ class CogAdmins(
     @commands.has_permissions(manage_nicknames=True)
     async def admin_rp(self, ctx):
         await ctx.message.delete()
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "❌", "✅"]
 
@@ -704,7 +704,7 @@ class CogAdmins(
                 return
             elif reaction.emoji == "3️⃣":
                 await q.delete()
-                db = sqlite3.connect("owlly.db", timeout=3000)
+                db = sqlite3.connect("src/owlly.db", timeout=3000)
                 c = db.cursor()
                 sql = "UPDATE chanRP set chanRP=? WHERE idS=?"
                 var = ("0", ctx.guild.id)
@@ -862,7 +862,7 @@ class CogAdmins(
                 return
         elif reaction.emoji == "6️⃣":
             await q.delete()
-            db = sqlite3.connect("owlly.db", timeout=3000)
+            db = sqlite3.connect("src/owlly.db", timeout=3000)
             c = db.cursor()
             sql = "SELECT maxDC FROM SERVEUR WHERE idS = ?"
             c.execute(sql, (ctx.guild.id,))
@@ -920,7 +920,7 @@ class CogAdmins(
                 and str(reaction.emoji) in emoji
             )
 
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         sql = "SELECT tag FROM SERVEUR WHERE idS = ?"
         c.execute(sql, (ctx.guild.id,))

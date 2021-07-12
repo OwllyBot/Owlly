@@ -11,7 +11,7 @@ im = pyimgur.Imgur(CLIENT_ID)
 
 
 def number_check(ctx):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT maxDC FROM SERVEUR WHERE idS = ?"
     c.execute(sql, (ctx.guild.id,))
@@ -42,7 +42,7 @@ def number_check(ctx):
 
 
 def name_persona(ctx, nom, id_Persona):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     # Tag name
     sql = "SELECT tag FROM SERVEUR WHERE idS=?"
@@ -149,7 +149,7 @@ async def webhook_create(ctx, bot):
                 and ctx.message.channel == message.channel
             )
 
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         q = await ctx.send("Rentrez d'abord un nom !")
         rep = await bot.wait_for("message", timeout=300, check=checkRep)
@@ -188,7 +188,7 @@ async def webhook_create(ctx, bot):
 
 
 def search_Persona(ctx, nom):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT idDC FROM DC WHERE (Nom = ? AND idU = ? AND idS = ?)"
     c.execute(
@@ -226,7 +226,7 @@ async def webhook_edit(ctx, bot, idDC, config):
             and ctx.message.channel == message.channel
         )
 
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
 
     if config == "1":  # Edition nom

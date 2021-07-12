@@ -29,7 +29,7 @@ class CogUtils(
     async def on_message(self, message):
         if not isinstance(message.channel, discord.DMChannel):
             channel = message.channel
-            db = sqlite3.connect("owlly.db", timeout=3000)
+            db = sqlite3.connect("src/owlly.db", timeout=3000)
             c = db.cursor()
             prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
             c.execute(prefix, (int(message.guild.id),))
@@ -44,7 +44,7 @@ class CogUtils(
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         sql = "INSERT INTO SERVEUR (prefix, idS, roliste, notes, rolerm, chanRP, maxDC, sticky, tag, tokenHRP, delete_HRP, delay_HRP) VALUES (?, ?, ?, ?,?,?,?,?,?,?,?,?)"
         var = ("?", guild.id, "0", 0, "0", "0", 0, 0, "0", "0", 0, 0)
@@ -72,7 +72,7 @@ class CogUtils(
     )
     async def prefix(self, ctx):
         server = ctx.guild.id
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
         c.execute(prefix, (server,))
@@ -94,7 +94,7 @@ class CogUtils(
         brief="Informations sur le bot.",
     )
     async def info(self, ctx):
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
         c.execute(prefix, (int(ctx.guild.id),))
@@ -153,7 +153,7 @@ class CogUtils(
             brief="Informations sur le bot.",
         )
         async def info(self, ctx):
-            db = sqlite3.connect("owlly.db", timeout=3000)
+            db = sqlite3.connect("src/owlly.db", timeout=3000)
             c = db.cursor()
             prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
             c.execute(prefix, (int(ctx.guild.id),))
@@ -190,7 +190,7 @@ class CogUtils(
     )
     async def lexique(self, ctx, *, word: str):
         server = ctx.guild.id
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         sql = "SELECT notes FROM SERVEUR WHERE idS=?"
         c.execute(sql, (server,))

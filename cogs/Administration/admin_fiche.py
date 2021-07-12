@@ -50,7 +50,7 @@ class adminfiche(
             )
 
         cl = ctx.guild.id
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         q = await ctx.send(
             "Dans quel channel voulez-vous que soit envoyé les fiches à valider ?"
@@ -117,7 +117,7 @@ class adminfiche(
     async def edit_update(self, ctx, dm, chartype, champ, old):
         idS = ctx.guild.id
         f = open(
-            f"fiche/{dm.id}_{chartype}_{dm.name}_{ctx.guild.id}.txt",
+            f"src/fiche/{dm.id}_{chartype}_{dm.name}_{ctx.guild.id}.txt",
             "r",
             encoding="utf-8",
         )
@@ -127,7 +127,7 @@ class adminfiche(
             data = "".join(data)
             perso = ast.literal_eval(data)
             save = open(
-                f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
+                f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
                 "w",
                 encoding="utf-8",
             )
@@ -136,10 +136,10 @@ class adminfiche(
         else:
             try:
                 os.path.isfile(
-                    f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt"
+                    f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt"
                 )
                 save = open(
-                    f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
+                    f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
                     "r",
                     encoding="utf-8",
                 )
@@ -152,7 +152,7 @@ class adminfiche(
                     perso = {}
             except OSError:
                 perso = {}
-        f = open(f"fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8")
+        f = open(f"src/fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8")
         perso_new = {}
         for k, v in perso.keys():
             if k != old:
@@ -165,7 +165,7 @@ class adminfiche(
     async def add_update(self, ctx, dm, chartype, champ, part):
         idS = ctx.guild.id
         f = open(
-            f"fiche/{dm.id}_{chartype}_{dm.name}_{ctx.guild.id}.txt",
+            f"src/fiche/{dm.id}_{chartype}_{dm.name}_{ctx.guild.id}.txt",
             "r",
             encoding="utf-8",
         )
@@ -175,7 +175,7 @@ class adminfiche(
             data = "".join(data)
             perso = ast.literal_eval(data)
             save = open(
-                f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
+                f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
                 "w",
                 encoding="utf-8",
             )
@@ -184,10 +184,10 @@ class adminfiche(
         else:
             try:
                 os.path.isfile(
-                    f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt"
+                    f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt"
                 )
                 save = open(
-                    f"fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
+                    f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
                     "r",
                     encoding="utf-8",
                 )
@@ -200,9 +200,9 @@ class adminfiche(
                     perso = {}
             except OSError:
                 perso = {}
-        f = open(f"fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8")
+        f = open(f"src/fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8")
         d = OrderedDict()
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         if part == "physique":
             sql = "SELECT champ_physique FROM FICHE WHERE idS=?"
@@ -273,7 +273,7 @@ class adminfiche(
             )
 
         cl = ctx.guild.id
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         menu = discord.Embed(
             title="Menu de gestion des fiches",

@@ -83,7 +83,7 @@ async def search_chan(ctx, chan):
 
 
 async def chanRp(ctx, bot, config):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
 
     def checkValid(reaction, user):
@@ -165,7 +165,7 @@ async def chanRp(ctx, bot, config):
 
 
 async def chanHRP_add(ctx, bot):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT chanRP FROM SERVEUR WHERE idS = ?"
     c.execute(sql, (ctx.guild.id,))
@@ -236,7 +236,7 @@ async def chanHRP_add(ctx, bot):
 
 
 async def chanHRP_rm(ctx, bot):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT chanRP FROM SERVEUR WHERE idS = ?"
     c.execute(sql, (ctx.guild.id,))
@@ -321,7 +321,7 @@ async def maxDC(ctx, bot, config):
             and ctx.message.channel == message.channel
         )
 
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     if config != "0" and config != "-1":
         q = await ctx.send(
@@ -351,7 +351,7 @@ async def maxDC(ctx, bot, config):
 
 
 async def sticky(ctx, bot, sticky):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     if sticky == "0":  # false
         sql = "UPDATE SERVEUR SET sticky = ? WHERE idS = ?"
@@ -372,7 +372,7 @@ async def tokenHRP(ctx, bot, token):
             and ctx.message.channel == message.channel
         )
 
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT tokenHRP FROM SERVEUR where idS=?"
     c.execute(sql, (ctx.guild.id,))
@@ -422,7 +422,7 @@ async def tokenHRP(ctx, bot, token):
 
 
 async def deleteHRP(ctx, bot, config):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
 
     def checkRep(message):
@@ -457,7 +457,7 @@ async def deleteHRP(ctx, bot, config):
 
 
 async def tag_Personae(ctx, bot, config):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     emoji = ["1️⃣", "2️⃣", "3️⃣", "❌", "✅"]
 

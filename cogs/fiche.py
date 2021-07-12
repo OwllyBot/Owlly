@@ -72,7 +72,7 @@ class fiches(
 
     async def forme(self, ctx, member: discord.Member, chartype, idS):
         f = open(
-            f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
+            f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
             "r",
             encoding="utf-8",
         )
@@ -87,10 +87,10 @@ class fiches(
         else:
             try:
                 os.path.isfile(
-                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                    f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
                 )
                 save = open(
-                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                    f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
                     "r",
                     encoding="utf-8",
                 )
@@ -103,7 +103,7 @@ class fiches(
                     perso = {}
             except OSError:
                 perso = {}
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         sql = "SELECT champ_physique, champ_general FROM FICHE WHERE idS=?"
         c.execute(sql, (idS,))
@@ -156,7 +156,7 @@ class fiches(
     async def validation(self, ctx, msg, img, chartype, member: discord.Member):
         idS = ctx.guild.id
         if msg != "error":
-            db = sqlite3.connect("owlly.db", timeout=3000)
+            db = sqlite3.connect("src/owlly.db", timeout=3000)
             c = db.cursor()
             SQL = "SELECT fiche_pj, fiche_pnj, fiche_validation FROM FICHE WHERE idS=?"
             c.execute(SQL, (ctx.guild.id,))
@@ -199,10 +199,10 @@ class fiches(
                         await chan_send.send(msg)
                     else:
                         await chan_send.send(msg)
-                    os.remove(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
+                    os.remove(f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
                     try:
                         os.remove(
-                            f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                            f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
                         )
                     except OSError:
                         pass
@@ -216,7 +216,7 @@ class fiches(
                 )
 
     async def start_presentation(self, ctx, member, chartype):
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         idS = ctx.guild.id
         sql = "SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
@@ -247,11 +247,11 @@ class fiches(
                 and str(reaction.emoji) in emoji
             )
 
-        if not os.path.isfile(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt"):
+        if not os.path.isfile(f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt"):
             perso = {}
         else:
             f = open(
-                f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
                 "r",
                 encoding="utf-8",
             )
@@ -261,7 +261,7 @@ class fiches(
                 data = "".join(data)
                 perso = ast.literal_eval(data)
                 save = open(
-                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                    f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
                     "w",
                     encoding="utf-8",
                 )
@@ -270,10 +270,10 @@ class fiches(
             else:
                 try:
                     os.path.isfile(
-                        f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                        f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
                     )
                     save = open(
-                        f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                        f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
                         "r",
                         encoding="utf-8",
                     )
@@ -287,7 +287,7 @@ class fiches(
                 except OSError:
                     perso = {}
         f = open(
-            f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
+            f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
             "w",
             encoding="utf-8",
         )
@@ -325,11 +325,11 @@ class fiches(
                             await member.send("Annulation de la présentation.")
                             f.close()
                             os.remove(
-                                f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                                f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt"
                             )
                             try:
                                 os.remove(
-                                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                                    f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
                                 )
                             except OSError:
                                 pass
@@ -415,8 +415,8 @@ class fiches(
             )
 
         if os.path.isfile(
-            f"fiche/{member.id}_pj_{member.name}_{idS}.txt"
-        ) and os.path.isfile(f"fiche/{member.id}_pnj_{member.name}_{idS}.txt"):
+            f"src/fiche/{member.id}_pj_{member.name}_{idS}.txt"
+        ) and os.path.isfile(f"src/fiche/{member.id}_pnj_{member.name}_{idS}.txt"):
             q = await ctx.send(
                 "Voulez-vous modifier la fiche du PNJ ou PJ ?\n 1️⃣ : PJ\n 2️⃣ : PNJ"
             )
@@ -436,16 +436,16 @@ class fiches(
                 await q.delete()
                 await ctx.send("Annulation", delete_after=30)
                 return
-        elif os.path.isfile(f"fiche/{member.id}_pnj_{member.name}_{idS}.txt"):
+        elif os.path.isfile(f"src/fiche/{member.id}_pnj_{member.name}_{idS}.txt"):
             chartype = "pnj"
-        elif os.path.isfile(f"fiche/{member.id}_pj_{member.name}_{idS}.txt"):
+        elif os.path.isfile(f"src/fiche/{member.id}_pj_{member.name}_{idS}.txt"):
             chartype = "pj"
         else:
             chartype = "ERROR"
             await ctx.send(f"{member.name} n'a pas de fiche en cours.")
             return
         f = open(
-            f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
+            f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
             "r",
             encoding="utf-8",
         )
@@ -455,7 +455,7 @@ class fiches(
             data = "".join(data)
             perso = ast.literal_eval(data)
             save = open(
-                f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
                 "w",
                 encoding="utf-8",
             )
@@ -464,10 +464,10 @@ class fiches(
         else:
             try:
                 os.path.isfile(
-                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                    f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
                 )
                 save = open(
-                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                    f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
                     "r",
                     encoding="utf-8",
                 )
@@ -481,7 +481,7 @@ class fiches(
             except OSError:
                 perso = {}
         f = open(
-            f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
+            f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
             "w",
             encoding="utf-8",
         )
@@ -540,7 +540,7 @@ class fiches(
                                     f.close()
                         perso[k] = rep.content
                         f = open(
-                            f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                            f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
                             "w",
                             encoding="utf-8",
                         )
@@ -557,10 +557,10 @@ class fiches(
                     return
             elif reaction.emoji == "2️⃣":
                 await q.delete()
-                os.remove(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
+                os.remove(f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
                 try:
                     os.remove(
-                        f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                        f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
                     )
                 except OSError:
                     pass
@@ -597,8 +597,8 @@ class fiches(
             )
 
         if os.path.isfile(
-            f"fiche/{member.id}_pj_{member.name}_{idS}.txt"
-        ) and os.path.isfile(f"fiche/{member.id}_pnj_{member.name}_{idS}.txt"):
+            f"src/fiche/{member.id}_pj_{member.name}_{idS}.txt"
+        ) and os.path.isfile(f"src/fiche/{member.id}_pnj_{member.name}_{idS}.txt"):
             q = await ctx.send(
                 "Voulez-vous modifier la fiche de votre PNJ ou PJ ?\n 1️⃣ : PJ\n 2️⃣ : PNJ"
             )
@@ -618,16 +618,16 @@ class fiches(
                 await q.delete()
                 await ctx.send("Annulation", delete_after=30)
                 return
-        elif os.path.isfile(f"fiche/{member.id}_pnj_{member.name}_{idS}.txt"):
+        elif os.path.isfile(f"src/fiche/{member.id}_pnj_{member.name}_{idS}.txt"):
             chartype = "pnj"
-        elif os.path.isfile(f"fiche/{member.id}_pj_{member.name}_{idS}.txt"):
+        elif os.path.isfile(f"src/fiche/{member.id}_pj_{member.name}_{idS}.txt"):
             chartype = "pj"
         else:
             chartype = "ERROR"
             await ctx.send("Erreur ! Vous n'avez pas de présentation en cours.")
             return
         f = open(
-            f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
+            f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
             "r",
             encoding="utf-8",
         )
@@ -637,7 +637,7 @@ class fiches(
             data = "".join(data)
             perso = ast.literal_eval(data)
             save = open(
-                f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
                 "w",
                 encoding="utf-8",
             )
@@ -646,10 +646,10 @@ class fiches(
         else:
             try:
                 os.path.isfile(
-                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                    f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
                 )
                 save = open(
-                    f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                    f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
                     "r",
                     encoding="utf-8",
                 )
@@ -663,7 +663,7 @@ class fiches(
             except OSError:
                 perso = {}
         f = open(
-            f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
+            f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
             "w",
             encoding="utf-8",
         )
@@ -676,7 +676,7 @@ class fiches(
         def checkRepChan(message):
             return message.author == member and ctx.message.channel == message.channel
 
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         SQL = "SELECT fiche_pj, fiche_pnj, fiche_validation FROM FICHE WHERE idS=?"
         c.execute(SQL, (ctx.guild.id,))
@@ -749,7 +749,7 @@ class fiches(
                                         f.close()
                             perso[k] = rep.content
                             f = open(
-                                f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                                f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
                                 "w",
                                 encoding="utf-8",
                             )
@@ -766,10 +766,10 @@ class fiches(
                         )
                         return
                 elif reaction.emoji == "2️⃣":
-                    os.remove(f"fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
+                    os.remove(f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
                     try:
                         os.remove(
-                            f"fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                            f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
                         )
                     except OSError:
                         pass

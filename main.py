@@ -14,7 +14,7 @@ intents = discord.Intents(messages=True, guilds=True, reactions=True, members=Tr
 
 def getprefix(bot, message):
     if message.guild is not None:
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
         c.execute(prefix, (int(message.guild.id),))
@@ -74,7 +74,7 @@ bot.help_command = PrettyHelp(
 async def on_raw_reaction_add(payload):
     emoji_cat = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
     action = payload.emoji
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     idS = payload.guild_id
     mid = payload.message_id
@@ -214,7 +214,7 @@ async def on_raw_reaction_add(payload):
 async def on_raw_message_delete(payload):
     mid = payload.message_id
     serv = payload.guild_id
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT idM FROM TICKET WHERE idS=?"
     c.execute(sql, (serv,))
@@ -241,7 +241,7 @@ async def on_raw_message_delete(payload):
 
 @bot.event
 async def on_guild_channel_delete(channel):
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     delete = channel.id
     sql = "SELECT created_by FROM AUTHOR WHERE created_by =?"
@@ -268,7 +268,7 @@ async def on_guild_channel_delete(channel):
 @bot.event
 async def on_member_remove(member):
     dep = int(member.id)
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql = "DELETE FROM AUTHOR WHERE UserID = ?"
     c.execute(sql, (dep,))
@@ -280,7 +280,7 @@ async def on_member_remove(member):
 @bot.event
 async def on_guild_remove(guild):
     server = guild.id
-    db = sqlite3.connect("owlly.db", timeout=3000)
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql1 = "DELETE FROM AUTHOR WHERE idS = ?"
     sql2 = "DELETE FROM TICKET WHERE idS = ?"

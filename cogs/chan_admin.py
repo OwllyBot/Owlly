@@ -85,7 +85,7 @@ class ChanCreator(
                 return
             elif rep.content.isnumeric():
                 idM = int(rep.content)
-                db = sqlite3.connect("owlly.db", timeout=3000)
+                db = sqlite3.connect("src/owlly.db", timeout=3000)
                 c = db.cursor()
                 sql = "SELECT idM FROM TICKET where idM=?"
                 c.execute(sql, (idM,))
@@ -181,7 +181,7 @@ class ChanCreator(
                 return
             elif rep.content.isnumeric():
                 idM = int(rep.content)
-                db = sqlite3.connect("owlly.db", timeout=3000)
+                db = sqlite3.connect("src/owlly.db", timeout=3000)
                 c = db.cursor()
                 sql = "SELECT idM FROM CATEGORY where idM=?"
                 c.execute(sql, (idM,))
@@ -221,7 +221,7 @@ class ChanCreator(
     )
     async def recount(self, ctx, arg, ticket_id):
         await ctx.message.delete()
-        db = sqlite3.connect("owlly.db", timeout=3000)
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         search_db = "SELECT num FROM TICKET WHERE idM=?"
         sql = "UPDATE TICKET SET num = ? WHERE idM=?"
