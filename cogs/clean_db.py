@@ -40,7 +40,7 @@ class DB_utils(commands.Cog):
             try:
                 await chan.fetch_message(k)
             except NotFound:
-                sql_solo = "DELETE FROM SOLO_CATEGORY WHERE idM=?"
+                sql_solo = "DELETE FROM TICKET WHERE idM=?"
                 c.execute(sql_solo, (k,))
 
         for k, v in catDict.items():
@@ -49,7 +49,7 @@ class DB_utils(commands.Cog):
             try:
                 await chan.fetch_message(k)
             except NotFound:
-                sql_solo = "DELETE FROM SOLO_CATEGORY WHERE idM=?"
+                sql_solo = "DELETE FROM CATEGORY WHERE idM=?"
                 c.execute(sql_solo, (k,))
         db.commit()
         c.close()

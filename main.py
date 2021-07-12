@@ -260,6 +260,10 @@ async def on_guild_channel_delete(channel):
         c.execute(sql, var)
     sql = "DELETE FROM AUTHOR WHERE channel_id = ?"
     c.execute(sql, (delete,))
+    sql = "DELETE FROM TICKET WHERE channelM = ?"
+    c.execute(sql, (delete,))
+    sql = "DELETE FROM CATEGORY WHERE channelM = ?"
+    c.execute(sql, (delete,))
     db.commit()
     c.close()
     db.close()
@@ -268,10 +272,25 @@ async def on_guild_channel_delete(channel):
 @bot.event
 async def on_member_remove(member):
     dep = int(member.id)
+    idS = int(member.guild.id)
     db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
-    sql = "DELETE FROM AUTHOR WHERE UserID = ?"
-    c.execute(sql, (dep,))
+    sql = "DELETE FROM AUTHOR WHERE (UserID = ? AND idS = ?)"
+    c.execute(
+        sql,
+        (
+            dep,
+            idS,
+        ),
+    )
+    sql = "DELETE FROM DC WHERE (idS = ? AND idU=?)"
+    c.execute(
+        sql,
+        (
+            idS,
+            dep,
+        ),
+    )
     db.commit()
     c.close()
     db.close()
@@ -286,13 +305,14 @@ async def on_guild_remove(guild):
     sql2 = "DELETE FROM TICKET WHERE idS = ?"
     sql3 = "DELETE FROM CATEGORY WHERE idS = ?"
     sql4 = "DELETE FROM FICHE WHERE idS = ?"
+    sql5 = "DELETE FROM DC WHERE idS = ?"
     c.execute(sql1, (server,))
     c.execute(sql2, (server,))
     c.execute(sql3, (server,))
     c.execute(sql4, (server,))
+    c.execute(sql5, (server,))
     sql = "DELETE FROM SERVEUR WHERE idS = ?"
-    var = guild.id
-    c.execute(sql, (var,))
+    c.execute(sql, (server,))
     db.commit()
     c.close()
     db.close()
