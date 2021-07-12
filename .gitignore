@@ -6,4 +6,3 @@ __pycache__/
 *.pyc
 cogs/__pycache__/
 .env
-TESTREPO
