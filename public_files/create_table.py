@@ -3,26 +3,27 @@ import sys
 import traceback
 import logging
 
-def create_table():
-    '''
-        Creates a table based on the original database, but emptied, to allow testing for users outside the repo.
-        Parameters 
-        -----------
-          database 
-            A database (if not exist, it will be created)
 
-        Returns
-        -------
-            None
-        
-        Usage
-        -----
-            python3 create_table database_name
-    '''
+def create_table():
+    """
+    Creates a table based on the original database, but emptied, to allow testing for users outside the repo.
+    Parameters
+    -----------
+      database
+        A database (if not exist, it will be created)
+
+    Returns
+    -------
+        None
+
+    Usage
+    -----
+        python3 create_table database_name
+    """
     try:
         if sys.argv[1] == "help":
-           print(help(create_table))
-           return ""
+            print(help(create_table))
+            return ""
         else:
             db = sqlite3.connect(f"{sys.argv[1]}.db")
             c = db.cursor()
@@ -101,10 +102,9 @@ def create_table():
             c.close()
             db.close()
     except BaseException as error:
-        print('An exception occurred: {}'.format(error))
+        print("An exception occurred: {}".format(error))
         print(help(create_table))
-        
-        
-        
+
+
 if __name__ == "__main__":
     create_table()

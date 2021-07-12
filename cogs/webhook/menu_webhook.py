@@ -146,31 +146,35 @@ async def webhook_edit(ctx, bot, idDC, config):
         await ctx.send("Modification enregistrée !")
         return
 
-async def menu_edit(ctx,bot):
+
+async def menu_edit(ctx, bot):
     emoji = ["1️⃣", "2️⃣", "3️⃣", "❌", "✅"]
-    def checkRep(message):  
-        return message.author == ctx.message.author and ctx.message.channel == message.channel
-    def checkValid(reaction, user):  
-        return (ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji)
-    edition=discord.Embed(title="PERSONAE - ÉDITION", color=Color.dark_teal())
+
+    def checkRep(message):
+        return (
+            message.author == ctx.message.author
+            and ctx.message.channel == message.channel
+        )
+
+    def checkValid(reaction, user):
+        return (
+            ctx.message.author == user
+            and q.id == reaction.message.id
+            and str(reaction.emoji) in emoji
+        )
+
+    edition = discord.Embed(title="PERSONAE - ÉDITION", color=Color.dark_teal())
     edition.add_field(
         name="1️⃣ | Nom",
         value="Édition du nom",
         inline=False,
     )
-    edition.add_field(
-        name="2️⃣ | Avatar",
-        value="Édition de l'avatar",
-        inline=False
-    )
-    edition.add_field(
-        name="3️⃣ | Token",
-        value="Édition du token",
-        inline=False
-    )
+    edition.add_field(name="2️⃣ | Avatar", value="Édition de l'avatar", inline=False)
+    edition.add_field(name="3️⃣ | Token", value="Édition du token", inline=False)
     edition.set_footer(
-        text="Cliquez sur la réaction pour choisir !\n ❌ Pour quitter le menu.")
-    q=await ctx.send(embed=edition)
+        text="Cliquez sur la réaction pour choisir !\n ❌ Pour quitter le menu."
+    )
+    q = await ctx.send(embed=edition)
     await q.add_reaction("1️⃣")
     await q.add_reaction("2️⃣")
     await q.add_reaction("3️⃣")
@@ -178,7 +182,9 @@ async def menu_edit(ctx,bot):
     reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
     if reaction.emoji == "1️⃣":
         await q.delete()
-        q = await ctx.send("Merci d'envoyer le nom ou le token du personnage que vous voulez éditer.")
+        q = await ctx.send(
+            "Merci d'envoyer le nom ou le token du personnage que vous voulez éditer."
+        )
         rep = await bot.wait_for("message", timeout=300, check=checkRep)
         persona = rep.content
         if rep.content.lower() == "stop" or rep.content.lower() == "cancel":
@@ -194,7 +200,9 @@ async def menu_edit(ctx,bot):
         return
     elif reaction.emoji == "2️⃣":
         await q.delete()
-        q = await ctx.send("Merci d'envoyer le nom ou le token du personnage que vous voulez éditer.")
+        q = await ctx.send(
+            "Merci d'envoyer le nom ou le token du personnage que vous voulez éditer."
+        )
         rep = await bot.wait_for("message", timeout=300, check=checkRep)
         persona = rep.content
         if rep.content.lower() == "stop" or rep.content.lower() == "cancel":
@@ -210,7 +218,9 @@ async def menu_edit(ctx,bot):
         return
     elif reaction.emoji == "3️⃣":
         await q.delete()
-        q = await ctx.send("Merci d'envoyer le nom ou le token du personnage que vous voulez éditer.")
+        q = await ctx.send(
+            "Merci d'envoyer le nom ou le token du personnage que vous voulez éditer."
+        )
         rep = await bot.wait_for("message", timeout=300, check=checkRep)
         persona = rep.content
         if rep.content.lower() == "stop" or rep.content.lower() == "cancel":
@@ -228,49 +238,57 @@ async def menu_edit(ctx,bot):
         await q.delete()
         await ctx.send("Annulation !")
         return
-    
+
+
 async def menu(ctx, bot):
-    emoji = ["1️⃣","2️⃣", "3️⃣", "❌", "✅"]
-    def checkRep(message):  
-        return message.author == ctx.message.author and ctx.message.channel == message.channel
-    def checkValid(reaction, user):  
+    emoji = ["1️⃣", "2️⃣", "3️⃣", "❌", "✅"]
+
+    def checkRep(message):
         return (
-          ctx.message.author == user and q.id == reaction.message.id and str(reaction.emoji) in emoji)
+            message.author == ctx.message.author
+            and ctx.message.channel == message.channel
+        )
+
+    def checkValid(reaction, user):
+        return (
+            ctx.message.author == user
+            and q.id == reaction.message.id
+            and str(reaction.emoji) in emoji
+        )
+
     embed = discord.Embed(title="GESTION PERSONAE", color=Color.dark_teal())
     embed.add_field(
         name="1️⃣ | Création",
-        value="Permet de débuter la création d'un Persona", 
+        value="Permet de débuter la création d'un Persona",
         inline=False,
     )
     embed.add_field(
         name="2️⃣ | Édition",
-        value="Permet d'éditer un Persona", 
+        value="Permet d'éditer un Persona",
         inline=False,
     )
     embed.add_field(
-        name="3️⃣ | Suppression",
-        value="Permet de supprimer un Persona",
-        inline=False
+        name="3️⃣ | Suppression", value="Permet de supprimer un Persona", inline=False
     )
     embed.set_footer(
         text="Cliquez sur la réaction pour choisir !\n ❌ Pour quitter le menu."
     )
-    q= await ctx.send(embed=embed)
-    i= 0
-    while emoji[i] !="✅":
+    q = await ctx.send(embed=embed)
+    i = 0
+    while emoji[i] != "✅":
         await q.add_reaction(emoji[i])
-        i+=1
+        i += 1
     reaction, user = await bot.wait_for("reaction_add", timeout=300, check=checkValid)
-    if reaction.emoji == "1️⃣": #Création
+    if reaction.emoji == "1️⃣":  # Création
         await q.delete()
         await webhook_create(ctx, bot)
         return
-    elif reaction.emoji == "2️⃣": #Edition
+    elif reaction.emoji == "2️⃣":  # Edition
         await q.delete()
         await menu_edit(ctx, bot)
         return
-        
-    elif reaction.emoji == "3️⃣": #Deletion
+
+    elif reaction.emoji == "3️⃣":  # Deletion
         await q.delete()
         await gestion.webhook_delete(ctx, bot)
         return
