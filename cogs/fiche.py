@@ -199,7 +199,9 @@ class fiches(
                         await chan_send.send(msg)
                     else:
                         await chan_send.send(msg)
-                    os.remove(f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
+                    os.remove(
+                        f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                    )
                     try:
                         os.remove(
                             f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
@@ -247,7 +249,9 @@ class fiches(
                 and str(reaction.emoji) in emoji
             )
 
-        if not os.path.isfile(f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt"):
+        if not os.path.isfile(
+            f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt"
+        ):
             perso = {}
         else:
             f = open(
@@ -766,7 +770,9 @@ class fiches(
                         )
                         return
                 elif reaction.emoji == "2️⃣":
-                    os.remove(f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt")
+                    os.remove(
+                        f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt"
+                    )
                     try:
                         os.remove(
                             f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"

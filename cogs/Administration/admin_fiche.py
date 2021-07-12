@@ -152,7 +152,9 @@ class adminfiche(
                     perso = {}
             except OSError:
                 perso = {}
-        f = open(f"src/fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8")
+        f = open(
+            f"src/fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8"
+        )
         perso_new = {}
         for k, v in perso.keys():
             if k != old:
@@ -200,7 +202,9 @@ class adminfiche(
                     perso = {}
             except OSError:
                 perso = {}
-        f = open(f"src/fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8")
+        f = open(
+            f"src/fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8"
+        )
         d = OrderedDict()
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
