@@ -166,10 +166,10 @@ def check_token(ctx, token):
     else:
         return "error"
 
-
 def search_Persona(ctx, nom):
     db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
+    nom=name_persona(ctx, nom)
     sql = "SELECT idDC FROM DC WHERE (Nom = ? AND idU = ? AND idS = ?)"
     c.execute(
         sql,
