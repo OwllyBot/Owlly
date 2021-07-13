@@ -24,7 +24,7 @@ __Quelques conditions :__
 
 [Recrutement](https://forms.gle/EfgxcpDA5vcfuFYP7)
 
-Il est tout à fait possible de coder sur le bot à partir d'un fork. Cependant, puisque le dossier `src` est privé, il est nécessaire de créer les fichiers à partir du script [create_files]() (`python3 create_files`).
+Il est tout à fait possible de coder sur le bot à partir d'un fork. Cependant, puisque le dossier `src` est privé, il est nécessaire de créer les fichiers à partir du script [create_files](https://github.com/OwllyBot/Owlly/tree/dev/instruction_fork) (`python3 create_files`).
 
 ---
 

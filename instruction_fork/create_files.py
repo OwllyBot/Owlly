@@ -6,7 +6,7 @@ import os
 
 def create_table():
     """
-    Creates a table based on the original database, but emptied, to allow testing for users outside the repo.
+    Creates the files and directories necessary to run and test the bot, outside the repo.
     Parameters
     -----------
       None
