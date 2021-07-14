@@ -4,6 +4,7 @@ import traceback
 import logging
 import os
 
+
 def create_table():
     """
     Creates the files and directories necessary to run and test the bot, outside the repo.
@@ -24,10 +25,10 @@ def create_table():
             print(help(create_table))
             return ""
         else:
-            if not os.path.exists('src/fiche/Saves_files'):
-            	os.makedirs('src/fiche/Saves_files')
-                
-            db = sqlite3.connect(f"src/owlly.db",timeout=300)
+            if not os.path.exists("src/fiche/Saves_files"):
+                os.makedirs("src/fiche/Saves_files")
+
+            db = sqlite3.connect(f"src/owlly.db", timeout=300)
             c = db.cursor()
             author = """CREATE TABLE "AUTHOR" (
                 "channel_id"	INTEGER,
@@ -103,7 +104,7 @@ def create_table():
             c.execute(category)
             c.close()
             db.close()
-            f=open(".gitignore","a")
+            f = open(".gitignore", "a")
             f.write("src/\n")
             f.close()
     except BaseException as error:
