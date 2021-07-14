@@ -220,12 +220,12 @@ async def webhook_delete(ctx, bot):
         await rep.delete()
         return
     persona = rep.content
-    id=search_Persona(ctx, persona)
-    if id == "error" : 
+    id = search_Persona(ctx, persona)
+    if id == "error":
         await ctx.send("Ce Persona n'existe pas")
         return
-    sql="DELETE FROM DC WHERE (idS = ? AND idU = ? AND idDC = ?)"
-    var=(ctx.guild.id, ctx.message.author.id, id)
+    sql = "DELETE FROM DC WHERE (idS = ? AND idU = ? AND idDC = ?)"
+    var = (ctx.guild.id, ctx.message.author.id, id)
     c.execute(sql, var)
     await ctx.send("La suppression a bien été effectuée !")
     db.commit()

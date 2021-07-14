@@ -9,16 +9,16 @@ from cogs.webhook import menu_webhook as menu
 
 
 class Personae(
-        commands.cogs,
-        name="Personae",
-        description=
-        "Toutes les commandes afin de créer et gérer un personnage sous forme de webhook",
+    commands.cogs,
+    name="Personae",
+    description="Toutes les commandes afin de créer et gérer un personnage sous forme de webhook",
 ):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(help="Ouvre le menu de gestion des Personae.",
-                      brief="Menu des Personae.")
+    @commands.command(
+        help="Ouvre le menu de gestion des Personae.", brief="Menu des Personae."
+    )
     async def personae(self, ctx):
         await menu.menu(ctx, self.bot)
         return
@@ -86,8 +86,10 @@ class Personae(
         c = db.cursor()
 
         def checkRep(message):
-            return (message.author == ctx.message.author
-                    and ctx.message.channel == message.channel)
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
 
         idC = gestion.search_Persona(ctx, nom)
         if idC == "error":
@@ -106,9 +108,11 @@ class Personae(
         db.close()
         return
 
-    @commands.command(help="Supprime un Persona de la base de donnée.",
-                      brief="Suppression d'un Persona.",
-                      usage="\"Nom/Token\"")
+    @commands.command(
+        help="Supprime un Persona de la base de donnée.",
+        brief="Suppression d'un Persona.",
+        usage='"Nom/Token"',
+    )
     async def persona_delete(self, ctx, persona):
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
