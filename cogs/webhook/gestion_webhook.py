@@ -166,10 +166,11 @@ def check_token(ctx, token):
     else:
         return "error"
 
+
 def search_Persona(ctx, nom):
     db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
-    nom=name_persona(ctx, nom)
+    nom = name_persona(ctx, nom)
     sql = "SELECT idDC FROM DC WHERE (Nom = ? AND idU = ? AND idS = ?)"
     c.execute(
         sql,
@@ -219,51 +220,13 @@ async def webhook_delete(ctx, bot):
         await rep.delete()
         return
     persona = rep.content
-    # Check if token :
-    sql = "SELECT token FROM DC WHERE (idS = ? AND idU = ? AND token = ?)"
-    var = (
-        ctx.guild.id,
-        ctx.message.author.id,
-        persona,
-    )
+    id=search_Persona(ctx, persona)
+    if id == "error" : 
+        await ctx.send("Ce Persona n'existe pas")
+        return
+    sql="DELETE FROM DC WHERE (idS = ? AND idU = ? AND idDC = ?)"
+    var=(ctx.guild.id, ctx.message.author.id, id)
     c.execute(sql, var)
-    check = c.fetchall()
-    config = ""
-    if check is None or len(check) == 0:
-        # Check nom
-        sql = "SELECT Nom FROM DC WHERE (idS= ? AND idU = ? AND Nom = ?)"
-        var = (
-            ctx.guild.id,
-            ctx.message.author.id,
-            persona,
-        )
-        c.execute(sql, var)
-        check = c.fetchall()
-        if check is None or len(check) == 0:
-            await ctx.send(
-                "Ce personnage n'existe pas, merci de vérifier votre saisie."
-            )
-            return
-        else:
-            config = "Nom"
-    else:
-        config = "token"
-    if config == "Nom":
-        sql = "DELETE FROM DC WHERE (idS=? and idU=? AND Nom=?)"
-        var = (
-            ctx.guild.id,
-            ctx.message.author.id,
-            persona,
-        )
-        c.execute(sql, var)
-    elif config == "token":
-        sql = "DELETE FROM DC WHERE (idS = ? AND idU = ? AND token = ?)"
-        var = (
-            ctx.guild.id,
-            ctx.message.author.id,
-            persona,
-        )
-        c.execute(sql, var)
     await ctx.send("La suppression a bien été effectuée !")
     db.commit()
     c.close()
