@@ -150,7 +150,7 @@ class CogAdmins(
         await q.add_reaction("✅")
         await q.add_reaction("❌")
         reaction, user = await self.bot.wait_for(
-            "add_reaction", timeout=300, check=checkValid
+            "reaction_add", timeout=300, check=checkValid
         )
         if reaction.emoji == "✅":
             q = await ctx.send(
@@ -193,9 +193,10 @@ class CogAdmins(
             )
             if reaction.emoji == "✅":
                 await webhook.sticky(ctx, self.bot, "1")
+                await q.clear_reactions()
             else:
                 await utils.init_value("sticky", "SERVEUR", "idS", 0, server)
-            await q.clear_reactions()
+                await q.clear_reactions()
         else:
             await q.clear_reactions()
             await utils.init_value("sticky", "SERVEUR", "idS", 0, server)
@@ -245,7 +246,7 @@ class CogAdmins(
         else:
             await q.clear_reactions()
             await utils.init_value("chanRP", "SERVEUR", "idS", "0", server)
-            await webhook.tokenHRP(ctx, self.bot, "1")
+            await utils.init_value("tokenHRP", "SERVEUR", "idS", "0", server)
 
         await ctx.send(
             "La configuration du serveur est maintenant terminé ! Vous pouvez éditer chaque paramètres séparément."
