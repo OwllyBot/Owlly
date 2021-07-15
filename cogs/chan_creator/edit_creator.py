@@ -38,7 +38,7 @@ async def search_cat_name(ctx, name, bot):
         name = get(ctx.message.guild.categories, name=name)
         number = name.id
         return number
-    elif lg > 1 and lg < 10:
+    elif 1 < lg < 10:
         search_name = []
         for i in range(0, lg):
             for cat in cat_list:

@@ -8,10 +8,6 @@ import os
 def create_table():
     """
     Creates the files and directories necessary to run and test the bot, outside the repo.
-    Parameters
-    -----------
-      None
-
     Returns
     -------
         None

@@ -697,7 +697,7 @@ class CogAdmins(
                 await q.delete()
                 db = sqlite3.connect("src/owlly.db", timeout=3000)
                 c = db.cursor()
-                sql = "UPDATE chanRP set chanRP=? WHERE idS=?"
+                sql = "UPDATE SERVEUR set chanRP=? WHERE idS=?"
                 var = ("0", ctx.guild.id)
                 c.execute(sql, var)
                 db.commit()

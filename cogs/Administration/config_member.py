@@ -44,7 +44,7 @@ async def roliste_init(ctx, bot, type_db, role):
         f"Les rôles {phrase} ont bien été enregistré dans la base de données"
     )
     if len(role_list) > 0:
-        role_str = ",".join((role_list))
+        role_str = ",".join(role_list)
     var = (role_str, ctx.guild.id)
     c.execute(sql, var)
     db.commit()
@@ -60,7 +60,7 @@ async def role_init(ctx, *role: discord.Role, bot):
     if (len(role)) > 1:
         for i in role:
             role_list.append(str(i.id))
-        role_str = ",".join((role_list))
+        role_str = ",".join(role_list)
     else:
         role_str = str(role[0].id)
     var = (role_str, ctx.guild.id)
@@ -85,7 +85,7 @@ async def init_role_rm(ctx, *role: discord.Role, bot):
     if (len(role)) > 1:
         for i in role:
             role_list.append(str(i.id))
-        role_str = ",".join((role_list))
+        role_str = ",".join(role_list)
     else:
         role_str = str(role[0].id)
     print(role_str)

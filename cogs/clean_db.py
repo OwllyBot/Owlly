@@ -18,7 +18,6 @@ class DB_utils(commands.Cog):
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         sql = "SELECT idM, channelM FROM TICKET WHERE idS=?"
-        self.idS = ctx.guild.id
         idS = ctx.guild.id
         c.execute(sql, (idS,))
         ticket = c.fetchall()

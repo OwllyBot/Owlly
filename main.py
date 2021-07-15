@@ -189,7 +189,7 @@ async def on_raw_reaction_add(payload):
             chan_name = f"{payload.member.nick}"
         create = True
     # ===== CREATION ====
-    if create == True:
+    if create:
         category_name = get(guild.categories, id=chan_create)
         await channel.send(
             f"Création du channel {chan_name} dans {category_name}.", delete_after=30
@@ -197,9 +197,7 @@ async def on_raw_reaction_add(payload):
         category = bot.get_channel(chan_create)
         new_chan = await category.create_text_channel(chan_name)
         overwrite = discord.PermissionOverwrite()
-        overwrite.manage_channels = True
-        overwrite.manage_messages = True
-        await new_chan.set_permissions(user, overwrite=overwrite)
+        await new_chan.set_permissions(user, manage_channels=True, manage_messages=True)
         sql = (
             "INSERT INTO AUTHOR (channel_id, userID, idS, created_by) VALUES (?,?,?,?)"
         )
@@ -247,7 +245,7 @@ async def on_guild_channel_delete(channel):
     sql = "SELECT created_by FROM AUTHOR WHERE created_by =?"
     c.execute(sql, (delete,))
     verif_ticket = c.fetchone()
-    if verif_ticket != None:
+    if verif_ticket is not None:
         sql = "SELECT num FROM TICKET WHERE idM = ?"
         c.execute(sql, verif_ticket)
         count = c.fetchone()

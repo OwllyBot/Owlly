@@ -98,7 +98,7 @@ async def image_persona(ctx, bot, image):
         return "stop"
     else:
         while not (
-            (image.attachments)
+            image.attachments
             or ("discordapp" in image_url)
             or (any(x in image_url for x in ["jpg", "png", "jpeg", "gif"]))
         ):

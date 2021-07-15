@@ -256,7 +256,7 @@ class ChanCreator(
                 db.close()
                 return
             else:
-                var = (arg, (ticket_id))
+                var = (arg, (ticket_id,))
                 c.execute(sql, var)
                 db.commit()
                 c.close()
