@@ -1,5 +1,6 @@
-Unidecode==1.2.0
-discord.py==1.7.3
-pyimgur==0.6.0
-pygit2==1.5.0
-discord==1.7.3
+Unidecode>=1.2.0
+pygit2>=1.5.0
+discord>=1.7.3
+pyimgur>=0.6.0
+discord-pretty-help
+black

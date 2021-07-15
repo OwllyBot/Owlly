@@ -1,21 +1,12 @@
-from test import up_DB
-from cogs.clean_db import DB_utils
-import discord
-from discord import role
-from discord.colour import Color
-from discord.ext import commands, tasks
 import sqlite3
-import re
-from typing import Optional
+
+import discord
+from discord.colour import Color
+from discord.ext import commands
 from discord.ext.commands import CommandError
-from discord.ext.commands.errors import RoleNotFound
+
 from cogs.Administration import config_member as member
-from cogs.Administration import admin_fiche as fiche
 from cogs.Administration import webhook_config as webhook
-import unidecode
-import os
-import ast
-from collections import OrderedDict
 
 
 class CogAdmins(

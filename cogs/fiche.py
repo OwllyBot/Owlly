@@ -1,12 +1,13 @@
-import discord
-from discord.ext import commands
-import os
-import sqlite3
-import os.path
 import ast
 import asyncio
-import unidecode
+import os
+import os.path
+import sqlite3
+
+import discord
 import pyimgur
+import unidecode
+from discord.ext import commands
 from discord.ext.commands import CommandError
 
 CLIENT_ID = os.environ.get("CLIENT_ID")
@@ -21,20 +22,105 @@ class Personnage(object):
         return str(self.champ)
 
 
+async def search_chan(ctx, chan: str):
+    chan = str(chan)
+    try:
+        chan = await commands.TextChannelConverter().convert(ctx, chan)
+        return chan
+    except CommandError:
+        chan = "Error"
+        return chan
+
+
+async def forme(ctx, member: discord.Member, chartype, idS):
+    f = open(
+        f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
+        "r",
+        encoding="utf-8",
+    )
+    perso = {}
+    data = f.readlines()
+    f.close()
+    msg = "error forme msg"
+    img = "Error forme image"
+    if len(data) > 0:
+        data = "".join(data)
+        perso = ast.literal_eval(data)
+    else:
+        try:
+            os.path.isfile(
+                f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+            )
+            save = open(
+                f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                "r",
+                encoding="utf-8",
+            )
+            save_data = save.readlines()
+            save.close()
+            if len(save_data) > 0:
+                save_data = "".join(save_data)
+                perso = ast.literal_eval(save_data)
+            else:
+                perso = {}
+        except OSError:
+            perso = {}
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
+    c = db.cursor()
+    sql = "SELECT champ_physique, champ_general FROM FICHE WHERE idS=?"
+    c.execute(sql, (idS,))
+    champ = c.fetchone()
+    general = champ[1].split(",")
+    physique = champ[0].split(",")
+    general_info = {}
+    physique_info = {}
+    for k, v in perso.items():
+        for gen in general:
+            for phys in physique:
+                gen = gen.replace("\\", "")
+                phys = phys.replace("\\", "")
+                k = k.replace("\\", "")
+                if v == "NA" or v == "na" or v == "/":
+                    pass
+                else:
+                    if k.lower() == gen.lower():
+                        general_info.update({k: v})
+                    elif k.lower() == phys.lower():
+                        physique_info.update({k: v})
+    general_msg = "─────༺ Présentation ༻─────\n"
+    physique_msg = "──────༺ Physique ༻──────\n"
+    img = ""
+    for k, v in general_info.items():
+        if v.endswith((".png", ".jpg", ".jpeg", ".gif")):
+            img = v
+        else:
+            k = k.replace("*", "")
+            k = k.replace("$", "")
+            k = k.replace("&", "")
+            general_msg = general_msg + f"**__{k.capitalize()}__** : {v}\n"
+    for l, m in physique_info.items():
+        if m.endswith((".png", ".jpg", ".jpeg", ".gif")):
+            img = m
+        else:
+            l = l.replace("*", "")
+            l = l.replace("$", "")
+            l = l.replace("&", "")
+            physique_msg = physique_msg + f"**__{l.capitalize()}__** : {m}\n"
+    msg = (
+        general_msg
+        + "\n"
+        + physique_msg
+        + "\n"
+        + f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Joueur* : {member.mention}"
+    )
+    return msg, img
+
+
 class fiches(
     commands.Cog, name="Fiche", description="Permet la création, édition, de fiche RP."
 ):
     def __init__(self, bot):
         self.bot = bot
-
-    async def search_chan(self, ctx, chan: str):
-        chan = str(chan)
-        try:
-            chan = await commands.TextChannelConverter().convert(ctx, chan)
-            return chan
-        except CommandError:
-            chan = "Error"
-            return chan
 
     async def checkTriggers(self, rep, c, member: discord.Member):
         def checkRep(message):
@@ -45,7 +131,7 @@ class fiches(
         reponse = rep.content.replace("'", "\\'")
         if "&" in c:
             while not (
-                (rep.attachments)
+                rep.attachments
                 or ("discordapp" in reponse)
                 or (any(x in reponse for x in ["jpg", "png", "jpeg", "gif"]))
             ):
@@ -70,89 +156,6 @@ class fiches(
                 reponse = rep.content
         return reponse
 
-    async def forme(self, ctx, member: discord.Member, chartype, idS):
-        f = open(
-            f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
-            "r",
-            encoding="utf-8",
-        )
-        perso = {}
-        data = f.readlines()
-        f.close()
-        msg = "error forme msg"
-        img = "Error forme image"
-        if len(data) > 0:
-            data = "".join(data)
-            perso = ast.literal_eval(data)
-        else:
-            try:
-                os.path.isfile(
-                    f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
-                )
-                save = open(
-                    f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
-                    "r",
-                    encoding="utf-8",
-                )
-                save_data = save.readlines()
-                save.close()
-                if len(save_data) > 0:
-                    save_data = "".join(save_data)
-                    perso = ast.literal_eval(save_data)
-                else:
-                    perso = {}
-            except OSError:
-                perso = {}
-        db = sqlite3.connect("src/owlly.db", timeout=3000)
-        c = db.cursor()
-        sql = "SELECT champ_physique, champ_general FROM FICHE WHERE idS=?"
-        c.execute(sql, (idS,))
-        champ = c.fetchone()
-        general = champ[1].split(",")
-        physique = champ[0].split(",")
-        general_info = {}
-        physique_info = {}
-        for k, v in perso.items():
-            for gen in general:
-                for phys in physique:
-                    gen = gen.replace("\\", "")
-                    phys = phys.replace("\\", "")
-                    k = k.replace("\\", "")
-                    if v == "NA" or v == "na" or v == "/":
-                        pass
-                    else:
-                        if k.lower() == gen.lower():
-                            general_info.update({k: v})
-                        elif k.lower() == phys.lower():
-                            physique_info.update({k: v})
-        general_msg = "─────༺ Présentation ༻─────\n"
-        physique_msg = "──────༺ Physique ༻──────\n"
-        img = ""
-        for k, v in general_info.items():
-            if v.endswith((".png", ".jpg", ".jpeg", ".gif")):
-                img = v
-            else:
-                k = k.replace("*", "")
-                k = k.replace("$", "")
-                k = k.replace("&", "")
-                general_msg = general_msg + f"**__{k.capitalize()}__** : {v}\n"
-        for l, m in physique_info.items():
-            if m.endswith((".png", ".jpg", ".jpeg", ".gif")):
-                img = m
-            else:
-                l = l.replace("*", "")
-                l = l.replace("$", "")
-                l = l.replace("&", "")
-                physique_msg = physique_msg + f"**__{l.capitalize()}__** : {m}\n"
-        msg = (
-            general_msg
-            + "\n"
-            + physique_msg
-            + "\n"
-            + f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Joueur* : {member.mention}"
-        )
-        return msg, img
-
     async def validation(self, ctx, msg, img, chartype, member: discord.Member):
         idS = ctx.guild.id
         if msg != "error":
@@ -175,7 +178,7 @@ class fiches(
                 and (channel[0] != 0)
                 and (channel[1] != 0)
             ):
-                chan = await self.search_chan(ctx, channel[2])
+                chan = await search_chan(ctx, channel[2])
                 q = await chan.send(
                     f"Il y a une présentation à valider ! Son contenu est :\n {msg}\n {img} \n Validez-vous la fiche ? "
                 )
@@ -187,11 +190,11 @@ class fiches(
                 if reaction.emoji == "✅":
                     if chartype.lower() == "pnj":
                         if channel[1] != 0:
-                            chan_send = await self.search_chan(ctx, channel[1])
+                            chan_send = await search_chan(ctx, channel[1])
                         else:
-                            chan_send = await self.search_chan(ctx, channel[0])
+                            chan_send = await search_chan(ctx, channel[0])
                     else:
-                        chan_send = await self.search_chan(ctx, channel[0])
+                        chan_send = await search_chan(ctx, channel[0])
                     if img != "Error" or img != "":
                         embed = discord.Embed(color=0x36393F)
                         embed.set_image(url=img)
@@ -214,7 +217,9 @@ class fiches(
                     )
             else:
                 await member.send(
-                    "Huh, il y a eu un soucis avec l'envoie. Il semblerait que les channels ne soient pas configurés ! Rapproche toi du staff pour le prévenir. \n Note : Ce genre de chose n'est pas sensé arrivé, donc contacte aussi @Mara#3000 et fait un rapport de bug. "
+                    "Huh, il y a eu un soucis avec l'envoie. Il semblerait que les channels ne soient pas configurés "
+                    "! Rapproche toi du staff pour le prévenir. \n Note : Ce genre de chose n'est pas sensé arrivé, "
+                    "donc contacte aussi @Mara#3000 et fait un rapport de bug. "
                 )
 
     async def start_presentation(self, ctx, member, chartype):
@@ -374,7 +379,7 @@ class fiches(
                         return "NOTdone"
         f.write(str(perso))
         f.close()
-        msg, img = await self.forme(ctx, member, chartype, idS)
+        msg, img = await forme(ctx, member, chartype, idS)
         if img != "Error" or img != "":
             msg = msg + "\n\n" + img
         if msg != "error":
@@ -494,7 +499,7 @@ class fiches(
                 title=f"MENU {chartype} EDITION ADMIN",
                 description="1️⃣ - EDITION\n 2️⃣ - SUPPRESSION \n 3️⃣ - VOIR LA FICHE \n 4️⃣ - ENVOYER EN VERIFICATION",
             )
-            msg, img = await self.forme(ctx, member, chartype, idS)
+            msg, img = await forme(ctx, member, chartype, idS)
             q = await ctx.send(embed=menu)
             for i in emoji:
                 await q.add_reaction(i)
@@ -570,10 +575,10 @@ class fiches(
                     pass
                 await ctx.send(f"La présentation de {member.name} a été supprimé.")
             elif reaction.emoji == "3️⃣":
-                msg, img = await self.forme(ctx, member, chartype, idS)
+                msg, img = await forme(ctx, member, chartype, idS)
                 await ctx.send(f"{msg} \n {img}")
             elif reaction.emoji == "4️⃣":
-                fiche, img = await self.forme(ctx, member, chartype, idS=ctx.guild.id)
+                fiche, img = await forme(ctx, member, chartype, idS=ctx.guild.id)
                 await self.validation(ctx, fiche, img, chartype, member)
             else:
                 await q.delete()
@@ -692,7 +697,7 @@ class fiches(
             and (channel[1] != 0)
         ):
             if chartype != "ERROR":
-                msg, img = await self.forme(ctx, member, chartype, idS)
+                msg, img = await forme(ctx, member, chartype, idS)
                 menu = discord.Embed(
                     title=f"Menu ({chartype})",
                     description="1️⃣ - Edition\n 2️⃣ - Suppression\n 3️⃣ - Reprise \n 4️⃣ - Voir la fiche en cours",
@@ -784,10 +789,10 @@ class fiches(
                     await ctx.send("Regardez vos DM 📨 !")
                     step = await self.start_presentation(ctx, member, chartype)
                     if step == "done":
-                        msg, img = await self.forme(ctx, member, chartype, idS)
+                        msg, img = await forme(ctx, member, chartype, idS)
                         await self.validation(ctx, msg, img, chartype, member)
                 elif reaction.emoji == "4️⃣":
-                    msg, img = await self.forme(ctx, member, chartype, idS)
+                    msg, img = await forme(ctx, member, chartype, idS)
                     await member.send(f"{msg} \n {img}")
             else:
                 await ctx.send("Vous n'avez pas de présentation en cours !")
@@ -809,7 +814,7 @@ class fiches(
         await ctx.message.delete()
         pres = await self.start_presentation(ctx, member, chartype)
         if pres == "done":
-            fiche, img = await self.forme(ctx, member, chartype, ctx.guild.id)
+            fiche, img = await forme(ctx, member, chartype, ctx.guild.id)
             await self.validation(ctx, fiche, img, chartype, member)
 
     @commands.command(
@@ -825,7 +830,7 @@ class fiches(
         pres = await self.start_presentation(ctx, member, chartype)
         await ctx.message.delete()
         if pres == "done":
-            fiche, img = await self.forme(ctx, member, chartype, ctx.guild.id)
+            fiche, img = await forme(ctx, member, chartype, ctx.guild.id)
             await self.validation(ctx, fiche, img, chartype, member)
 
 
