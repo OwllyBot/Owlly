@@ -26,71 +26,103 @@ def create_table():
 
             db = sqlite3.connect(f"src/owlly.db", timeout=300)
             c = db.cursor()
-            author = """CREATE TABLE "AUTHOR" (
-                "channel_id"	INTEGER,
-                "userID"	INTEGER,
-                "idS"	INTEGER,
-                "created_by"	INTEGER,
-                PRIMARY KEY("channel_id")
+
+            author = """create table AUTHOR
+            (
+                channel_id INTEGER default 0,
+                userID     INTEGER default 0,
+                idS        INTEGER default 0,
+                created_by INTEGER default 0,
+                primary key (channel_id)
             );"""
 
-            category = """CREATE TABLE "CATEGORY" (
-                "idM"	INTEGER,
-                "channelM"	INTEGER,
-                "category_list"	TEXT,
-                "idS"	INTEGER,
-                "config_name"	INTEGER
+            category = """create table CATEGORY
+            (
+                idM           INTEGER default 0,
+                channelM      INTEGER default 0,
+                category_list TEXT    default 0,
+                idS           INTEGER default 0,
+                config_name   INTEGER default 0,
+                constraint CATEGORY_pk
+                    primary key (idM)
             );
             """
 
-            DC = """CREATE TABLE "DC" (
-                "idDC"	INTEGER,
-                "idS"	INTEGER,
-                "idU"	INTEGER,
-                "Nom"	TEXT,
-                "Avatar"	TEXT,
-                "Token"	TEXT,
-                "Active"	INTEGER,
-                PRIMARY KEY("idDC")
+            DC = """create table DC
+                (
+                    idDC   INTEGER default 0,
+                    idS    INTEGER default 0,
+                    idU    INTEGER default 0,
+                    Nom    TEXT    default 0,
+                    Avatar TEXT    default 0,
+                    Token  TEXT    default 0,
+                    Active INTEGER default 0,
+                    primary key (idDC)
+                );"""
+
+            fiche = """create table FICHE
+            (
+                idS              INTEGER default 0,
+                fiche_pj         INTEGER default 0,
+                fiche_pnj        INTEGER default 0,
+                fiche_validation INTEGER default 0,
+                champ_general    TEXT    default 0,
+                champ_physique   TEXT    default 0,
+                primary key (idS)
             );"""
 
-            fiche = """CREATE TABLE "FICHE" (
-        	    "idS"	INTEGER,
-        	    "fiche_pj"	INTEGER,
-        	    "fiche_pnj"	INTEGER,
-        	    "fiche_validation"	INTEGER,
-        	    "champ_general"	TEXT,
-        	    "champ_physique"	TEXT,
-        	    PRIMARY KEY("idS")
+            dice = """create table DICE
+            (
+                idS        int  default 0,
+                Dice       text default 0,
+                seuil      text default 0,
+                nb         int  default 0,
+                stats      text default 0,
+                type_borne text default 0,
+                constraint Roll_Serv_pk
+                    primary key (idS)
             );"""
 
-            serveur = """CREATE TABLE "SERVEUR" (
-            	"prefix"	TEXT,
-            	"idS"	INTEGER,
-            	"roliste"	TEXT,
-            	"notes"	INTEGER,
-            	"rolerm"	TEXT,
-            	"chanRP"	TEXT,
-            	"maxDC"	INTEGER,
-            	"sticky"	INTEGER,
-            	"tag"	TEXT,
-            	"tokenHRP"	TEXT,
-            	"delete_hrp"	INTEGER,
-            	"delay_HRP"	INTEGER,
-            	PRIMARY KEY("idS")
+            serveur = """create table SERVEUR
+            (
+                prefix     TEXT    default 0,
+                idS        INTEGER default 0,
+                roliste    TEXT    default 0,
+                notes      INTEGER default 0,
+                rolerm     TEXT    default 0,
+                chanRP     TEXT    default 0,
+                maxDC      INTEGER default 0,
+                sticky     INTEGER default 0,
+                tag        TEXT    default 0,
+                tokenHRP   TEXT    default 0,
+                delete_hrp INTEGER default 0,
+                delay_HRP  INTEGER default 0,
+                primary key (idS)
             );"""
 
-            ticket = """CREATE TABLE "TICKET" (
-            	"idM"	INTEGER,
-            	"channelM"	INTEGER,
-            	"channel"	INTEGER,
-            	"num"	TEXT,
-            	"modulo"	INTEGER,
-            	"limitation"	INTEGER,
-            	"emote"	TEXT,
-            	"idS"	INTEGER,
-            	"name_auto"	TEXT,
-            	PRIMARY KEY("idM")
+            stats = """create table CARAC
+            (
+                idP    int  default 0,
+                idS    int  default 0,
+                Alias  text default 0,
+                stats text default 0,
+                constraint STATS_pk
+                    primary key (Alias, idP, idS)
+            );
+            """
+
+            ticket = """create table TICKET
+            (
+                idM        INTEGER default 0,
+                channelM   INTEGER default 0,
+                channel    INTEGER default 0,
+                num        TEXT,
+                modulo     INTEGER default 0,
+                limitation INTEGER default 0,
+                emote      TEXT    default 0,
+                idS        INTEGER default 0,
+                name_auto  TEXT    default 0,
+                primary key (idM)
             );"""
             c.execute(author)
             c.execute(ticket)
@@ -98,6 +130,8 @@ def create_table():
             c.execute(fiche)
             c.execute(DC)
             c.execute(category)
+            c.execute(dice)
+            c.execute(stats)
             c.close()
             db.close()
             f = open(".gitignore", "a")
