@@ -168,6 +168,14 @@ async def update_DB_Connect(self):
                 dep,
             ),
         )
+        caract = "DELETE FROM CARAC WHERE (idS = ? AND idP=?)"
+        c.execute(
+            sql,
+            (
+                idS,
+                dep,
+            ),
+        )
         db.commit()
         c.close()
         db.close()
@@ -210,11 +218,15 @@ async def update_DB_Connect(self):
         sql3 = "DELETE FROM CATEGORY WHERE idS = ?"
         sql4 = "DELETE FROM FICHE WHERE idS = ?"
         sql5 = "DELETE FROM DC WHERE idS = ?"
+        sql6 = "DELETE FROM DICE WHERE idS = ?"
+        sql7 = "DELETE FROM CARAC WHERE idS = ?"
         c.execute(sql1, (server,))
         c.execute(sql2, (server,))
         c.execute(sql3, (server,))
         c.execute(sql4, (server,))
         c.execute(sql5, (server,))
+        c.execute(sql7, (server,))
+        c.execute(sql6, (server,))
         sql = "DELETE FROM SERVEUR WHERE idS = ?"
         c.execute(sql, (server,))
         db.commit()
