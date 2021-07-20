@@ -118,7 +118,7 @@ async def update_DB_Connect(self):
     db.close()
 
     @commands.Cog.listener()
-    async def on_guild_channel_delete(channel):
+    async def on_guild_channel_delete(self, channel):
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         delete = channel.id
@@ -147,7 +147,7 @@ async def update_DB_Connect(self):
         db.close()
 
     @commands.Cog.listener()
-    async def on_member_remove(member):
+    async def on_member_remove(self, member):
         dep = int(member.id)
         idS = int(member.guild.id)
         db = sqlite3.connect("src/owlly.db", timeout=3000)
@@ -181,7 +181,7 @@ async def update_DB_Connect(self):
         db.close()
 
     @commands.Cog.listener()
-    async def on_raw_message_delete(payload):
+    async def on_raw_message_delete(self, payload):
         mid = payload.message_id
         serv = payload.guild_id
         db = sqlite3.connect("src/owlly.db", timeout=3000)
@@ -209,7 +209,7 @@ async def update_DB_Connect(self):
         db.close()
 
     @command.Cog.listener()
-    async def on_guild_remove(guild):
+    async def on_guild_remove(self, guild):
         server = guild.id
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()

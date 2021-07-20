@@ -91,7 +91,7 @@ def create_table():
                 notes      INTEGER default 0,
                 rolerm     TEXT    default 0,
                 chanRP     TEXT    default 0,
-                maxDC      INTEGER default 0,
+                maxDC      INTEGER default -1,
                 sticky     INTEGER default 0,
                 tag        TEXT    default 0,
                 tokenHRP   TEXT    default 0,

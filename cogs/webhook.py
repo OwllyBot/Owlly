@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import sqlite3
+import re
 from cogs.function_webhook import gestion_webhook as gestion
 from cogs.function_webhook import lecture_webhook as lecture
 from cogs.function_webhook import menu_webhook as menu
@@ -132,6 +133,135 @@ class Personae(
         c.close()
         db.close()
         return
+
+    @Commands.Cog.listener()
+    async def on_message(self, message):
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
+        c = db.cursor()
+        regex = "0"
+        idS = message.guild.id
+        chan = message.channel.id
+        catego = message.channel.category_id
+        user = message.author.id
+        sql = "SELECT chanRP FROM SERVEUR WHERE idS=?"
+        c.execute(sql, (idS,))
+        chanRP = c.fetchone()
+        config = False
+        if chanRP is not none:
+            chanRP = chanRP[0]
+            chanRP = chanRP.split(",")
+        sql = "SELECT tokenHRP FROM SERVEUR WHERE idS=?"
+        c.execute(sql, (idS,))
+        token = c.fetchone()
+        if token is not None:
+            token = token[0]
+        if token != "0":
+            regex = re.compile(token, re.DOTALL)
+        if chan in chanRP or catego in chanRP:
+            if message.reference:
+                # Reply
+                ref_id = message.reference.message_id
+                ref_msg = await fetch_message(ref_id)
+                perso_name = ref_msg.author.name
+                sql = "SELECT idDC WHERE (idS = ? AND idU=? AND Nom = ?)"
+                var = (
+                    idS,
+                    user,
+                    perso_name,
+                )
+                c.execute(sql, var)
+                perso_check=c.fetchone()
+                if perso:
+                    id_edit=ref_msg.webhook_id
+                    if isinstance()
+            if regex.match(message.content):
+                sql = "SELECT delay_HRP FROM SERVEUR WHERE idS=?"
+                c.execute(sql, (idS,))
+                delay = c.fetchone()
+                if delay:
+                    delay = delay[0]
+                if delay != 0:
+                    await message.delete(delay)
+                    return
+            sql = "SELECT token FROM DC WHERE (idS=? AND idU=?)"
+            var = (
+                idS,
+                user,
+            )
+            c.execute(sql, var)
+            perso = [x[0] for x in c.fetchall()]
+            sql = "SELECT sticky from SERVEUR WHERE idS=?"
+            c.execute(sql, (idS,))
+            sticky = c.fetchone()
+            web = False
+            webcontent = message.content
+            if sticky:
+                sticky = sticky[0]
+            else:
+                sticky = "0"
+            for snippet in perso:
+                reg = re.compile(snippet, re.DOTALL)
+                if reg.match(message.content):
+                    sql = (
+                        "SELECT Nom, Avatar FROM DC WHERE (idS=? AND "
+                        "idU=? AND Token = ?)"
+                    )
+                    var = (
+                        idS,
+                        user,
+                        snippet,
+                    )
+                    c.execute(sql, var)
+                    if char:
+                        char = [x for x in char]
+                        web = True
+                        send = reg.match(message.content)
+                        webcontent = send.group(1)
+                        if sticky == "1":
+                            sql = (
+                                "UPDATE DC SET Active = ? WHERE (idS=? AND "
+                                "idU=? AND Token =?)"
+                            )
+                            c.execute(sql, idS, user, snippet)
+                        break
+            if not web and sticky == "1":
+                sql = (
+                    "SELECT Nom, Avatar FROM DC WHERE (idS = ? AND idU=? AND Active=?)"
+                )
+                var = (
+                    idS,
+                    user,
+                    1,
+                )
+                c.execute(sql, var)
+                char = c.fetchone()
+                if char:
+                    web = true
+                    char = [x for x in char]
+            if web:
+                NPC = await message.channel.webhooks()
+                OwllyE = False
+                if len(NPC) > 0:
+                    # Webhook exists
+                    for i in NPC:
+                        if i.name == "OwllyNPC":
+                            # OWLLYNPC exists
+                            OwllyNPC = i  # Est un webhook
+                            OwllyE = True
+                            break
+                if not OwllyE:
+                    OwllyNPC = await create_webhook(
+                        "OwllyNPC",
+                        avatar=self.bot.avatar_url,
+                        reason="OwllyNPC doesn't exist yet !",
+                    )
+                await OwllyNPC.send(
+                    content=webcontent,
+                    username=char[0],
+                    avatar_url=char[1],
+                    allowed_mentions=True,
+                )
+                await message.delete()
 
 
 def setup(bot):
