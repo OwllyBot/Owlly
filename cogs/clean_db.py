@@ -207,7 +207,7 @@ class DB_utils(commands.Cog):
         c.close()
         db.close()
 
-    @command.Cog.listener()
+    @commands.Cog.listener()
     async def on_guild_remove(self, guild):
         server = guild.id
         db = sqlite3.connect("src/owlly.db", timeout=3000)
