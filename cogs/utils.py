@@ -111,8 +111,8 @@ class CogUtils(
             f"`{prefix}`\n 🏓 **__Latence__** : "
             f"{str(round(self.bot.latency, 2))}\n "
             f"<:python:823857333259730964> **__Language__** : "
-            f"Python \n<:git:823857771584684032> **__Github__** : [Github]("
-            f"https://github.com/OwllyBot/Owlly)\n☕ [Kofi]("
+            f"Python \n<:git:823857771584684032> [**__Github__**]("
+            f"https://github.com/OwllyBot/Owlly)\n☕ [**__Kofi__**]("
             f"https://ko-fi.com/owlly_bot) ",
             color=0x438F8C,
         )
