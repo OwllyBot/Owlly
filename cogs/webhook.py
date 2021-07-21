@@ -134,7 +134,7 @@ class Personae(
         db.close()
         return
 
-    @Commands.Cog.listener()
+    """@Commands.Cog.listener()
     async def on_message(self, message):
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
@@ -170,10 +170,11 @@ class Personae(
                     perso_name,
                 )
                 c.execute(sql, var)
-                perso_check=c.fetchone()
+                perso_check = c.fetchone()
                 if perso:
-                    id_edit=ref_msg.webhook_id
-                    if isinstance()
+                    id_edit = ref_msg.webhook_id
+                    if isinstance():
+                        pass
             if regex.match(message.content):
                 sql = "SELECT delay_HRP FROM SERVEUR WHERE idS=?"
                 c.execute(sql, (idS,))
@@ -261,7 +262,7 @@ class Personae(
                     avatar_url=char[1],
                     allowed_mentions=True,
                 )
-                await message.delete()
+                await message.delete()"""
 
 
 def setup(bot):

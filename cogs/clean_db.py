@@ -10,7 +10,7 @@ intents = discord.Intents(messages=True, guilds=True, reactions=True, members=Tr
 class DB_utils(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.loop.create_task(self.update_DB())
+        self.bot.loop.create_task(self.update_DB_Connect())
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
