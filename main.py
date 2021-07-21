@@ -212,4 +212,6 @@ if repo_name == "main":
     token = os.environ.get("DISCORD_BOT_TOKEN")
 else:
     token = os.environ.get("DISCORD_BOT_TOKEN_TESTING")
+    print(token)
+print(token)
 bot.run(token)
