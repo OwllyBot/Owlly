@@ -88,7 +88,8 @@ class CogUtils(
     async def whoami(self, ctx):
         await ctx.send(f"You are {ctx.message.author.name}")
 
-    @commands.command(
+    @commands.group(
+        invoke_without_command=True,
         name="info",
         help="Affiche des infos sur le bot.",
         brief="Informations sur le bot.",
@@ -105,13 +106,20 @@ class CogUtils(
             prefix = "?"
         embed = discord.Embed(
             title="Owlly",
-            description=f"\n 🦉 **__Développeur__** : @Mara#3000 \n <:commandline:823856723441221692> **__Prefix__** : `{prefix}`\n 🏓 **__Latence__** : {str(round(self.bot.latency, 2))}\n <:python:823857333259730964> **__Language__** : Python \n<:git:823857771584684032> **__Github__** : [Github](https://github.com/OwllyBot/OwllyDocs)",
+            description=f"\n 🦉 **__Développeur__** : @Mara#3000 \n "
+            f"<:commandline:823856723441221692> **__Prefix__** : "
+            f"`{prefix}`\n 🏓 **__Latence__** : "
+            f"{str(round(self.bot.latency, 2))}\n "
+            f"<:python:823857333259730964> **__Language__** : "
+            f"Python \n<:git:823857771584684032> **__Github__** : [Github]("
+            f"https://github.com/OwllyBot/Owlly)\n☕ [Kofi]("
+            f"https://ko-fi.com/owlly_bot) ",
             color=0x438F8C,
         )
         await ctx.send(embed=embed)
         await ctx.message.delete()
 
-    @commands.command(
+    @info.command(
         name="bug",
         help="Permet d'afficher les infos afin de signaler un bug.",
         brief="Informations sur le signalement de bug.",
@@ -120,7 +128,7 @@ class CogUtils(
         bloc = "```\n# Commande : \n# Résultat : \n# Reproduction : \n# Description / autres informations : \n# Screenshot :\n```"
         embed = discord.Embed(
             title="Signaler un bug",
-            description=f"Vous avez vu un bug et vous aimeriez le signaler ? Voici la marche à suivre : \n:white_small_square: Aller sur [Github](https://github.com/OwllyBot/OwllyDocs/issues)\n:white_small_square: Remplissez la template suivante en donnant le plus d'information possible :\n {bloc}\n\n N'oubliez pas de créer un compte Github. Vous pouvez aussi MP @Mara#3000 avec la description du bug.",
+            description=f"Vous avez vu un bug et vous aimeriez le signaler ? Voici la marche à suivre : \n:white_small_square: Aller sur [Github](https://github.com/OwllyBot/Owlly/issues)\n:white_small_square: Remplissez la template suivante en donnant le plus d'information possible :\n {bloc}\n\n N'oubliez pas de créer un compte Github. Vous pouvez aussi MP @Mara#3000 avec la description du bug.",
             color=0x438F8C,
         )
         await ctx.send(embed=embed)
@@ -147,41 +155,29 @@ class CogUtils(
         except CommandError:
             colur = Colour.random()
 
-        @commands.command(
-            name="info",
-            help="Affiche des infos sur le bot.",
-            brief="Informations sur le bot.",
+    @info.command(
+        brief="Donne le lien vers la roadmap du bot.",
+        help="Permet de voir les prochaines fonctions prévues",
+    )
+    async def roadmap(self, ctx):
+        embed = discord.Embed(
+            title="Roadmap",
+            description="▫️ [Amélioration](https://github.com/OwllyBot/Owlly/projects/4)\n"
+            "▫ [Documentation]("
+            "https://github.com/OwllyBot/Owlly/projects/5)\n "
+            ":white_small_square: [Bug]("
+            "https://github.com/OwllyBot/Owlly/projects/6)",
         )
-        async def info(self, ctx):
-            db = sqlite3.connect("src/owlly.db", timeout=3000)
-            c = db.cursor()
-            prefix = "SELECT prefix FROM SERVEUR WHERE idS = ?"
-            c.execute(prefix, (int(ctx.guild.id),))
-            prefix = c.fetchone()
-            if prefix is not None:
-                prefix = prefix[0]
-            else:
-                prefix = "?"
-            embed = discord.Embed(
-                title="Owlly",
-                description=f"\n 🦉 **__Développeur__** : @Mara#3000 \n <:commandline:823856723441221692> **__Prefix__** : `{prefix}`\n 🏓 **__Latence__** : {str(round(self.bot.latency, 2))}\n <:python:823857333259730964> **__Language__** : Python \n<:git:823857771584684032> **__Github__** : [Github](https://github.com/OwllyBot/OwllyDocs)",
-                color=0x438F8C,
-            )
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
-        @commands.command(
-            name="bug",
-            help="Permet d'afficher les infos afin de signaler un bug.",
-            brief="Informations sur le signalement de bug.",
+    @info.command(brief="Donne le lien vers le Kofi")
+    async def kofi(self, ctx):
+        await ctx.send(
+            "https://ko-fi.com/owlly_bot. \n "
+            " Il n'y a pas de premium sur le bot, mais le fait d'être un "
+            "donateur permet d'avoir ses suggestions passées en priorité, "
+            "et d'avoir accès aux votes spéciaux !"
         )
-        async def bug(self, ctx):
-            bloc = "```\n# Commande : \n# Résultat : \n# Reproduction : \n# Description / autres informations : \n# Screenshot :\n```"
-            embed = discord.Embed(
-                title="Signaler un bug",
-                description=f"Vous avez vu un bug et vous aimeriez le signaler ? Voici la marche à suivre : \n:white_small_square: Aller sur [Github](https://github.com/OwllyBot/OwllyDocs/issues)\n:white_small_square: Remplissez la template suivante en donnant le plus d'information possible :\n {bloc}\n\n N'oubliez pas de créer un compte Github. Vous pouvez aussi MP @Mara#3000 avec la description du bug.",
-                color=0x438F8C,
-            )
-            await ctx.send(embed=embed)
 
     @commands.command(
         brief="Une recherche dans un channel",
