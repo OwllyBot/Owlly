@@ -94,28 +94,27 @@ class DB_utils(commands.Cog):
             )
             c.execute(sql)
 
-
-async def update_DB_Connect(self):
-    await self.bot.wait_until_ready()
-    db = sqlite3.connect("src/owlly.db", timeout=3000)
-    c = db.cursor()
-    server = (
-        "INSERT OR IGNORE INTO SERVEUR(prefix, idS, roliste, notes, "
-        "rolerm, chanRP, maxDC, sticky, tag, tokenHRP, delete_hrp, delay_hrp) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
-    )
-    fiche = (
-        "INSERT OR IGNORE INTO FICHE(ids, fiche_pj, fiche_validation, "
-        "champ_general, champ_physique) VALUES(?,?,?, ?,?)"
-    )
-    guilds_list = self.bot.guilds
-    for i.id in guilds_list:
-        servvar = ("?", i, "0", 0, "0", "0", 0, 0, "0", "0", 0, 0)
-        fichevar = (i, 0, 0, 0, "0", "0")
-        c.execute(server, servvar)
-        c.execute(fiche, fichevar)
-    db.commit()
-    c.close()
-    db.close()
+    async def update_DB_Connect(self):
+        await self.bot.wait_until_ready()
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
+        c = db.cursor()
+        server = (
+            "INSERT OR IGNORE INTO SERVEUR(prefix, idS, roliste, notes, "
+            "rolerm, chanRP, maxDC, sticky, tag, tokenHRP, delete_hrp, delay_hrp) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
+        )
+        fiche = (
+            "INSERT OR IGNORE INTO FICHE(ids, fiche_pj, fiche_validation, "
+            "champ_general, champ_physique) VALUES(?,?,?, ?,?)"
+        )
+        guilds_list = self.bot.guilds
+        for i.id in guilds_list:
+            servvar = ("?", i, "0", 0, "0", "0", 0, 0, "0", "0", 0, 0)
+            fichevar = (i, 0, 0, 0, "0", "0")
+            c.execute(server, servvar)
+            c.execute(fiche, fichevar)
+        db.commit()
+        c.close()
+        db.close()
 
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel):
