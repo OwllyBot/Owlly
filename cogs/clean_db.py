@@ -103,11 +103,13 @@ class DB_utils(commands.Cog):
             "rolerm, chanRP, maxDC, sticky, tag, tokenHRP, delete_hrp, delay_hrp) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
         )
         fiche = (
-            "INSERT OR IGNORE INTO FICHE(ids, fiche_pj, fiche_validation, "
-            "champ_general, champ_physique) VALUES(?,?,?, ?,?)"
+            "INSERT OR IGNORE INTO FICHE(ids, fiche_pj, fiche_pnj, "
+            "fiche_validation, "
+            "champ_general, champ_physique) VALUES(?,?,?,?,?,?)"
         )
         guilds_list = self.bot.guilds
-        for i.id in guilds_list:
+        for i in guilds_list:
+            i = i.id
             servvar = ("?", i, "0", 0, "0", "0", 0, 0, "0", "0", 0, 0)
             fichevar = (i, 0, 0, 0, "0", "0")
             c.execute(server, servvar)
