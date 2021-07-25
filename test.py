@@ -15,7 +15,6 @@ def up_DB(base, var, row, idT, value):
     db.commit()
     c.close()
     db.close()
-    print("Done")
 
 
 up_DB("SERVEUR", "maxDC", "idS", 453162143668371456, 5)
@@ -32,7 +31,6 @@ def select_DB(base, row, type, value):
         print("Result is none")
         result = "0"
     else:
-        print(result[0])
         result = result[0]
     c.close()
     db.close()
