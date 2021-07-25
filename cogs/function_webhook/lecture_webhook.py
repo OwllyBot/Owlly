@@ -25,6 +25,8 @@ async def edit_webhook(message: discord.Message, idS, user):
             await webhook.edit_message(id=ref_id, content=message.content)
             await message.delete()
             return
+    c.close()
+    db.close()
 
 
 async def delete_HRP(message: discord.Message, idS):
@@ -38,6 +40,8 @@ async def delete_HRP(message: discord.Message, idS):
     if delay != 0:
         await message.delete(delay=delay)
         return
+    c.close()
+    db.close()
 
 
 async def switch_persona(bot, message: discord.Message, idS, user):
@@ -118,9 +122,19 @@ async def switch_persona(bot, message: discord.Message, idS, user):
             allowed_mentions=True,
         )
         await message.delete()
+        db.commit()
+        c.close()
+        db.close()
 
 
 async def delete_persona(idS, idU, message: discord.Message):
     db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
     sql = "SELECT idDC WHERE (idS = ? AND idU=? AND Nom = ?)"
+    var = (idS, idU, message.author.name)
+    c.execute(sql, var)
+    perso_check = c.fetchone()
+    if perso_check:
+        await message.delete()
+    c.close()
+    c.close()

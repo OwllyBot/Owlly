@@ -181,6 +181,10 @@ class Personae(
         chanRP = c.fetchone()
         if chanRP is not None:
             chanRP = chanRP[0].split(",")
+        catego = channel.category_id
+        if channel in chanRP or catego in chanRP:
+            if action == "❌":
+                await lecture.delete_persona(idS, user, msg)
 
 
 def setup(bot):
