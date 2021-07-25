@@ -169,7 +169,7 @@ class DB_utils(commands.Cog):
                 dep,
             ),
         )
-        caract = "DELETE FROM CARAC WHERE (idS = ? AND idP=?)"
+        caract = "DELETE FROM PERSO WHERE (idS = ? AND idP=?)"
         c.execute(
             sql,
             (
@@ -219,8 +219,8 @@ class DB_utils(commands.Cog):
         sql3 = "DELETE FROM CATEGORY WHERE idS = ?"
         sql4 = "DELETE FROM FICHE WHERE idS = ?"
         sql5 = "DELETE FROM DC WHERE idS = ?"
-        sql6 = "DELETE FROM DICE WHERE idS = ?"
-        sql7 = "DELETE FROM CARAC WHERE idS = ?"
+        sql6 = "DELETE FROM JEU WHERE idS = ?"
+        sql7 = "DELETE FROM PERSO WHERE idS = ?"
         c.execute(sql1, (server,))
         c.execute(sql2, (server,))
         c.execute(sql3, (server,))
