@@ -1,6 +1,7 @@
-import discord
-from discord.ext import commands, tasks
 import sqlite3
+
+import discord
+from discord.ext import commands
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 

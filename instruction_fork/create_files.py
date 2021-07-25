@@ -1,8 +1,6 @@
+import os
 import sqlite3
 import sys
-import traceback
-import logging
-import os
 
 
 def create_table():

@@ -1,8 +1,8 @@
-from test import select_DB, up_DB
-import discord
-from discord.ext import commands, tasks
-from discord import NotFound
 import sqlite3
+
+import discord
+from discord import NotFound
+from discord.ext import commands
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
@@ -76,13 +76,15 @@ class DB_utils(commands.Cog):
         c = db.cursor()
         idw = str(idw)
         sql = (
-            "SELECT " + selection + " FROM " + base + " WHERE " + id + " = " + idw + ""
+            "SELECT " + selection + " FROM " + base + " WHERE " + id + " = " + idw
         )
         c.execute(sql)
         result = c.fetchone()
         if result is None:
             sql = (
-                "UPDATE +base+ SET "
+                "UPDATE "
+                + base
+                + " SET "
                 + selection
                 + " = "
                 + var
@@ -90,7 +92,6 @@ class DB_utils(commands.Cog):
                 + id
                 + " = "
                 + idw
-                + ""
             )
             c.execute(sql)
 
@@ -169,7 +170,7 @@ class DB_utils(commands.Cog):
                 dep,
             ),
         )
-        caract = "DELETE FROM PERSO WHERE (idS = ? AND idP=?)"
+        sql = "DELETE FROM PERSO WHERE (idS = ? AND idP=?)"
         c.execute(
             sql,
             (

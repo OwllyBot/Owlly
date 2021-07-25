@@ -1,14 +1,13 @@
-import discord
-from discord.ext import commands
-from discord.utils import get
-import unicodedata
 import os
-import sqlite3
-from discord.ext.commands import TextChannelConverter as tcc
-from discord.ext.commands import CommandError
-import sqlite3
 import os.path
+import sqlite3
+import unicodedata
+
+import discord
 import pyimgur
+from discord.ext import commands
+from discord.ext.commands import CommandError
+from discord.utils import get
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 CLIENT_ID = os.environ.get("CLIENT_ID")

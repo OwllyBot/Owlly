@@ -1,15 +1,12 @@
-import discord
-from discord import role
-from discord.ext import commands, tasks
-import sqlite3
-import re
-from typing import Optional
-from discord.ext.commands import CommandError
-from discord.ext.commands.errors import RoleNotFound
-import unidecode
-import os
 import ast
+import os
+import sqlite3
 from collections import OrderedDict
+
+import discord
+import unidecode
+from discord.ext import commands
+from discord.ext.commands import CommandError
 
 
 class adminfiche(
@@ -46,7 +43,7 @@ class adminfiche(
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+                and (reaction.emoji == "✅" or reaction.emoji == "❌")
             )
 
         cl = ctx.guild.id
@@ -267,7 +264,7 @@ class adminfiche(
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and str(reaction.emoji) in emoji
+                and reaction.emoji in emoji
             )
 
         def checkRep(message):

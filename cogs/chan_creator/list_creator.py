@@ -1,8 +1,6 @@
-import discord
-from discord.ext import commands, tasks
-from discord.utils import get
 import sqlite3
-from discord import NotFound
+
+from discord.utils import get
 
 
 def list_ticket(ctx):

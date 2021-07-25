@@ -1,12 +1,10 @@
+import re
+import sqlite3
+
 import discord
 from discord.colour import Color
-from discord.ext import commands, tasks
-from discord.utils import get
-from typing import Optional
-import sqlite3
-import re
-from discord import Colour
-from discord.ext.commands import ColourConverter
+from discord.ext import commands
+
 from cogs.chan_creator import config_creators as cfg
 from cogs.chan_creator import edit_creator as edit
 from cogs.chan_creator import list_creator as listing
@@ -35,7 +33,7 @@ class ChanCreator(
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and str(reaction.emoji) in emoji
+                and reaction.emoji in emoji
             )
 
         def checkRep(message):
@@ -131,7 +129,7 @@ class ChanCreator(
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and str(reaction.emoji) in emoji
+                and reaction.emoji in emoji
             )
 
         def checkRep(message):
