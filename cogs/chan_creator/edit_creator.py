@@ -1,12 +1,10 @@
-import discord
-from discord import NotFound
-from discord.ext import commands, tasks
-from discord.utils import get
-import sqlite3
 import re
-from discord import Colour
-from discord.ext.commands import ColourConverter
+import sqlite3
+
+import discord
 import unidecode as uni
+from discord import NotFound
+from discord.utils import get
 
 
 async def search_cat_name(ctx, name, bot):
@@ -16,7 +14,7 @@ async def search_cat_name(ctx, name, bot):
         return (
             ctx.message.author == user
             and q.id == reaction.message.id
-            and str(reaction.emoji) in emoji
+            and reaction.emoji in emoji
         )
 
     cat_list = []
@@ -115,7 +113,7 @@ async def edit_ticket(ctx, idM, bot):
         return (
             ctx.message.author == user
             and q.id == reaction.message.id
-            and str(reaction.emoji) in emoji
+            and reaction.emoji in emoji
         )
 
     def checkRep(message):
@@ -347,7 +345,7 @@ async def edit_category(ctx, idM, bot):
         return (
             ctx.message.author == user
             and q.id == reaction.message.id
-            and str(reaction.emoji) in emoji
+            and reaction.emoji in emoji
         )
 
     def checkRep(message):

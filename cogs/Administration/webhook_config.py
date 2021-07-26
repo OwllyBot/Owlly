@@ -1,10 +1,10 @@
-import discord
-from discord.ext import commands, tasks
-import sqlite3
 import re
-from discord.utils import get
-from discord.ext.commands import CommandError
+import sqlite3
+
 import unidecode as uni
+from discord.ext import commands
+from discord.ext.commands import CommandError
+from discord.utils import get
 
 
 async def search_cat_name(ctx, name, bot):
@@ -14,7 +14,7 @@ async def search_cat_name(ctx, name, bot):
         return (
             ctx.message.author == user
             and info.id == reaction.message.id
-            and str(reaction.emoji) in emoji
+            and reaction.emoji in emoji
         )
 
     cat_list = []
@@ -85,14 +85,6 @@ async def search_chan(ctx, chan):
 async def chanRp(ctx, bot, config):
     db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
-
-    def checkValid(reaction, user):
-
-        return (
-            ctx.message.author == user
-            and q.id == reaction.message.id
-            and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
-        )
 
     def checkRep(message):
         return (
@@ -464,7 +456,7 @@ async def tag_Personae(ctx, bot, config):
         return (
             ctx.message.author == user
             and q.id == reaction.message.id
-            and str(reaction.emoji) in emoji
+            and reaction.emoji in emoji
         )
 
     def checkRep(message):

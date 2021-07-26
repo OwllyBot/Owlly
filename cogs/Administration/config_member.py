@@ -1,15 +1,8 @@
-import discord
-from discord import role
-from discord.ext import commands, tasks
 import sqlite3
-import re
-from typing import Optional
-from discord.ext.commands import CommandError
+
+import discord
+from discord.ext import commands
 from discord.ext.commands.errors import RoleNotFound
-import unidecode
-import os
-import ast
-from collections import OrderedDict
 
 
 async def roliste_init(ctx, bot, type_db, role):
@@ -119,7 +112,7 @@ async def inscription_role(bot, ctx, type_db):
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and (str(reaction.emoji) in emoji)
+                and reaction.emoji in emoji
             )
 
         def checkRep(message):

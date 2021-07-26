@@ -1,7 +1,8 @@
-import discord
-from discord.ext import commands
-import sqlite3
 import re
+import sqlite3
+
+from discord.ext import commands
+
 from cogs.function_webhook import gestion_webhook as gestion
 from cogs.function_webhook import lecture_webhook as lecture
 from cogs.function_webhook import menu_webhook as menu

@@ -1,9 +1,8 @@
+import sqlite3
+import uuid
+
 import discord
 from cogs.function_webhook import gestion_webhook as gestion
-import sqlite3
-from discord.ext import commands
-import os
-import uuid
 from discord.colour import Color
 
 
@@ -160,7 +159,7 @@ async def menu_edit(ctx, bot):
         return (
             ctx.message.author == user
             and q.id == reaction.message.id
-            and str(reaction.emoji) in emoji
+            and reaction.emoji in emoji
         )
 
     edition = discord.Embed(title="PERSONAE - ÉDITION", color=Color.dark_teal())
@@ -243,17 +242,11 @@ async def menu_edit(ctx, bot):
 async def menu(ctx, bot):
     emoji = ["1️⃣", "2️⃣", "3️⃣", "❌", "✅"]
 
-    def checkRep(message):
-        return (
-            message.author == ctx.message.author
-            and ctx.message.channel == message.channel
-        )
-
     def checkValid(reaction, user):
         return (
             ctx.message.author == user
             and q.id == reaction.message.id
-            and str(reaction.emoji) in emoji
+            and reaction.emoji in emoji
         )
 
     embed = discord.Embed(title="GESTION PERSONAE", color=Color.dark_teal())

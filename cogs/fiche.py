@@ -169,7 +169,7 @@ class fiches(
                 return (
                     user.bot != True
                     and q.id == reaction.message.id
-                    and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+                    and (reaction.emoji == "✅" or reaction.emoji == "❌")
                 )
 
             if (
@@ -251,7 +251,7 @@ class fiches(
                 user.bot != True
                 and isinstance(reaction.message.channel, discord.DMChannel)
                 and q.id == reaction.message.id
-                and str(reaction.emoji) in emoji
+                and reaction.emoji in emoji
             )
 
         if not os.path.isfile(
@@ -420,7 +420,7 @@ class fiches(
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and str(reaction.emoji) in emoji
+                and reaction.emoji in emoji
             )
 
         if os.path.isfile(
@@ -602,7 +602,7 @@ class fiches(
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and str(reaction.emoji) in emoji
+                and reaction.emoji in emoji
             )
 
         if os.path.isfile(

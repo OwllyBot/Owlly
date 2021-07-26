@@ -1,10 +1,10 @@
+import os
+import sqlite3
+
 import discord
 from discord.ext import commands
 from discord.utils import get
-import os
-import sqlite3
 from pretty_help import PrettyHelp
-from discord.ext.commands.help import HelpCommand
 from pygit2 import Repository
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)

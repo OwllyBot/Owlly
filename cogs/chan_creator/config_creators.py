@@ -1,14 +1,14 @@
-import discord
-from discord.ext import commands, tasks
-from discord.utils import get
-from typing import Optional
-import sqlite3
+import os
 import re
+import sqlite3
+from typing import Optional
+
+import discord
+import pyimgur
+import unidecode as uni
 from discord import Colour
 from discord.ext.commands import ColourConverter, CommandError
-import unidecode as uni
-import pyimgur
-import os
+from discord.utils import get
 
 CLIENT_ID = os.environ.get("CLIENT_ID")
 im = pyimgur.Imgur(CLIENT_ID)
@@ -38,7 +38,7 @@ async def search_cat_name(ctx, name, bot):
         return (
             ctx.message.author == user
             and info.id == reaction.message.id
-            and str(reaction.emoji) in emoji
+            and reaction.emoji in emoji
         )
 
     cat_list = []
@@ -102,7 +102,7 @@ async def create_ticket(self, ctx, bot):
         return (
             ctx.message.author == user
             and q.id == reaction.message.id
-            and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+            and (reaction.emoji == "✅" or reaction.emoji == "❌")
         )
 
     def checkRep(message):
@@ -404,7 +404,7 @@ async def create_category(self, ctx, bot):
         return (
             ctx.message.author == user
             and q.id == reaction.message.id
-            and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+            and (reaction.emoji == "✅" or reaction.emoji == "❌")
         )
 
     def checkRep(message):

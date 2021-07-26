@@ -49,7 +49,7 @@ class CogAdmins(
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and (str(reaction.emoji) in emoji)
+                and reaction.emoji in emoji
             )
 
         q = await ctx.send(
@@ -347,17 +347,11 @@ class CogAdmins(
         await q.add_reaction("2️⃣")
         await q.add_reaction("3️⃣")
 
-        def checkRep(message):
-            return (
-                message.author == ctx.message.author
-                and ctx.message.channel == message.channel
-            )
-
         def checkValid(reaction, user):
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and (str(reaction.emoji) in emoji)
+                and reaction.emoji in emoji
             )
 
         reaction, user = await self.bot.wait_for(
@@ -396,7 +390,7 @@ class CogAdmins(
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+                and (reaction.emoji == "✅" or reaction.emoji == "❌")
             )
 
         db = sqlite3.connect("src/owlly.db", timeout=3000)
@@ -487,7 +481,7 @@ class CogAdmins(
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and str(reaction.emoji) in emoji
+                and reaction.emoji in emoji
             )
 
         db = sqlite3.connect("src/owlly.db", timeout=3000)
@@ -556,13 +550,7 @@ class CogAdmins(
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
-            )
-
-        def checkRep(message):
-            return (
-                message.author == ctx.message.author
-                and ctx.message.channel == message.channel
+                and (reaction.emoji == "✅" or reaction.emoji == "❌")
             )
 
         db = sqlite3.connect("src/owlly.db", timeout=3000)
@@ -609,13 +597,7 @@ class CogAdmins(
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and str(reaction.emoji) in emoji
-            )
-
-        def checkRep(message):
-            return (
-                message.author == ctx.message.author
-                and ctx.message.channel == message.channel
+                and reaction.emoji in emoji
             )
 
         embed = discord.Embed(title="PERSONAE ADMINISTRATION", color=Color.dark_teal())
@@ -652,7 +634,7 @@ class CogAdmins(
         embed.set_footer(
             text="Cliquez sur la réaction pour choisir !\n ❌ permet d'annuler. "
         )
-        q = await ctx.send(embed)
+        q = await ctx.send(embed=embed)
         i = 0
         while emoji[i] != "✅":
             await q.add_reaction(emoji[i])
@@ -899,17 +881,11 @@ class CogAdmins(
     async def tag_persona(self, ctx):
         emoji = ["1️⃣", "2️⃣", "3️⃣", "❌"]
 
-        def checkRep(message):
-            return (
-                message.author == ctx.message.author
-                and ctx.message.channel == message.channel
-            )
-
         def checkValid(reaction, user):
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and str(reaction.emoji) in emoji
+                and reaction.emoji in emoji
             )
 
         db = sqlite3.connect("src/owlly.db", timeout=3000)

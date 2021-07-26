@@ -1,10 +1,7 @@
-import discord
-import sqlite3
-import re
-from discord.ext import commands
-import pyimgur
 import os
-import uuid
+import sqlite3
+
+import pyimgur
 
 CLIENT_ID = os.environ.get("CLIENT_ID")
 im = pyimgur.Imgur(CLIENT_ID)

@@ -1,14 +1,9 @@
-import discord
-from discord.enums import _is_descriptor
-from discord.ext import commands, tasks
 import re
 import sqlite3
-from typing import Optional, Union
-from discord import Colour
-from discord.ext.commands import ColourConverter
-import unidecode as uni
 
-from discord.ext.commands.errors import CommandError
+import discord
+import unidecode as uni
+from discord.ext import commands
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
 
@@ -147,13 +142,6 @@ class CogUtils(
             await message.delete()
             a += 1
         await ctx.send(f"J'ai nettoyé {a} messages", delete_after=30)
-
-    @commands.command()
-    async def convertColor(self, ctx, color):
-        try:
-            colur = await ColourConverter.convert(self, ctx, color)
-        except CommandError:
-            colur = Colour.random()
 
     @info.command(
         brief="Donne le lien vers la roadmap du bot.",
