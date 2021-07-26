@@ -121,7 +121,7 @@ class CogAdmins(
                 await self.notes_config(ctx, chan)
             else:
                 await ctx.send("Channel introuvable.")
-                await self.notes_config(ctx, "0")
+                await utils.init_value("SERVEUR", "notes", 0, "idS", server)
         else:
             await q.clear_reactions()
             await utils.init_value("notes", "SERVEUR", "idS", 0, server)
@@ -911,7 +911,7 @@ class CogAdmins(
         if reaction.emoji == "✅":
             if tag != "0":
                 await ctx.send("Modification du tag")
-                await webhook.tag(ctx, self.bot, "1")
+                await webhook.tag_Personae(ctx, self.bot, "1")
             else:
                 await ctx.send("1️⃣ - Modification du tag\n2️⃣ - Suppression du tag")
                 await q.add_reaction("1️⃣")

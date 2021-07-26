@@ -3,7 +3,6 @@ import asyncio
 import os
 import os.path
 import sqlite3
-
 import discord
 import pyimgur
 import unidecode
@@ -12,14 +11,6 @@ from discord.ext.commands import CommandError
 
 CLIENT_ID = os.environ.get("CLIENT_ID")
 im = pyimgur.Imgur(CLIENT_ID)
-
-
-class Personnage(object):
-    def __init__(self, champ):
-        self.champ = champ
-
-    def __str__(self):
-        return str(self.champ)
 
 
 async def search_chan(ctx, chan: str):
@@ -236,8 +227,8 @@ class fiches(
         general = general.split(",")
         physique = physique.split(",")
         champ = general + physique
-        template = {i: str(Personnage(i)) for i in champ}
-        last = list(template)[-1]
+        template = champ
+        last = champ[-1]
 
         def checkRep(message):
             return message.author == member and isinstance(
@@ -304,7 +295,7 @@ class fiches(
             f":white_small_square: `*` signifie que le champ est obligatoire. \n :white_small_square: `$` signifie que le réponse **doit être un lien** \n :white_small_square: `&` signifie que la réponse doit être **une image**."
         )
         while last.lower() not in perso.keys():
-            for t in template.keys():
+            for t in template:
                 t = t.replace("\\", "")
                 if t.lower() not in perso.keys():
                     c = t.capitalize()
@@ -318,7 +309,6 @@ class fiches(
                         msg = f"{msg}\n Ce champ doit être une image (pièce-jointe ou lien)."
                     await member.send(msg)
                     c = c.replace("'", "\\'")
-                    c = c.replace("\\", "")
                     rep = await self.bot.wait_for(
                         "message", timeout=300, check=checkRep
                     )
@@ -542,7 +532,7 @@ class fiches(
                                 rep = await self.bot.wait_for(
                                     "message", timeout=300, check=checkRep
                                 )
-                                repCheck = self.checkTriggers(rep, c, member)
+                                repCheck = await self.checkTriggers(rep, c, member)
                                 if repCheck.lower() == "stop":
                                     await member.send(f"Mise en pause.")
                                     f.write(str(perso))
@@ -682,9 +672,6 @@ class fiches(
                 message.channel, discord.DMChannel
             )
 
-        def checkRepChan(message):
-            return message.author == member and ctx.message.channel == message.channel
-
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         SQL = "SELECT fiche_pj, fiche_pnj, fiche_validation FROM FICHE WHERE idS=?"
@@ -749,7 +736,7 @@ class fiches(
                                     rep = await self.bot.wait_for(
                                         "message", timeout=300, check=checkRep
                                     )
-                                    repCheck = self.checkTriggers(rep, c, member)
+                                    repCheck = await self.checkTriggers(rep, c, member)
                                     if repCheck.lower() == "stop":
                                         await member.send(
                                             f"Mise en pause. Vous pourrez reprendre plus tard avec la commande `{ctx.prefix}fiche`"
@@ -812,6 +799,7 @@ class fiches(
         chartype = "pj"
         await ctx.send(f"{member.mention} check tes DM ! 📧")
         await ctx.message.delete()
+        # Member seems to have problem with pycharm here
         pres = await self.start_presentation(ctx, member, chartype)
         if pres == "done":
             fiche, img = await forme(ctx, member, chartype, ctx.guild.id)

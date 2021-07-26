@@ -1,6 +1,6 @@
 import re
 import sqlite3
-
+import discord
 from discord.ext import commands
 
 from cogs.function_webhook import gestion_webhook as gestion
@@ -138,54 +138,56 @@ class Personae(
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        db = sqlite3.connect("src/owlly.db", timeout=3000)
-        c = db.cursor()
-        regex = "0"
-        idS = message.guild.id
-        chan = message.channel.id
-        catego = message.channel.category_id
-        user = message.author.id
-        sql = "SELECT chanRP FROM SERVEUR WHERE idS=?"
-        c.execute(sql, (idS,))
-        chanRP = c.fetchone()
-        if chanRP is not None:
-            chanRP = chanRP[0]
-            chanRP = chanRP.split(",")
-        sql = "SELECT tokenHRP FROM SERVEUR WHERE idS=?"
-        c.execute(sql, (idS,))
-        token = c.fetchone()
-        if token is not None:
-            token = token[0]
-        if token != "0":
-            regex = re.compile(token, re.DOTALL)
-        if chan in chanRP or catego in chanRP:
-            if message.reference:
-                # Reply
-                await lecture.edit_webhook(message, idS, user)
-            elif not isinstance(regex, str) and regex.match(message.content):
-                # Delete HRP
-                await lecture.delete_HRP(message, idS)
-            else:
-                await lecture.switch_persona(self.bot, message, idS, user)
+        if message.guild:
+            db = sqlite3.connect("src/owlly.db", timeout=3000)
+            c = db.cursor()
+            regex = "0"
+            idS = message.guild.id
+            chan = message.channel.id
+            catego = message.channel.category_id
+            user = message.author.id
+            sql = "SELECT chanRP FROM SERVEUR WHERE idS=?"
+            c.execute(sql, (idS,))
+            chanRP = c.fetchone()
+            if chanRP is not None:
+                chanRP = chanRP[0]
+                chanRP = chanRP.split(",")
+            sql = "SELECT tokenHRP FROM SERVEUR WHERE idS=?"
+            c.execute(sql, (idS,))
+            token = c.fetchone()
+            if token is not None:
+                token = token[0]
+            if token != "0":
+                regex = re.compile(token, re.DOTALL)
+            if chan in chanRP or catego in chanRP:
+                if message.reference:
+                    # Reply
+                    await lecture.edit_webhook(message, idS, user)
+                elif not isinstance(regex, str) and regex.match(message.content):
+                    # Delete HRP
+                    await lecture.delete_HRP(message, idS)
+                else:
+                    await lecture.switch_persona(self.bot, message, idS, user)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        action = payload.emoji
-        idS = payload.guild_id
-        channel = self.bot.get_channel(payload.channel_id)
-        msg = await channel.fetch_message(payload.message_id)
-        user = payload.user_id
-        db = sqlite3.connect("src/owlly.db", timeout=3000)
-        c = db.cursor()
-        sql = "SELECT chanRP FROM SERVEUR WHERE idS=?"
-        c.execute(sql, (idS,))
-        chanRP = c.fetchone()
-        if chanRP is not None:
-            chanRP = chanRP[0].split(",")
-        catego = channel.category_id
-        if channel in chanRP or catego in chanRP:
-            if action == "❌":
-                await lecture.delete_persona(idS, user, msg)
+        if not discord.DMChannel:
+            action = payload.emoji
+            idS = payload.guild_id
+            channel = self.bot.get_channel(payload.channel_id)
+            msg = await channel.fetch_message(payload.message_id)
+            user = payload.user_id
+            db = sqlite3.connect("src/owlly.db", timeout=3000)
+            c = db.cursor()
+            sql = "SELECT chanRP FROM SERVEUR WHERE idS=?"
+            c.execute(sql, (idS,))
+            chanRP = c.fetchone()
+            if chanRP is not None:
+                chanRP = chanRP[0].split(",")
+            catego = channel.category_id
+            if channel in chanRP or catego in chanRP:
+                if action == "❌":
+                    await lecture.delete_persona(idS, user, msg)
 
 
 def setup(bot):

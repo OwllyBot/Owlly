@@ -75,9 +75,7 @@ class DB_utils(commands.Cog):
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         idw = str(idw)
-        sql = (
-            "SELECT " + selection + " FROM " + base + " WHERE " + id + " = " + idw
-        )
+        sql = "SELECT " + selection + " FROM " + base + " WHERE " + id + " = " + idw
         c.execute(sql)
         result = c.fetchone()
         if result is None:
