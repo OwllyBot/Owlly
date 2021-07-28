@@ -164,58 +164,9 @@ class adminfiche(
                 return
         elif reaction.emoji == "2️⃣":  # Suppression
             await q.delete()
-            sql = "SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
-            c.execute(sql, (cl,))
-            champs = c.fetchone()
-            gen_msg = "".join(champs[0]).split(",")
-            gen_msg = ", ".join(gen_msg)
-            phys_msg = "".join(champs[1]).split(",")
-            phys_msg = ", ".join(phys_msg)
-            msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
-            q = await ctx.send(f"{msg_full} Quel champ voulez-vous supprimer ?")
-            rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-            if rep.content.lower() == "stop":
-                await q.delete()
-                await rep.delete()
-                await ctx.send("Annulation", delete_after=30)
-                return
-            else:
-                champ = unidecode.unidecode(rep.content.lower())
-
-            if champs[0] is not None:
-                champ_general = champs[0].split(",")
-                champ_physique = champs[1].split(",")
-            else:
-                await ctx.send(
-                    "Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.",
-                    delete_after=30,
-                )
-                await q.delete()
-                await rep.delete()
-                return
-            gen_uni = [unidecode.unidecode(i.lower()) for i in champ_general]
-            phys_uni = [unidecode.unidecode(i.lower()) for i in champ_physique]
-            if champ in gen_uni:
-                for i in range(0, len(gen_uni)):
-                    if gen_uni[i] == champ:
-                        del champ_general[i]
-            elif champ in phys_uni:
-                for i in range(0, len(phys_uni)):
-                    if phys_uni[i] == champ:
-                        del champ_physique[i]
-            else:
-                await ctx.send("Ce champ n'existe pas !", delete_after=30)
-                return
-            champ_general = ",".join(champ_general)
-            champ_physique = ",".join(champ_physique)
-            sql = "UPDATE FICHE SET champ_general = ?, champ_physique = ? WHERE idS=?"
-            var = (champ_general, champ_physique, cl)
-            c.execute(sql, var)
-            db.commit()
-            await rep.delete()
-            await q.delete()
-            await ctx.send(f"Le Champ : {champ} a bien été supprimé !")
-            await self.presence_membre(ctx, "supprimé", champ, 0, 0)
+            check = await utils.delete_part(ctx, cl, self.bot)
+            if check[0] == "Deleted":
+                await self.presence_membre(ctx, "supprimé", check[1], 0, 0)
         elif reaction.emoji == "3️⃣":  # Edition
             save = ""
             await q.delete()
