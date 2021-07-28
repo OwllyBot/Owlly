@@ -1,12 +1,11 @@
-import ast
 import os
 import sqlite3
-from collections import OrderedDict
-
+import json
 import discord
 import unidecode
 from discord.ext import commands
 from discord.ext.commands import CommandError
+from cogs.Administration import fiche_config as utils
 
 
 class adminfiche(
@@ -25,204 +24,6 @@ class adminfiche(
             chan = "Error"
             return chan
 
-    @commands.has_permissions(administrator=True)
-    @commands.command(
-        aliases=["fiche_chan"],
-        help="Permet de configurer le channel dans lequel sera envoyé les présentations des personnages.",
-        brief="Insertion d'un channel pour envoyer les présentations validées.",
-        usage="channel",
-    )
-    async def chan_fiche(self, ctx):
-        def checkRep(message):
-            return (
-                message.author == ctx.message.author
-                and ctx.message.channel == message.channel
-            )
-
-        def checkValid(reaction, user):
-            return (
-                ctx.message.author == user
-                and q.id == reaction.message.id
-                and (reaction.emoji == "✅" or reaction.emoji == "❌")
-            )
-
-        cl = ctx.guild.id
-        db = sqlite3.connect("src/owlly.db", timeout=3000)
-        c = db.cursor()
-        q = await ctx.send(
-            "Dans quel channel voulez-vous que soit envoyé les fiches à valider ?"
-        )
-        rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-        if rep.content.lower() == "stop":
-            await q.delete()
-            await rep.delete()
-            await ctx.send("Annulation", delete_after=30)
-            return
-        fiche_validation = await self.search_chan(ctx, rep.content)
-        if fiche_validation == "Error":
-            await ctx.send("Erreur dans le channel.", delete_after=30)
-            await q.delete()
-            await rep.delete()
-            return
-        await rep.delete()
-        await q.edit(
-            content="Dans quel channel voulez-vous envoyer la présentation des PJ validés ?"
-        )
-        rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-        if rep.content.lower() == "stop":
-            await q.delete()
-            await rep.delete()
-            await ctx.send("Annulation", delete_after=30)
-            return
-        fiche_pj = await self.search_chan(ctx, rep.content)
-        if fiche_pj == "Error":
-            await ctx.send("Erreur dans le channel.", delete_after=30)
-            await q.delete()
-            await rep.delete()
-            return
-        await rep.delete()
-        await q.edit(content="Voulez-vous configurer le channel des PNJ ?")
-        await q.add_reaction("✅")
-        await q.add_reaction("❌")
-        reaction, user = await self.bot.wait_for(
-            "reaction_add", timeout=300, check=checkValid
-        )
-        if reaction.emoji == "✅":
-            await q.clear_reactions()
-            await q.edit(
-                content="Dans quel channel voulez-vous que soit envoyé les fiches des PNJ ?"
-            )
-            rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-            fiche_pnj = await self.search_chan(ctx, rep.content)
-            fiche_pnj = fiche_pnj.id
-            if fiche_pnj == "Error":
-                await ctx.send("Erreur dans le channel.", delete_after=30)
-                await q.delete()
-                await rep.delete()
-                return
-        else:
-            fiche_pnj = 0
-        await q.edit(content="Validation des modification....")
-        sql = "UPDATE FICHE SET fiche_validation=?, fiche_pj=?, fiche_pnj=? WHERE idS=?"
-        var = (fiche_validation.id, fiche_pj.id, fiche_pnj, cl)
-        c.execute(sql, var)
-        db.commit()
-        c.close()
-        db.close()
-        await q.edit(content="Modification validée !")
-
-    async def edit_update(self, ctx, dm, chartype, champ, old):
-        idS = ctx.guild.id
-        f = open(
-            f"src/fiche/{dm.id}_{chartype}_{dm.name}_{ctx.guild.id}.txt",
-            "r",
-            encoding="utf-8",
-        )
-        data = f.readlines()
-        f.close()
-        if len(data) > 0:
-            data = "".join(data)
-            perso = ast.literal_eval(data)
-            save = open(
-                f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
-                "w",
-                encoding="utf-8",
-            )
-            save.write(str(perso))
-            save.close()
-        else:
-            try:
-                os.path.isfile(
-                    f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt"
-                )
-                save = open(
-                    f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
-                    "r",
-                    encoding="utf-8",
-                )
-                save_data = save.readlines()
-                save.close()
-                if len(save_data) > 0:
-                    save_data = "".join(save_data)
-                    perso = ast.literal_eval(save_data)
-                else:
-                    perso = {}
-            except OSError:
-                perso = {}
-        f = open(
-            f"src/fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8"
-        )
-        perso_new = {}
-        for k, v in perso.keys():
-            if k != old:
-                perso_new.update({k.lower: v})
-            else:
-                perso_new.update({champ.lower(): {v}})
-        f.write(str(perso_new))
-        f.close()
-
-    async def add_update(self, ctx, dm, chartype, champ, part):
-        idS = ctx.guild.id
-        f = open(
-            f"src/fiche/{dm.id}_{chartype}_{dm.name}_{ctx.guild.id}.txt",
-            "r",
-            encoding="utf-8",
-        )
-        data = f.readlines()
-        f.close()
-        if len(data) > 0:
-            data = "".join(data)
-            perso = ast.literal_eval(data)
-            save = open(
-                f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
-                "w",
-                encoding="utf-8",
-            )
-            save.write(str(perso))
-            save.close()
-        else:
-            try:
-                os.path.isfile(
-                    f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt"
-                )
-                save = open(
-                    f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
-                    "r",
-                    encoding="utf-8",
-                )
-                save_data = save.readlines()
-                save.close()
-                if len(save_data) > 0:
-                    save_data = "".join(save_data)
-                    perso = ast.literal_eval(save_data)
-                else:
-                    perso = {}
-            except OSError:
-                perso = {}
-        f = open(
-            f"src/fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8"
-        )
-        d = OrderedDict()
-        db = sqlite3.connect("src/owlly.db", timeout=3000)
-        c = db.cursor()
-        if part == "physique":
-            sql = "SELECT champ_physique FROM FICHE WHERE idS=?"
-        else:
-            sql = "SELECT champ_general FROM FICHE WHERE idS = ?"
-        c.execute(sql, (idS,))
-        champ_part = c.fetchone()
-        champ_part = champ[0].split(",")
-        index = champ_part[-1]
-        for k, v in perso.items():
-            if k == index:
-                d[champ] = "NA"
-            d[k] = v
-        perso_new = dict(d)
-        f.write(str(perso_new))
-        f.close()
-        c.close()
-        db.close()
-
     async def presence_membre(self, ctx, type_edit, champ, old, part):
         if len(os.listdir("fiche")) > 1:  # Repertoire avec autre chose que .pouic
             await ctx.send("Alerte ! Il y a des fiches en cours ! ")
@@ -231,7 +32,7 @@ class adminfiche(
                 list_files.extend(fichier)
             play = []
             pj = []
-            for i in list:
+            for i in list_files:
                 if i != ".pouic" and i not in play:
                     play.append(i.split("_")[0])
                     pj.append(i.split("_")[1])
@@ -240,16 +41,16 @@ class adminfiche(
                     dm = await commands.MemberConverter.convert(ctx, member)
                     await dm.send(f"⚠️ {ctx.author.mention} a {type_edit} {champ}. ")
                     if type_edit == "édité":
-                        await self.edit_update(ctx, dm, chartype, champ, old)
+                        await utils.edit_update(ctx, dm, chartype, champ, old)
                     elif type_edit == "ajouté":
-                        await self.add_update(ctx, dm, chartype, champ, part)
+                        await utils.add_update(ctx, dm, chartype, champ, part)
 
-    @commands.command(
+    @commands.group(
         brief="Permet de choisir les champs de la présentation des personnages.",
         help="Cette commande permet de choisir les champs de présentation générale et du physique, de les éditer, supprimer mais aussi en ajouter.",
     )
     @commands.has_permissions(administrator=True)
-    async def config_fiche(self, ctx):
+    async def fiche(self, ctx):
         emoji = [
             "1️⃣",
             "2️⃣",
@@ -299,59 +100,49 @@ class adminfiche(
             c.execute(sql, (cl,))
             channels = c.fetchone()
             if channels[0] is None:
-                await self.chan_fiche(ctx)
-            q = await ctx.send(
-                "Merci de rentrer les champs que vous souhaitez pour la partie présentation **générale**.\n `cancel` pour annuler et `stop` pour valider.\n Utiliser le symbole `*` pour marquer l'obligation du champ, `$` pour les liens et `&` pour les images."
-            )
-            general = []
-            while True:
-                general_rep = await self.bot.wait_for(
-                    "message", timeout=300, check=checkRep
-                )
-                general_champ = general_rep.content
-                if general_champ.lower() == "stop":
-                    await ctx.send("Validation en cours !", delete_after=5)
-                    await general_rep.delete()
-                    break
-                elif general_champ.lower() == "cancel":
-                    await general_rep.delete()
-                    await ctx.send("Annulation !", delete_after=30)
-                    await q.delete()
-                    return
-                else:
-                    await general_rep.add_reaction("✅")
-                    general_champ = general_champ.replace("'", "\\'")
-                    general.append(general_champ.capitalize())
-                await general_rep.delete(delay=10)
-            general = ",".join(general)
+                await self.fiche(ctx)
+            general = await utils.part_fiche(self.bot, ctx, "générale")
+            physique = await utils.part_fiche(self.bot, ctx, "physique")
             await q.delete()
-            q = await ctx.send(
-                "Maintenant, rentrer les champs pour la description physique.\n `stop` pour valider, `cancel` pour annuler.\n Utiliser `*` pour marquer les champs obligatoires, `$` si cela doit être un lien, et `&` si cela doit être une image."
+            q = await ctx.send("Voulez-vous rajouter des parties à votre fiche ? ")
+            await q.add_reaction("✅")
+            await q.add_reaction("❌")
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", timeout=300, check=checkValid
             )
-            physique = []
-            while True:
-                physique_rep = await self.bot.wait_for(
-                    "message", timeout=300, check=checkRep
-                )
-                physique_champ = physique_rep.content
-                if physique_champ.lower() == "stop":
-                    await ctx.send("Validation en cours !", delete_after=5)
-                    await physique_rep.delete()
-                    break
-                elif physique_champ.lower() == "cancel":
-                    await physique_rep.delete()
-                    await ctx.send("Annulation !", delete_after=30)
-                    await q.delete()
-                    return
+            if reaction.emoji == "✅":
+                champ_autre = {}
+                await q.delete()
+                q = await ctx.send("Combien de partie voulez-vous rajouter ? ")
+                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+                if (
+                    rep.content.lower() == "0"
+                    or rep.content.lower() == "stop"
+                    or rep.content.lower() == "cancel"
+                ):
+                    await ctx.send("Annulation")
                 else:
-                    physique_champ = physique_champ.replace("'", "\\'")
-                    await physique_rep.add_reaction("✅")
-                    physique.append(physique_champ.capitalize())
-                await physique_rep.delete(delay=10)
-            physique = ",".join(physique)
-            await q.delete()
+                    while not isinstance(rep.content, int):
+                        await ctx.send("Veuillez rentrer un nombre !")
+                        rep = await self.bot.wait_for(
+                            "message", timeout=300, check=checkRep
+                        )
+                nb_part = int(rep.content.lower())
+                i = 0
+                while i < nb_part:
+                    q = await ctx.send("Quel est le nom de la partie ?")
+                    rep = await self.bot.wait_for(
+                        "message", timeout=300, check=checkRep
+                    )
+                    titre = rep.content
+                    await q.delete()
+                    await rep.delete()
+                    part_champ = await utils.part_fiche(self.bot, ctx, titre)
+                    champ_autre.update({titre: part_champ.split(",")})
+                    i = i + 1
+            phrase_autre = utils.dict_form(champ_autre)
             q = await ctx.send(
-                f"Vos champs sont donc :\n __GÉNÉRAL__ :\n {general} \n\n __PHYSIQUE__ : {physique}\n\n Validez-vous ses paramètres ?"
+                f"Vos champs sont donc :\n __GÉNÉRAL__ :\n {general} \n\n __PHYSIQUE__ : {physique}\n\n {phrase_autre} Validez-vous ses paramètres ?"
             )
             await q.add_reaction("✅")
             await q.add_reaction("❌")
@@ -359,10 +150,9 @@ class adminfiche(
                 "reaction_add", timeout=300, check=checkValid
             )
             if reaction.emoji == "✅":
-                sql = (
-                    "UPDATE FICHE SET champ_general = ?, champ_physique = ? WHERE idS=?"
-                )
-                var = (general, physique, cl)
+                autre = str(champ_autre)
+                sql = "UPDATE FICHE SET champ_general = ?, champ_physique = ?, champ_autre=? WHERE idS=?"
+                var = (general, physique, autre, cl)
                 c.execute(sql, var)
                 db.commit()
                 await ctx.send("Enregistré !")
@@ -639,6 +429,91 @@ class adminfiche(
             return
         c.close()
         db.close()
+
+    @commands.has_permissions(administrator=True)
+    @fiche.command(
+        help="Permet de configurer le channel dans lequel sera envoyé les présentations des personnages.",
+        brief="Insertion d'un channel pour envoyer les présentations validées.",
+        usage="channel",
+    )
+    async def chan(self, ctx):
+        def checkRep(message):
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
+
+        def checkValid(reaction, user):
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and (reaction.emoji == "✅" or reaction.emoji == "❌")
+            )
+
+        cl = ctx.guild.id
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
+        c = db.cursor()
+        q = await ctx.send(
+            "Dans quel channel voulez-vous que soit envoyé les fiches à valider ?"
+        )
+        rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+        if rep.content.lower() == "stop":
+            await q.delete()
+            await rep.delete()
+            await ctx.send("Annulation", delete_after=30)
+            return
+        fiche_validation = await self.search_chan(ctx, rep.content)
+        if fiche_validation == "Error":
+            await ctx.send("Erreur dans le channel.", delete_after=30)
+            await q.delete()
+            await rep.delete()
+            return
+        await rep.delete()
+        await q.edit(
+            content="Dans quel channel voulez-vous envoyer la présentation des PJ validés ?"
+        )
+        rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+        if rep.content.lower() == "stop":
+            await q.delete()
+            await rep.delete()
+            await ctx.send("Annulation", delete_after=30)
+            return
+        fiche_pj = await self.search_chan(ctx, rep.content)
+        if fiche_pj == "Error":
+            await ctx.send("Erreur dans le channel.", delete_after=30)
+            await q.delete()
+            await rep.delete()
+            return
+        await rep.delete()
+        await q.edit(content="Voulez-vous configurer le channel des PNJ ?")
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
+        if reaction.emoji == "✅":
+            await q.clear_reactions()
+            await q.edit(
+                content="Dans quel channel voulez-vous que soit envoyé les fiches des PNJ ?"
+            )
+            rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
+            fiche_pnj = await self.search_chan(ctx, rep.content)
+            fiche_pnj = fiche_pnj.id
+            if fiche_pnj == "Error":
+                await ctx.send("Erreur dans le channel.", delete_after=30)
+                await q.delete()
+                await rep.delete()
+                return
+        else:
+            fiche_pnj = 0
+        await q.edit(content="Validation des modification....")
+        sql = "UPDATE FICHE SET fiche_validation=?, fiche_pj=?, fiche_pnj=? WHERE idS=?"
+        var = (fiche_validation.id, fiche_pj.id, fiche_pnj, cl)
+        c.execute(sql, var)
+        db.commit()
+        c.close()
+        db.close()
+        await q.edit(content="Modification validée !")
 
 
 def setup(bot):
