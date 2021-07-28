@@ -23,6 +23,42 @@ async def search_chan(ctx, chan: str):
         return chan
 
 
+async def dict_autre(perso, autre):
+    if autre != "0":
+        autre_info = {}
+        for titre, champs in perso.items():
+            for k, v in autre.items():
+                for i in v:
+                    if titre.lower() == i.lower():
+                        titre = titre.replace("\\", "")
+                        champs = champs.replace("\\", "")
+                        k = k.replace("\\", "")
+                        if champs.lower() == "na" or champs.lower() == "/":
+                            pass
+                        else:
+                            autre_info.update({k: {titre: champs}})
+        return autre_info
+    else:
+        return "void"
+
+
+def titre_autre(autre):
+    img = ""
+    msg = ""
+    for partie, champs in autre.items():
+        titre = f"─────༺ {partie} ༻─────\n"
+        for k, v in champs.items():
+            if v.endswith((".png", ".jpg", ".jpeg", ".gif")):
+                img = v
+            else:
+                k = k.replace("*", "")
+                k = k.replace("$", "")
+                k = k.replace("&", "")
+                msg_content = f"**__{k.capitalize()}__** : {v}\n"
+        msg = msg + titre + msg_content
+    return msg
+
+
 async def forme(ctx, member: discord.Member, chartype, idS):
     f = open(
         f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
@@ -58,13 +94,17 @@ async def forme(ctx, member: discord.Member, chartype, idS):
             perso = {}
     db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
-    sql = "SELECT champ_physique, champ_general FROM FICHE WHERE idS=?"
+    sql = "SELECT champ_physique, champ_general, champ_autre FROM FICHE WHERE idS=?"
     c.execute(sql, (idS,))
     champ = c.fetchone()
     general = champ[1].split(",")
     physique = champ[0].split(",")
     general_info = {}
     physique_info = {}
+    if champ[2] != 0:
+        autre = ast.literal_eval(champ[2])
+    else:
+        autre = "0"
     for k, v in perso.items():
         for gen in general:
             for phys in physique:
@@ -78,6 +118,7 @@ async def forme(ctx, member: discord.Member, chartype, idS):
                         general_info.update({k: v})
                     elif k.lower() == phys.lower():
                         physique_info.update({k: v})
+    autre_info = dict_autre(perso, autre)
     general_msg = "─────༺ Présentation ༻─────\n"
     physique_msg = "──────༺ Physique ༻──────\n"
     img = ""
@@ -97,10 +138,15 @@ async def forme(ctx, member: discord.Member, chartype, idS):
             l = l.replace("$", "")
             l = l.replace("&", "")
             physique_msg = physique_msg + f"**__{l.capitalize()}__** : {m}\n"
+    autre_msg = titre_autre(autre)
+    if autre_msg[0] != "":
+        img = autre_msg[0]
     msg = (
         general_msg
         + "\n"
         + physique_msg
+        + "\n"
+        + autre_msg[1]
         + "\n"
         + f"⋆⋅⋅⋅⊱∘──────∘⊰⋅⋅⋅⋆\n *Joueur* : {member.mention}"
     )
@@ -217,16 +263,21 @@ class fiches(
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         idS = ctx.guild.id
-        sql = "SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
+        sql = "SELECT champ_general, champ_physique, champ_autre FROM FICHE WHERE idS=?"
         c.execute(sql, (idS,))
         champ_map = c.fetchone()
         general = champ_map[0]
         physique = champ_map[1]
+        autre = champ_map[2]
         if general is None or physique is None:
             return "ERROR"
         general = general.split(",")
         physique = physique.split(",")
-        champ = general + physique
+        if autre != "0":
+            autre = ast.literal_eval(autre)
+        else:
+            autre = ""
+        champ = general + physique + autre
         template = champ
         last = champ[-1]
 
