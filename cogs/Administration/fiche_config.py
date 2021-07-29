@@ -539,7 +539,7 @@ async def ajout_partie(ctx, cl, bot):
         autre = ast.literal_eval(autre[0])
     else:
         autre = {}
-    q = await ctx.send("Combien de partie voulez-vous rajouter ? ")
+    q = await ctx.send("Combien de parties voulez-vous rajouter ? ")
     rep = await bot.wait_for("message", timeout=300, check=checkRep)
     if (
         rep.content.lower() == "0"
@@ -548,9 +548,16 @@ async def ajout_partie(ctx, cl, bot):
     ):
         await ctx.send("Annulation")
     else:
-        while not isinstance(rep.content, int):
+        while not rep.content.lower().isnumeric():
             await ctx.send("Veuillez rentrer un nombre !")
             rep = await bot.wait_for("message", timeout=300, check=checkRep)
+            if (
+                rep.content.lower() == "stop"
+                or rep.content.lower() == "cancel"
+                or rep.content.lower() == "0"
+            ):
+                await ctx.send("Annulation")
+                return
     nb_part = int(rep.content.lower())
     i = 0
     while i < nb_part:

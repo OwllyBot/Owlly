@@ -26,6 +26,7 @@ async def search_chan(ctx, chan: str):
 async def dict_autre(perso, autre):
     if autre != "0":
         autre_info = {}
+        d = {}
         for titre, champs in perso.items():
             for k, v in autre.items():
                 for i in v:
@@ -36,7 +37,8 @@ async def dict_autre(perso, autre):
                         if champs.lower() == "na" or champs.lower() == "/":
                             pass
                         else:
-                            autre_info.update({k: {titre: champs}})
+                            d.update({titre: champs})
+                            autre_info.update({k: d})
         return autre_info
     else:
         return "void"
@@ -45,8 +47,9 @@ async def dict_autre(perso, autre):
 def titre_autre(autre):
     img = ""
     msg = ""
+    msg_content = ""
     for partie, champs in autre.items():
-        titre = f"─────༺ {partie} ༻─────\n"
+        msg_content = ""
         for k, v in champs.items():
             if v.endswith((".png", ".jpg", ".jpeg", ".gif")):
                 img = v
@@ -54,9 +57,9 @@ def titre_autre(autre):
                 k = k.replace("*", "")
                 k = k.replace("$", "")
                 k = k.replace("&", "")
-                msg_content = f"**__{k.capitalize()}__** : {v}\n"
-        msg = msg + titre + msg_content
-    return msg
+                msg_content = msg_content + f"**__{k.capitalize()}__** : {v}\n"
+        msg = msg + f"─────༺ {partie} ༻─────\n" + msg_content
+    return img, msg
 
 
 async def forme(ctx, member: discord.Member, chartype, idS):
@@ -118,7 +121,7 @@ async def forme(ctx, member: discord.Member, chartype, idS):
                         general_info.update({k: v})
                     elif k.lower() == phys.lower():
                         physique_info.update({k: v})
-    autre_info = dict_autre(perso, autre)
+    autre_info = await dict_autre(perso, autre)
     general_msg = "─────༺ Présentation ༻─────\n"
     physique_msg = "──────༺ Physique ༻──────\n"
     img = ""
@@ -138,7 +141,7 @@ async def forme(ctx, member: discord.Member, chartype, idS):
             l = l.replace("$", "")
             l = l.replace("&", "")
             physique_msg = physique_msg + f"**__{l.capitalize()}__** : {m}\n"
-    autre_msg = titre_autre(autre)
+    autre_msg = titre_autre(autre_info)
     if autre_msg[0] != "":
         img = autre_msg[0]
     msg = (
@@ -275,8 +278,9 @@ class fiches(
         physique = physique.split(",")
         if autre != "0":
             autre = ast.literal_eval(autre)
+            autre = [x for x in autre.values()][0]
         else:
-            autre = ""
+            autre = []
         champ = general + physique + autre
         template = champ
         last = champ[-1]

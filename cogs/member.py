@@ -13,14 +13,6 @@ CLIENT_ID = os.environ.get("CLIENT_ID")
 im = pyimgur.Imgur(CLIENT_ID)
 
 
-class Personnage(object):
-    def __init__(self, champ):
-        self.champ = champ
-
-    def __str__(self):
-        return str(self.champ)
-
-
 class memberUtils(
     commands.Cog, name="Membre", description="Des commandes gérants les membres."
 ):
