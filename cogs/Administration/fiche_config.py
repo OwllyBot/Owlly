@@ -1,4 +1,3 @@
-import discord
 import ast
 import os
 import sqlite3
@@ -114,12 +113,13 @@ async def add_update(ctx, dm, chartype, champ, part):
         if index not in perso.keys():
             perso_new.update({index: "NA"})
     else:
-        champ_part = ast.literal_eval(champ[0])
-        perso_new = {}
-        for k, v in champ_part:
-            for i in v:
-                if i not in perso.keys():
-                    perso_new.update({i: "NA"})
+        if champ[0] != "0":
+            champ_part = ast.literal_eval(champ[0])
+            perso_new = {}
+            for k, v in champ_part:
+                for i in v:
+                    if i not in perso.keys():
+                        perso_new.update({i: "NA"})
     f.write(str(perso_new))
     f.close()
     c.close()
@@ -196,7 +196,10 @@ async def delete_part(ctx, cl, bot):
     gen_msg = ", ".join(gen_msg)
     phys_msg = "".join(champs[1]).split(",")
     phys_msg = ", ".join(phys_msg)
-    autre = ast.literal_eval(champs[2])
+    if champs[2] != "0":
+        autre = ast.literal_eval(champs[2])
+    else:
+        autre = {}
     autres_msg = dict_form(autre)
     msg_full = (
         f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n\n {autres_msg}"
@@ -280,30 +283,31 @@ async def delete_autre(ctx, bot, cl):
     c.execute(sql, (cl,))
     champ_autre = c.fetchone()
     champ_autre = champ_autre[0]
-    autre = ast.literal_eval(champ_autre)
-    q = await ctx.send("Quel est la partie que vous souhaitez supprimer ?")
-    rep = await bot.wait_for("message", timeout=300, check=checkRep)
-    if rep.content.lower() == "cancel" or rep.content.lower() == "stop":
-        await q.delete()
-        await rep.delete()
-        await ctx.send("Annulation")
-        return
-    champ_uni = unidecode.unidecode(rep.content.lower())
-    found = "Not"
-    for k, v in autre:
-        if unidecode.unidecode(k) == champ_uni:
-            del autre[k]
-            found = "Deleted"
-    if found == "Not":
-        await ctx.send("Cette partie n'existe pas.")
-        await q.delete()
-        await rep.delete()
-        await ctx.send("Annulation")
-        return
-    sql = "UPDATE FICHE SET champ_autre= ? WHERE idS= ?"
-    var = (autre, cl)
-    c.execute(sql, var)
-    db.commit()
+    if champ_autre != "0":
+        autre = ast.literal_eval(champ_autre)
+        q = await ctx.send("Quel est la partie que vous souhaitez supprimer ?")
+        rep = await bot.wait_for("message", timeout=300, check=checkRep)
+        if rep.content.lower() == "cancel" or rep.content.lower() == "stop":
+            await q.delete()
+            await rep.delete()
+            await ctx.send("Annulation")
+            return
+        champ_uni = unidecode.unidecode(rep.content.lower())
+        found = "Not"
+        for k, v in autre:
+            if unidecode.unidecode(k) == champ_uni:
+                del autre[k]
+                found = "Deleted"
+        if found == "Not":
+            await ctx.send("Cette partie n'existe pas.")
+            await q.delete()
+            await rep.delete()
+            await ctx.send("Annulation")
+            return
+        sql = "UPDATE FICHE SET champ_autre= ? WHERE idS= ?"
+        var = (autre, cl)
+        c.execute(sql, var)
+        db.commit()
     c.close()
     db.close()
     return "Deleted", rep.content.lower()
@@ -333,8 +337,12 @@ async def edit_champ(ctx, cl, bot):
     gen_msg = ", ".join(gen_msg)
     phys_msg = "".join(champs[1]).split(",")
     phys_msg = ", ".join(phys_msg)
-    autre = ast.literal_eval(champs[2])
-    autres_msg = dict_form(autre)
+    if champs[2] != "0":
+        autre = ast.literal_eval(champs[2])
+        autres_msg = dict_form(autre)
+    else:
+        autre = {}
+        autres_msg = ""
     msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n\n {autres_msg}\n"
     q = await ctx.send(f"{msg_full} Quel champ voulez-vous éditer ?")
     rep = await bot.wait_for("message", timeout=300, check=checkRep)
@@ -450,7 +458,7 @@ async def ajout_champ_norm(ctx, config, cl, bot):
             await ctx.send("Annulation", delete_after=30)
             return
         new = rep.content.capitalize()
-        if unidecode.unidecode(new.lower() not in uni):
+        if unidecode.unidecode(new.lower()) not in uni:
             champ.append(new)
         else:
             await q.delete()
@@ -458,32 +466,100 @@ async def ajout_champ_norm(ctx, config, cl, bot):
             await ctx.send("Ce champ existe déjà !", delete_after=30)
             return
         champ = ",".join(champ)
-        sql = "UPDATE FICHE SET " + config + "= ? WHERE idS = ?"
-        var = (champ, cl)
-        c.execute(sql, var)
-        db.commit()
-        c.close()
-        db.close()
-        await ctx.send(f"Le champ {new} a bien été ajouté")
-        await q.delete()
-        await rep.delete()
-        return new
     else:
-        champ=ast.literal_eval(champ[0])
-        part= [x for x in champ.keys()]
-        part= ", ".join(part)
-        q=await ctx.send(f"Dans quelle partie voulez-vous ajouter ce champ ? Les parties disponibles sont :\n{part}")
-        rep = await bot.wait_for("message", timeout=300, check=checkRep)
-        champ_uni={}
-        for k, v in champ:
-            champ_uni.update(
-                {
-                    unidecode.unidecode(k.lower()): [
-                        unidecode.unidecode(i.lower()) for i in v
+        if champ[0] != "0":
+            champ = ast.literal_eval(champ[0])
+            part = [x for x in champ.keys()]
+            part = ", ".join(part)
+            q = await ctx.send(
+                f"Dans quelle partie voulez-vous ajouter ce champ ? Les parties disponibles sont :\n{part}"
+            )
+            rep = await bot.wait_for("message", timeout=300, check=checkRep)
+            champ_uni = {}
+            for k, v in champ:
+                champ_uni.update(
+                    {
+                        unidecode.unidecode(k.lower()): [
+                            unidecode.unidecode(i.lower()) for i in v
                         ]
                     }
                 )
-        search=search_autre(champ_uni, unidecode.unidecode(rep.lower()), champ)
-        if search != "False":
-            #TODO : Recupérer la liste de la partie puis ajouter le nouveau champ
-            #TODO : Pouvoir rajouter une partie complète
+            search = search_autre(
+                champ_uni, unidecode.unidecode(rep.content.lower()), champ
+            )
+            if search != "False":
+                partie = champ[search]
+                await q.delete()
+                await ctx.send("Quel champs voulez-vous rajouter ?")
+                rep = await bot.wait_for("message", timeout=300, check=checkRep)
+                new = rep.content.capitalize()
+                if unidecode.unidecode(rep.content.lower()) not in partie:
+                    partie.append(new)
+                else:
+                    await q.delete()
+                    await rep.delete()
+                    await ctx.send("Erreur, ce champs existe déjà !")
+                    return
+                champ[search] = partie
+                champ = str(champ)
+            else:
+                await q.delete()
+                await ctx.send("Cette partie n'existe pas.")
+                await rep.delete()
+                return
+        else:
+            await ctx.send(
+                "Il n'y a pas de partie configurée, merci d'en créer avant de rajouter des champs."
+            )
+    sql = "UPDATE FICHE SET " + config + "= ? WHERE idS = ?"
+    var = (champ, cl)
+    c.execute(sql, var)
+    db.commit()
+    c.close()
+    db.close()
+    await ctx.send(f"Le champ {new} a bien été ajouté")
+    await q.delete()
+    await rep.delete()
+    return new
+
+
+async def ajout_partie(ctx, cl, bot):
+    def checkRep(message):
+        return (
+            message.author == ctx.message.author
+            and ctx.message.channel == message.channel
+        )
+
+    db = sqlite3.connect("src/owlly.db", timeout=3000)
+    c = db.cursor()
+    sql = "SELECT champ_autre FROM FICHE WHERE idS = ?"
+    c.execute(sql, (cl,))
+    autre = c.fetchone()
+    if autre[0] != "0":
+        autre = ast.literal_eval(autre[0])
+    else:
+        autre = {}
+    q = await ctx.send("Combien de partie voulez-vous rajouter ? ")
+    rep = await bot.wait_for("message", timeout=300, check=checkRep)
+    if (
+        rep.content.lower() == "0"
+        or rep.content.lower() == "stop"
+        or rep.content.lower() == "cancel"
+    ):
+        await ctx.send("Annulation")
+    else:
+        while not isinstance(rep.content, int):
+            await ctx.send("Veuillez rentrer un nombre !")
+            rep = await bot.wait_for("message", timeout=300, check=checkRep)
+    nb_part = int(rep.content.lower())
+    i = 0
+    while i < nb_part:
+        q = await ctx.send("Quel est le nom de la partie ?")
+        rep = await bot.wait_for("message", timeout=300, check=checkRep)
+        titre = rep.content
+        await q.delete()
+        await rep.delete()
+        part_champ = await part_fiche(bot, ctx, titre)
+        autre.update({titre: part_champ.split(",")})
+        i = i + 1
+    return autre

@@ -2,7 +2,6 @@ import os
 import sqlite3
 import ast
 import discord
-import unidecode
 from discord.ext import commands
 from discord.ext.commands import CommandError
 from cogs.Administration import fiche_config as utils
@@ -38,7 +37,7 @@ class adminfiche(
                     pj.append(i.split("_")[1])
             for member in play:
                 for chartype in pj:
-                    dm = await commands.MemberConverter.convert(ctx, member)
+                    dm = await commands.MemberConverter().convert(ctx, member)
                     await dm.send(f"⚠️ {ctx.author.mention} a {type_edit} {champ}. ")
                     if type_edit == "édité":
                         await utils.edit_update(ctx, dm, chartype, champ, old)
@@ -112,35 +111,7 @@ class adminfiche(
                 "reaction_add", timeout=300, check=checkValid
             )
             if reaction.emoji == "✅":
-                champ_autre = {}
-                await q.delete()
-                q = await ctx.send("Combien de partie voulez-vous rajouter ? ")
-                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-                if (
-                    rep.content.lower() == "0"
-                    or rep.content.lower() == "stop"
-                    or rep.content.lower() == "cancel"
-                ):
-                    await ctx.send("Annulation")
-                else:
-                    while not isinstance(rep.content, int):
-                        await ctx.send("Veuillez rentrer un nombre !")
-                        rep = await self.bot.wait_for(
-                            "message", timeout=300, check=checkRep
-                        )
-                nb_part = int(rep.content.lower())
-                i = 0
-                while i < nb_part:
-                    q = await ctx.send("Quel est le nom de la partie ?")
-                    rep = await self.bot.wait_for(
-                        "message", timeout=300, check=checkRep
-                    )
-                    titre = rep.content
-                    await q.delete()
-                    await rep.delete()
-                    part_champ = await utils.part_fiche(self.bot, ctx, titre)
-                    champ_autre.update({titre: part_champ.split(",")})
-                    i = i + 1
+                champ_autre = utils.ajout_partie(ctx, cl, self.bot)
             phrase_autre = utils.dict_form(champ_autre)
             q = await ctx.send(
                 f"Vos champs sont donc :\n __GÉNÉRAL__ :\n {general} \n\n __PHYSIQUE__ : {physique}\n\n {phrase_autre} Validez-vous ses paramètres ?"
@@ -197,9 +168,12 @@ class adminfiche(
             gen_msg = ", ".join(gen_msg)
             phys_msg = "".join(champs[1]).split(",")
             phys_msg = ", ".join(phys_msg)
-            autre = ast.literal_eval(champs[2])
-            autre_msg = utils.dict_form(autre)
-            msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n\n {autre}"
+            if champs[2] != "0":
+                autre = ast.literal_eval(champs[2])
+                autre_msg = utils.dict_form(autre)
+            else:
+                autre_msg = ""
+            msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n\n {autre_msg}\n"
             q = await ctx.send(
                 f"__**Fiche actuelle**__ :\n {msg_full}\n Dans quelle partie voulez-vous ajouter votre champ ? \n 1️⃣ GÉNÉRALE \n 2️⃣ PHYSIQUE \n 3️⃣ AUTRE"
             )
@@ -211,13 +185,50 @@ class adminfiche(
                 "reaction_add", timeout=300, check=checkValid
             )
             if reaction.emoji == "1️⃣":
+                await q.delete()
                 new = await utils.ajout_champ_norm(ctx, "champ_general", cl, self.bot)
                 part = "general"
                 await self.presence_membre(ctx, "ajouté", new, 0, part)
             elif reaction.emoji == "2️⃣":
+                await q.delete()
                 new = await utils.ajout_champ_norm(ctx, "champ_physique", cl, self.bot)
                 part = "physique"
                 await self.presence_membre(ctx, "ajouté", new, 0, part)
+            elif reaction.emoji == "3️⃣":
+                await q.delete()
+                q = await ctx.send(
+                    "1️⃣ | Créer une nouvelle partie \n2️⃣ | Ajouter un champ à une partie existante"
+                )
+                await q.add_reaction("1️⃣")
+                await q.add_reaction("2️⃣")
+                await q.add_reaction("❌")
+                reaction, user = await self.bot.wait_for(
+                    "reaction_add", timeout=300, check=checkValid
+                )
+                if reaction.emoji == "2️⃣":
+                    await q.delete()
+                    new = await utils.ajout_champ_norm(ctx, "champ_autre", cl, self.bot)
+                    part = "autre"
+                    await self.presence_membre(ctx, "ajouté", new, 0, part)
+                    return
+                elif reaction.emoji == "1️⃣":
+                    await q.delete()
+                    new = await utils.ajout_partie(ctx, cl, self.bot)
+                    sql = "UPDATE FICHE SET champ_autre = ? WHERE idS=?"
+                    champ_autre = str(new)
+                    c.execute(sql, champ_autre)
+                    db.commit()
+                    c.close()
+                    db.close()
+                    phrase_autre = utils.dict_form(new)
+                    await ctx.send(phrase_autre)
+                    part = "autre"
+                    await self.presence_membre(ctx, "ajouté", new, 0, part)
+                    return
+                else:
+                    await q.delete()
+                    await ctx.send("Annulation")
+                    return
             else:
                 await q.delete()
                 await ctx.send("Annulation", delete_after=30)
@@ -225,14 +236,19 @@ class adminfiche(
                 db.close()
                 return
         elif reaction.emoji == "👀":
-            sql = "SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
+            sql = "SELECT champ_general, champ_physique, champ_autre FROM FICHE WHERE idS=?"
             c.execute(sql, (cl,))
             champs = c.fetchone()
             gen_msg = "".join(champs[0]).split(",")
             gen_msg = ", ".join(gen_msg)
             phys_msg = "".join(champs[1]).split(",")
             phys_msg = ", ".join(phys_msg)
-            msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
+            if champs[2] != "0":
+                autre = ast.literal_eval(champs[2])
+                autre_msg = utils.dict_form(autre)
+            else:
+                autre_msg = ""
+            msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n\n {autre_msg}\n"
             await q.delete()
             await ctx.send(f"Fiche actuelle : \n {msg_full}")
             c.close()
