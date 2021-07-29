@@ -3,6 +3,47 @@ import os
 import sqlite3
 from collections import OrderedDict
 import unidecode
+import discord
+
+
+def save_data(member: discord.Member, chartype, idS):
+    f = open(
+        f"src/fiche/{member.id}_{chartype}_{member.name}_{idS}.txt",
+        "r",
+        encoding="utf-8",
+    )
+    data = f.readlines()
+    f.close()
+    if len(data) > 0:
+        data = "".join(data)
+        perso = ast.literal_eval(data)
+        save = open(
+            f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
+            "w",
+            encoding="utf-8",
+        )
+        save.write(str(perso))
+        save.close()
+    else:
+        try:
+            os.path.isfile(
+                f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt"
+            )
+            save = open(
+                f"src/fiche/Saves_files/{member.id}_{chartype}_{member.name}_{idS}.txt",
+                "r",
+                encoding="utf-8",
+            )
+            save_data = save.readlines()
+            save.close()
+            if len(save_data) > 0:
+                save_data = "".join(save_data)
+                perso = ast.literal_eval(save_data)
+            else:
+                perso = {}
+        except OSError:
+            perso = {}
+    return perso
 
 
 async def edit_update(ctx, dm, chartype, champ, old):
