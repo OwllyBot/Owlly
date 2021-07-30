@@ -102,11 +102,11 @@ class CogUtils(
         embed = discord.Embed(
             title="Owlly",
             description=f"\n 🦉 **__Développeur__** : @Mara#3000 \n "
-            f"<:commandline:823856723441221692> **__Prefix__** : "
+            f"🤖 **__Prefix__** : "
             f"`{prefix}`\n 🏓 **__Latence__** : "
             f"{str(round(self.bot.latency, 2))}\n "
-            f"<:python:823857333259730964> **__Language__** : "
-            f"Python \n<:git:823857771584684032> [**__Github__**]("
+            f"<:python:863877604549591041> **__Language__** : "
+            f"Python \n<:git:870569367958609951> [**__Github__**]("
             f"https://github.com/OwllyBot/Owlly)\n☕ [**__Kofi__**]("
             f"https://ko-fi.com/owlly_bot) ",
             color=0x438F8C,

@@ -548,7 +548,7 @@ class fiches(
             await ctx.send(f"{member.name} n'a pas de présentation en cours...")
             return
 
-    @commands.command(
+    @commands.group(
         aliases=["pres", "edit_pres"],
         brief="Commandes pour modifier une présentation en cours.",
         help="Le champ PNJ est à indiquer pour les fiches lorsque celles-ci sont pour les PNJ. Autrement, par défaut, les fiches PJ sont sélectionnées. \n Cette commande permet la reprise, modification ou suppression d'une présentation.",
