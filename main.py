@@ -64,7 +64,7 @@ if __name__ == "__main__":
             print(e)
 
 color = discord.Color.blurple()
-ending = "Pour voir l'aide sur une commande, utilisez {help.clean_prefix}command\n De même, pour une catégorie, utilisez {help.clean_prefix}categorie."
+ending = "Pour voir l'aide sur une commande, utilisez {help.clean_prefix}help command\n De même, pour une catégorie, utilisez {help.clean_prefix}help Categorie."
 bot.help_command = PrettyHelp(
     color=color, index_title="Owlly - Aide", ending_note=ending, active_time=300
 )
