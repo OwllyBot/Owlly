@@ -33,7 +33,7 @@ async def webhook_create(ctx, bot):
             await q.delete()
             await rep.delete()
             return
-        nom = rep.content()
+        nom = rep.content
         nom = gestion.name_persona(ctx, nom, id_Persona)
         check_name = gestion.name_check(ctx, nom)
         if check_name == "error":

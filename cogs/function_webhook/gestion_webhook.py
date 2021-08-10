@@ -89,7 +89,7 @@ async def image_persona(ctx, bot, image):
             and ctx.message.channel == message.channel
         )
 
-    image_url = image.content()
+    image_url = image.content
     if image.content.lower() == "stop" or image.content.lower() == "cancel":
         await ctx.send("Annulation !", delete_after=30)
         return "stop"
