@@ -3,7 +3,7 @@ import sqlite3
 
 import pyimgur
 
-CLIENT_ID = os.environ.get("CLIENT_ID")
+CLIENT_ID = os.getenv("CLIENT_ID")
 im = pyimgur.Imgur(CLIENT_ID)
 
 
