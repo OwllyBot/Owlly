@@ -159,7 +159,7 @@ class Personae(
                 token = token[0]
             if token != "0":
                 regex = re.compile(token, re.DOTALL)
-            if chan in chanRP or catego in chanRP:
+            if str(chan) in chanRP or str(catego) in chanRP:
                 if message.reference:
                     # Reply
                     await lecture.edit_webhook(message, idS, user)

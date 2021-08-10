@@ -140,8 +140,8 @@ async def token_Persona(ctx, bot):
                 await rep.delete()
                 await q.delete()
                 return "stop"
-        token = token.replace("text", "(.*)\\")
-        token = "^\\" + token + "$"
+        token = token.replace("text", "(.*)")
+        token = "^" + token + "$"
         return token
 
 

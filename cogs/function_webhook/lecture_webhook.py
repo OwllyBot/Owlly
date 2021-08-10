@@ -1,5 +1,6 @@
 import re
 import sqlite3
+import urllib.request
 
 import discord
 
@@ -111,15 +112,15 @@ async def switch_persona(bot, message: discord.Message, idS, user):
                     break
         if not OwllyE:
             OwllyNPC = await message.channel.create_webhook(
-                "OwllyNPC",
-                avatar=bot.avatar_url,
+                name="OwllyNPC",
+                avatar=(await bot.user.avatar_url.read()),
                 reason="OwllyNPC doesn't exist yet !",
             )
         await OwllyNPC.send(
             content=webcontent,
             username=char[0],
             avatar_url=char[1],
-            allowed_mentions=True,
+            allowed_mentions=discord.AllowedMentions.all()
         )
         await message.delete()
         db.commit()
