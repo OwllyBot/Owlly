@@ -171,7 +171,7 @@ class Personae(
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if not discord.DMChannel:
+        if payload.guild_id:
             action = payload.emoji
             idS = payload.guild_id
             channel = self.bot.get_channel(payload.channel_id)
@@ -185,8 +185,8 @@ class Personae(
             if chanRP is not None:
                 chanRP = chanRP[0].split(",")
             catego = channel.category_id
-            if channel in chanRP or catego in chanRP:
-                if action == "❌":
+            if str(channel.id) in chanRP or str(catego) in chanRP:
+                if action.name == "❌":
                     await lecture.delete_persona(idS, user, msg)
 
 

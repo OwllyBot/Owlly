@@ -133,7 +133,7 @@ async def switch_persona(bot, message: discord.Message, idS, user):
 async def delete_persona(idS, idU, message: discord.Message):
     db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
-    sql = "SELECT idDC WHERE (idS = ? AND idU=? AND Nom = ?)"
+    sql = "SELECT idDC FROM DC WHERE (idS = ? AND idU=? AND Nom = ?)"
     var = (idS, idU, message.author.name)
     c.execute(sql, var)
     perso_check = c.fetchone()
