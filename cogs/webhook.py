@@ -162,7 +162,7 @@ class Personae(
             if str(chan) in chanRP or str(catego) in chanRP:
                 if message.reference:
                     # Reply
-                    await lecture.edit_webhook(message, idS, user)
+                    await lecture.edit_webhook(self.bot, message, idS, user)
                 elif not isinstance(regex, str) and regex.match(message.content):
                     # Delete HRP
                     await lecture.delete_HRP(message, idS)
