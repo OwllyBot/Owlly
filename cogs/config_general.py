@@ -11,7 +11,7 @@ from cogs.Administration import webhook_config as webhook
 
 class CogAdmins(
     commands.Cog,
-    name="Administration",
+    name="Configuration",
     description="Permet d'enregistrer quelques paramètres pour le bot.",
 ):
     def __init__(self, bot):

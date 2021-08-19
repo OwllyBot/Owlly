@@ -6,11 +6,10 @@ from discord.ext import commands
 from discord.ext.commands import CommandError
 from cogs.Administration import fiche_config as utils
 
-
 class adminfiche(
     commands.Cog,
     name="Administration des fiches",
-    description="Permet de configurer les fiches.",
+    description="Permet d'administration la création des fiches : channels et champs.",
 ):
     def __init__(self, bot):
         self.bot = bot

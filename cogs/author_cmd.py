@@ -8,7 +8,7 @@ intents = discord.Intents(messages=True, guilds=True, reactions=True, members=Tr
 
 class controlleur(
     commands.Cog,
-    name="Auteur",
+    name="Éditions",
     description="Permet aux auteurs des channels de modifiers certains attributs du dit channel. Attention, toutes les commandes doivent être faites dans le channel créées.",
 ):
     def __init__(self, bot):
