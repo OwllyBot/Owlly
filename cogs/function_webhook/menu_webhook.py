@@ -33,7 +33,7 @@ async def webhook_create(ctx, bot):
             await q.delete()
             await rep.delete()
             return
-        nom = rep.content()
+        nom = rep.content
         nom = gestion.name_persona(ctx, nom, id_Persona)
         check_name = gestion.name_check(ctx, nom)
         if check_name == "error":
@@ -49,7 +49,7 @@ async def webhook_create(ctx, bot):
         if image == "stop":
             return
         token = await gestion.token_Persona(ctx, bot)
-        check_token = gestion.check_token(ctx, bot, token)
+        check_token = gestion.check_token(ctx, token)
         if check_token == "error":
             await ctx.send("Erreur ! Ce token est déjà pris.")
             await q.delete()

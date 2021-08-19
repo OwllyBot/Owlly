@@ -117,6 +117,19 @@ class DB_utils(commands.Cog):
         c.close()
         db.close()
 
+    def db_check(self, select, table, search, condi):
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
+        c = db.cursor()
+        sql = "SELECT " + select + " FROM " + table + " WHERE " + search + " = ?"
+        c.execute(sql, (condi,))
+        recherche = c.fetchone()
+        c.close()
+        db.close()
+        if recherche:
+            return True
+        else:
+            return False
+
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel):
         db = sqlite3.connect("src/owlly.db", timeout=3000)

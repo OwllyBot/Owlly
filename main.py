@@ -209,7 +209,7 @@ async def on_raw_reaction_add(payload):
 
 
 if repo_name == "main":
-    token = os.environ.get("DISCORD_BOT_TOKEN")
+    token = os.getenv("DISCORD_BOT_TOKEN")
 else:
-    token = os.environ.get("DISCORD_BOT_TOKEN_TESTING")
+    token = os.getenv("DISCORD_BOT_TOKEN_TESTING")
 bot.run(token)

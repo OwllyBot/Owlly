@@ -3,7 +3,7 @@ import sqlite3
 
 import pyimgur
 
-CLIENT_ID = os.environ.get("CLIENT_ID")
+CLIENT_ID = os.getenv("CLIENT_ID")
 im = pyimgur.Imgur(CLIENT_ID)
 
 
@@ -89,7 +89,7 @@ async def image_persona(ctx, bot, image):
             and ctx.message.channel == message.channel
         )
 
-    image_url = image.content()
+    image_url = image.content
     if image.content.lower() == "stop" or image.content.lower() == "cancel":
         await ctx.send("Annulation !", delete_after=30)
         return "stop"
@@ -140,8 +140,8 @@ async def token_Persona(ctx, bot):
                 await rep.delete()
                 await q.delete()
                 return "stop"
-        token = token.replace("text", "(.*)\\")
-        token = "^\\" + token + "$"
+        token = token.replace("text", "(.*)")
+        token = "^" + token + "$"
         return token
 
 
@@ -167,13 +167,13 @@ def check_token(ctx, token):
 def search_Persona(ctx, nom):
     db = sqlite3.connect("src/owlly.db", timeout=3000)
     c = db.cursor()
-    nom = name_persona(ctx, nom)
+    #nom = name_persona(ctx, nom)
     sql = "SELECT idDC FROM DC WHERE (Nom = ? AND idU = ? AND idS = ?)"
     c.execute(
         sql,
         (
             nom,
-            ctx.author.message.id,
+            ctx.author.id,
             ctx.guild.id,
         ),
     )

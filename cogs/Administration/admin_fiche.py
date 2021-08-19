@@ -1,12 +1,10 @@
-import ast
 import os
 import sqlite3
-from collections import OrderedDict
-
+import ast
 import discord
-import unidecode
 from discord.ext import commands
 from discord.ext.commands import CommandError
+from cogs.Administration import fiche_config as utils
 
 
 class adminfiche(
@@ -25,14 +23,117 @@ class adminfiche(
             chan = "Error"
             return chan
 
+    async def presence_membre(self, ctx, type_edit, champ, old, part):
+        if len(os.listdir("fiche")) > 1:  # Repertoire avec autre chose que .pouic
+            await ctx.send("Alerte ! Il y a des fiches en cours ! ")
+            list_files = []
+            for (rep, sous_rep, fichier) in os.walk("fiche"):
+                list_files.extend(fichier)
+            play = []
+            pj = []
+            for i in list_files:
+                if i != ".pouic" and i not in play:
+                    play.append(i.split("_")[0])
+                    pj.append(i.split("_")[1])
+            for member in play:
+                for chartype in pj:
+                    dm = await commands.MemberConverter().convert(ctx, member)
+                    await dm.send(f"⚠️ {ctx.author.mention} a {type_edit} {champ}. ")
+                    if type_edit == "édité":
+                        await utils.edit_update(ctx, dm, chartype, champ, old)
+                    elif type_edit == "ajouté":
+                        await utils.add_update(ctx, dm, chartype, champ, part)
+
+    @commands.group(
+        brief="Permet de choisir les champs de la présentation des personnages.",
+        help="Cette commande permet de choisir les champs de présentation générale et du physique, de les éditer, supprimer mais aussi en ajouter.",
+        invoke_without_command=True,
+    )
     @commands.has_permissions(administrator=True)
-    @commands.command(
-        aliases=["fiche_chan"],
+    async def admin_fiche(self, ctx):
+        await ctx.message.delete()
+        db_utils = self.bot.get_cog("DB_utils")
+        emoji = [
+            "1️⃣",
+            "2️⃣",
+            "3️⃣",
+            "4️⃣",
+            "👀",
+            "❌",
+            "✅",
+        ]
+
+        def checkValid(reaction, user):
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and reaction.emoji in emoji
+            )
+
+        def checkRep(message):
+            return (
+                message.author == ctx.message.author
+                and ctx.message.channel == message.channel
+            )
+
+        cl = ctx.guild.id
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
+        c = db.cursor()
+        menu = discord.Embed(
+            title="Menu de gestion des fiches",
+            description="1️⃣ | Création\n2️⃣ | Suppression\n3️⃣ | Edition\n4️⃣ | Ajout\n👀 | Affichage",
+        )
+        menu.set_footer(text="❌ pour annuler.")
+        q = await ctx.send(embed=menu)
+        for i in emoji:
+            if i != "✅":
+                await q.add_reaction(i)
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
+        if reaction.emoji == "1️⃣":
+            if len(os.listdir("fiche")) > 1:
+                await ctx.send(
+                    "ALERTE ! Il y a des fiches en cours. Vous devez attendre qu'elles soient terminé pour pouvoir modifier les champs...."
+                )
+                c.close()
+                db.close()
+                return
+            await q.delete()
+            await self.create(ctx)
+        elif reaction.emoji == "2️⃣":  # Suppression
+            await q.delete()
+            await self.delete(ctx)
+        elif reaction.emoji == "3️⃣":  # Edition
+            await q.delete()
+            edit = await utils.edit_champ(ctx, cl, self.bot)
+            if edit[0] == "Edited":
+                save = edit[1]
+                champ = edit[2]
+                part = edit[3]
+                await self.presence_membre(ctx, "édité", save, champ, part)
+        elif reaction.emoji == "4️⃣":  # Ajout
+            await q.delete()
+            await self.add(ctx)
+        elif reaction.emoji == "👀":
+            await q.delete()
+            await self.see(ctx)
+        else:
+            await q.delete()
+            await ctx.send("Annulation", delete_after=30)
+        c.close()
+        db.close()
+        return
+
+    @commands.has_permissions(administrator=True)
+    @admin_fiche.command(
         help="Permet de configurer le channel dans lequel sera envoyé les présentations des personnages.",
         brief="Insertion d'un channel pour envoyer les présentations validées.",
         usage="channel",
     )
-    async def chan_fiche(self, ctx):
+    async def chan(self, ctx):
+        await ctx.message.delete()
+
         def checkRep(message):
             return (
                 message.author == ctx.message.author
@@ -111,416 +212,144 @@ class adminfiche(
         db.close()
         await q.edit(content="Modification validée !")
 
-    async def edit_update(self, ctx, dm, chartype, champ, old):
-        idS = ctx.guild.id
-        f = open(
-            f"src/fiche/{dm.id}_{chartype}_{dm.name}_{ctx.guild.id}.txt",
-            "r",
-            encoding="utf-8",
-        )
-        data = f.readlines()
-        f.close()
-        if len(data) > 0:
-            data = "".join(data)
-            perso = ast.literal_eval(data)
-            save = open(
-                f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
-                "w",
-                encoding="utf-8",
-            )
-            save.write(str(perso))
-            save.close()
-        else:
-            try:
-                os.path.isfile(
-                    f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt"
-                )
-                save = open(
-                    f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
-                    "r",
-                    encoding="utf-8",
-                )
-                save_data = save.readlines()
-                save.close()
-                if len(save_data) > 0:
-                    save_data = "".join(save_data)
-                    perso = ast.literal_eval(save_data)
-                else:
-                    perso = {}
-            except OSError:
-                perso = {}
-        f = open(
-            f"src/fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8"
-        )
-        perso_new = {}
-        for k, v in perso.keys():
-            if k != old:
-                perso_new.update({k.lower: v})
-            else:
-                perso_new.update({champ.lower(): {v}})
-        f.write(str(perso_new))
-        f.close()
-
-    async def add_update(self, ctx, dm, chartype, champ, part):
-        idS = ctx.guild.id
-        f = open(
-            f"src/fiche/{dm.id}_{chartype}_{dm.name}_{ctx.guild.id}.txt",
-            "r",
-            encoding="utf-8",
-        )
-        data = f.readlines()
-        f.close()
-        if len(data) > 0:
-            data = "".join(data)
-            perso = ast.literal_eval(data)
-            save = open(
-                f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
-                "w",
-                encoding="utf-8",
-            )
-            save.write(str(perso))
-            save.close()
-        else:
-            try:
-                os.path.isfile(
-                    f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt"
-                )
-                save = open(
-                    f"src/fiche/Saves_files/{dm.id}_{chartype}_{dm.name}_{idS}.txt",
-                    "r",
-                    encoding="utf-8",
-                )
-                save_data = save.readlines()
-                save.close()
-                if len(save_data) > 0:
-                    save_data = "".join(save_data)
-                    perso = ast.literal_eval(save_data)
-                else:
-                    perso = {}
-            except OSError:
-                perso = {}
-        f = open(
-            f"src/fiche/{dm.id}_{chartype}_{dm.name}_{idS}.txt", "w", encoding="utf-8"
-        )
-        d = OrderedDict()
+    @commands.has_permissions(administrator=True)
+    @admin_fiche.command(
+        help="Permet de lancer la création des fiches.", aliases=["new"]
+    )
+    async def create(self, ctx):
+        await ctx.message.delete()
+        cl = ctx.guild.id
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
-        if part == "physique":
-            sql = "SELECT champ_physique FROM FICHE WHERE idS=?"
-        else:
-            sql = "SELECT champ_general FROM FICHE WHERE idS = ?"
-        c.execute(sql, (idS,))
-        champ_part = c.fetchone()
-        champ_part = champ[0].split(",")
-        index = champ_part[-1]
-        for k, v in perso.items():
-            if k == index:
-                d[champ] = "NA"
-            d[k] = v
-        perso_new = dict(d)
-        f.write(str(perso_new))
-        f.close()
-        c.close()
-        db.close()
-
-    async def presence_membre(self, ctx, type_edit, champ, old, part):
-        if len(os.listdir("fiche")) > 1:  # Repertoire avec autre chose que .pouic
-            await ctx.send("Alerte ! Il y a des fiches en cours ! ")
-            list_files = []
-            for (rep, sous_rep, fichier) in os.walk("fiche"):
-                list_files.extend(fichier)
-            play = []
-            pj = []
-            for i in list:
-                if i != ".pouic" and i not in play:
-                    play.append(i.split("_")[0])
-                    pj.append(i.split("_")[1])
-            for member in play:
-                for chartype in pj:
-                    dm = await commands.MemberConverter.convert(ctx, member)
-                    await dm.send(f"⚠️ {ctx.author.mention} a {type_edit} {champ}. ")
-                    if type_edit == "édité":
-                        await self.edit_update(ctx, dm, chartype, champ, old)
-                    elif type_edit == "ajouté":
-                        await self.add_update(ctx, dm, chartype, champ, part)
-
-    @commands.command(
-        brief="Permet de choisir les champs de la présentation des personnages.",
-        help="Cette commande permet de choisir les champs de présentation générale et du physique, de les éditer, supprimer mais aussi en ajouter.",
-    )
-    @commands.has_permissions(administrator=True)
-    async def config_fiche(self, ctx):
-        emoji = [
-            "1️⃣",
-            "2️⃣",
-            "3️⃣",
-            "4️⃣",
-            "👀",
-            "❌",
-            "✅",
-        ]
 
         def checkValid(reaction, user):
             return (
                 ctx.message.author == user
                 and q.id == reaction.message.id
-                and reaction.emoji in emoji
+                and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
             )
 
-        def checkRep(message):
-            return (
-                message.author == ctx.message.author
-                and ctx.message.channel == message.channel
-            )
-
-        cl = ctx.guild.id
-        db = sqlite3.connect("src/owlly.db", timeout=3000)
-        c = db.cursor()
-        menu = discord.Embed(
-            title="Menu de gestion des fiches",
-            description="1️⃣ | Création\n2️⃣ | Suppression\n3️⃣ | Edition\n4️⃣ | Ajout\n👀 | Affichage",
-        )
-        menu.set_footer(text="❌ pour annuler.")
-        q = await ctx.send(embed=menu)
-        for i in emoji:
-            if i != "✅":
-                await q.add_reaction(i)
+        sql = "SELECT fiche_pj, fiche_validation, fiche_pnj FROM FICHE WHERE idS=?"
+        c.execute(sql, (cl,))
+        channels = c.fetchone()
+        if channels[0] is None:
+            await self.chan(ctx)
+        general = await utils.part_fiche(self.bot, ctx, "générale")
+        physique = await utils.part_fiche(self.bot, ctx, "physique")
+        q = await ctx.send("Voulez-vous rajouter des parties à votre fiche ? ")
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
         reaction, user = await self.bot.wait_for(
             "reaction_add", timeout=300, check=checkValid
         )
-        if reaction.emoji == "1️⃣":
-            if len(os.listdir("fiche")) > 1:
-                await ctx.send(
-                    "ALERTE ! Il y a des fiches en cours. Vous devez attendre qu'elles soient terminé pour pouvoir modifier les champs...."
-                )
-                return
+        if reaction.emoji == "✅":
+            champ_autre = utils.ajout_partie(ctx, cl, self.bot)
+        phrase_autre = utils.dict_form(champ_autre)
+        q = await ctx.send(
+            f"Vos champs sont donc :\n __GÉNÉRAL__ :\n {general} \n\n __PHYSIQUE__ : {physique}\n\n {phrase_autre} Validez-vous ses paramètres ?"
+        )
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
+        if reaction.emoji == "✅":
+            autre = str(champ_autre)
+            sql = "UPDATE FICHE SET champ_general = ?, champ_physique = ?, champ_autre=? WHERE idS=?"
+            var = (general, physique, autre, cl)
+            c.execute(sql, var)
+            db.commit()
+            await ctx.send("Enregistré !")
             await q.delete()
-            sql = "SELECT fiche_pj, fiche_validation, fiche_pnj FROM FICHE WHERE idS=?"
-            c.execute(sql, (cl,))
-            channels = c.fetchone()
-            if channels[0] is None:
-                await self.chan_fiche(ctx)
-            q = await ctx.send(
-                "Merci de rentrer les champs que vous souhaitez pour la partie présentation **générale**.\n `cancel` pour annuler et `stop` pour valider.\n Utiliser le symbole `*` pour marquer l'obligation du champ, `$` pour les liens et `&` pour les images."
-            )
-            general = []
-            while True:
-                general_rep = await self.bot.wait_for(
-                    "message", timeout=300, check=checkRep
-                )
-                general_champ = general_rep.content
-                if general_champ.lower() == "stop":
-                    await ctx.send("Validation en cours !", delete_after=5)
-                    await general_rep.delete()
-                    break
-                elif general_champ.lower() == "cancel":
-                    await general_rep.delete()
-                    await ctx.send("Annulation !", delete_after=30)
-                    await q.delete()
-                    return
-                else:
-                    await general_rep.add_reaction("✅")
-                    general_champ = general_champ.replace("'", "\\'")
-                    general.append(general_champ.capitalize())
-                await general_rep.delete(delay=10)
-            general = ",".join(general)
+            return
+        else:
             await q.delete()
-            q = await ctx.send(
-                "Maintenant, rentrer les champs pour la description physique.\n `stop` pour valider, `cancel` pour annuler.\n Utiliser `*` pour marquer les champs obligatoires, `$` si cela doit être un lien, et `&` si cela doit être une image."
+            await ctx.send("Annulation", delete_after=30)
+            return
+
+    @commands.has_permissions(administrator=True)
+    @admin_fiche.command(
+        help="Permet de supprimer des champs des fiches.", aliases=["del", "rm"]
+    )
+    async def delete(self, ctx):
+        await ctx.message.delete()()
+        db_utils = self.bot.get_cog("DB_utils")
+
+        def checkValid(reaction, user):
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
             )
-            physique = []
-            while True:
-                physique_rep = await self.bot.wait_for(
-                    "message", timeout=300, check=checkRep
-                )
-                physique_champ = physique_rep.content
-                if physique_champ.lower() == "stop":
-                    await ctx.send("Validation en cours !", delete_after=5)
-                    await physique_rep.delete()
-                    break
-                elif physique_champ.lower() == "cancel":
-                    await physique_rep.delete()
-                    await ctx.send("Annulation !", delete_after=30)
-                    await q.delete()
-                    return
-                else:
-                    physique_champ = physique_champ.replace("'", "\\'")
-                    await physique_rep.add_reaction("✅")
-                    physique.append(physique_champ.capitalize())
-                await physique_rep.delete(delay=10)
-            physique = ",".join(physique)
-            await q.delete()
-            q = await ctx.send(
-                f"Vos champs sont donc :\n __GÉNÉRAL__ :\n {general} \n\n __PHYSIQUE__ : {physique}\n\n Validez-vous ses paramètres ?"
-            )
+
+        cl = ctx.guild.id
+        recherche = db_utils.db_check("champ_autre", "FICHE", "idS", cl)
+        if recherche:
+            q = await ctx.send("Voulez-vous supprimer une partie du champ autre ?")
             await q.add_reaction("✅")
             await q.add_reaction("❌")
             reaction, user = await self.bot.wait_for(
                 "reaction_add", timeout=300, check=checkValid
             )
             if reaction.emoji == "✅":
-                sql = (
-                    "UPDATE FICHE SET champ_general = ?, champ_physique = ? WHERE idS=?"
-                )
-                var = (general, physique, cl)
-                c.execute(sql, var)
-                db.commit()
-                await ctx.send("Enregistré !")
-                await q.delete()
-                return
+                check = await utils.delete_autre(ctx, self.bot, cl)
             else:
-                await q.delete()
-                await ctx.send("Annulation", delete_after=30)
-                return
-        elif reaction.emoji == "2️⃣":  # Suppression
-            await q.delete()
-            sql = "SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
-            c.execute(sql, (cl,))
-            champs = c.fetchone()
-            gen_msg = "".join(champs[0]).split(",")
-            gen_msg = ", ".join(gen_msg)
-            phys_msg = "".join(champs[1]).split(",")
-            phys_msg = ", ".join(phys_msg)
-            msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
-            q = await ctx.send(f"{msg_full} Quel champ voulez-vous supprimer ?")
-            rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-            if rep.content.lower() == "stop":
-                await q.delete()
-                await rep.delete()
-                await ctx.send("Annulation", delete_after=30)
-                return
-            else:
-                champ = unidecode.unidecode(rep.content.lower())
+                check = await utils.delete_part(ctx, cl, self.bot)
+        if check[0] == "Deleted":
+            await self.presence_membre(ctx, "supprimé", check[1], 0, 0)
 
-            if champs[0] is not None:
-                champ_general = champs[0].split(",")
-                champ_physique = champs[1].split(",")
-            else:
-                await ctx.send(
-                    "Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.",
-                    delete_after=30,
-                )
-                await q.delete()
-                await rep.delete()
-                return
-            gen_uni = [unidecode.unidecode(i.lower()) for i in champ_general]
-            phys_uni = [unidecode.unidecode(i.lower()) for i in champ_physique]
-            if champ in gen_uni:
-                for i in range(0, len(gen_uni)):
-                    if gen_uni[i] == champ:
-                        del champ_general[i]
-            elif champ in phys_uni:
-                for i in range(0, len(phys_uni)):
-                    if phys_uni[i] == champ:
-                        del champ_physique[i]
-            else:
-                await ctx.send("Ce champ n'existe pas !", delete_after=30)
-                return
-            champ_general = ",".join(champ_general)
-            champ_physique = ",".join(champ_physique)
-            sql = "UPDATE FICHE SET champ_general = ?, champ_physique = ? WHERE idS=?"
-            var = (champ_general, champ_physique, cl)
-            c.execute(sql, var)
-            db.commit()
-            await rep.delete()
-            await q.delete()
-            await ctx.send(f"Le Champ : {champ} a bien été supprimé !")
-            await self.presence_membre(ctx, "supprimé", champ, 0, 0)
-        elif reaction.emoji == "3️⃣":  # Edition
-            save = ""
-            await q.delete()
-            sql = "SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
-            c.execute(sql, (cl,))
-            champs = c.fetchone()
-            if champs is None:
-                await ctx.send(
-                    "Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.",
-                    delete_after=30,
-                )
-                return
-            gen_msg = "".join(champs[0]).split(",")
-            gen_msg = ", ".join(gen_msg)
-            phys_msg = "".join(champs[1]).split(",")
-            phys_msg = ", ".join(phys_msg)
-            msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
-            q = await ctx.send(f"{msg_full} Quel champ voulez-vous éditer ?")
-            rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-            if rep.content.lower() == "stop":
-                await q.delete()
-                await rep.delete()
-                await ctx.send("Annulation", delete_after=30)
-                return
-            else:
-                champ = unidecode.unidecode(rep.content.lower())
+    @commands.has_permissions(administrator=True)
+    @admin_fiche.command(help="Permet d'ajouter des champs sur les fiches")
+    async def add(self, ctx):
+        await ctx.message.delete()
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
+        c = db.cursor()
 
-            champ_general = champs[0].split(",")
-            gen_uni = [unidecode.unidecode(i.lower()) for i in champ_general]
-            champ_physique = champs[1].split(",")
-            phys_uni = [unidecode.unidecode(i.lower()) for i in champ_physique]
+        def checkValid(reaction, user):
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+            )
 
-            if champ in gen_uni:
-                await rep.delete()
-                await q.edit(content=f"Par quoi voulez-vous modifier {champ} ?")
-                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-                save = rep.content
-                if rep.content.lower() == "stop":
-                    await q.delete()
-                    await rep.delete()
-                    await ctx.send("Annulation", delete_after=30)
-                    return
-                champ_general = [
-                    rep.content.capitalize()
-                    if champ == unidecode.unidecode(x.lower())
-                    else x
-                    for x in champ_general
-                ]
-                part = "general"
-            elif champ in phys_uni:
-                await q.edit(content=f"Par quoi voulez-vous modifier {champ} ?")
-                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-                save = rep.content
-                if rep.content.lower() == "stop":
-                    await q.delete()
-                    await rep.delete()
-                    await ctx.send("Annulation", delete_after=30)
-                    return
-                champ_physique = [
-                    rep.content.capitalize()
-                    if champ == unidecode.unidecode(x.lower())
-                    else x
-                    for x in champ_physique
-                ]
-                part = "physique"
-            else:
-                await q.delete()
-                await rep.delete()
-                await ctx.send("Erreur ! Ce champ n'existe pas.", delete_after=30)
-                return
-            champ_general = ",".join(champ_general)
-            champ_physique = ",".join(champ_physique)
-            sql = "UPDATE FICHE SET champ_general = ?, champ_physique = ? WHERE idS=?"
-            var = (champ_general, champ_physique, cl)
-            c.execute(sql, var)
-            db.commit()
-            c.close()
-            db.close()
+        cl = ctx.guild.id
+        sql = "SELECT champ_general, champ_physique, champ_autre FROM FICHE WHERE idS=?"
+        c.execute(sql, (cl,))
+        champs = c.fetchone()
+        gen_msg = "".join(champs[0]).split(",")
+        gen_msg = ", ".join(gen_msg)
+        phys_msg = "".join(champs[1]).split(",")
+        phys_msg = ", ".join(phys_msg)
+        if champs[2] != "0":
+            autre = ast.literal_eval(champs[2])
+            autre_msg = utils.dict_form(autre)
+        else:
+            autre_msg = ""
+        msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n\n {autre_msg}\n"
+        q = await ctx.send(
+            f"__**Fiche actuelle**__ :\n {msg_full}\n Dans quelle partie voulez-vous ajouter votre champ ? \n 1️⃣ GÉNÉRALE \n 2️⃣ PHYSIQUE \n 3️⃣ AUTRES PARTIES"
+        )
+        await q.add_reaction("1️⃣")
+        await q.add_reaction("2️⃣")
+        await q.add_reaction("3️⃣")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
+        if reaction.emoji == "1️⃣":
             await q.delete()
-            await rep.delete()
-            await ctx.send(f"Le champ : {champ} a bien été édité par {save}.")
-            await self.presence_membre(ctx, "édité", save, champ, part)
-            return
-        elif reaction.emoji == "4️⃣":  # Ajout
+            new = await utils.ajout_champ_norm(ctx, "champ_general", cl, self.bot)
+            part = "general"
+            await self.presence_membre(ctx, "ajouté", new, 0, part)
+        elif reaction.emoji == "2️⃣":
             await q.delete()
-            sql = "SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
-            c.execute(sql, (cl,))
-            champs = c.fetchone()
-            gen_msg = "".join(champs[0]).split(",")
-            gen_msg = ", ".join(gen_msg)
-            phys_msg = "".join(champs[1]).split(",")
-            phys_msg = ", ".join(phys_msg)
-            msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
+            new = await utils.ajout_champ_norm(ctx, "champ_physique", cl, self.bot)
+            part = "physique"
+            await self.presence_membre(ctx, "ajouté", new, 0, part)
+        elif reaction.emoji == "3️⃣":
+            await q.delete()
             q = await ctx.send(
-                f"__**Fiche actuelle**__ :\n {msg_full}\n Dans quelle partie voulez-vous ajouter votre champ ? \n 1️⃣ : GÉNÉRALE \n 2️⃣: PHYSIQUE"
+                "1️⃣ | Créer une nouvelle partie \n2️⃣ | Ajouter un champ à une partie existante"
             )
             await q.add_reaction("1️⃣")
             await q.add_reaction("2️⃣")
@@ -528,117 +357,99 @@ class adminfiche(
             reaction, user = await self.bot.wait_for(
                 "reaction_add", timeout=300, check=checkValid
             )
-            if reaction.emoji == "1️⃣":
-                sql = "SELECT champ_general FROM FICHE WHERE idS=?"
-                c.execute(sql, (cl,))
-                champ_general = c.fetchone()[0]
-                part = "general"
-                if champ_general is None:
-                    await ctx.send(
-                        "Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.",
-                        delete_after=30,
-                    )
-                    return
-                champ_general = champ_general.split(",")
-                gen_uni = [unidecode.unidecode(i.lower()) for i in champ_general]
+            if reaction.emoji == "2️⃣":
                 await q.delete()
-                q = await ctx.send(
-                    "Quel est le champ à ajouter ?\n Utiliser `*` pour marquer l'obligation, `&` que c'est une image, et $` pour un lien."
-                )
-                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-                if rep.content.lower() == "stop":
-                    await q.delete()
-                    await rep.delete()
-                    await ctx.send("Annulation", delete_after=30)
-                    return
-                new = rep.content.capitalize()
-                if unidecode.unidecode(new.lower()) not in gen_uni:
-                    champ_general.append(new)
-                else:
-                    await q.delete()
-                    await rep.delete()
-                    await ctx.send("Ce champ existe déjà !", delete_after=30)
-                    return
-                champ_general = ",".join(champ_general)
-                sql = "UPDATE FICHE SET champ_general = ? WHERE idS=?"
-                var = (champ_general, cl)
-                c.execute(sql, var)
-                db.commit()
-                c.close()
-                db.close()
-                await ctx.send(f"Le champ {new} a bien été ajouté !")
-                await q.delete()
-                await rep.delete()
+                new = await utils.ajout_champ_norm(ctx, "champ_autre", cl, self.bot)
+                part = "autre"
+                await self.presence_membre(ctx, "ajouté", new, 0, part)
                 return
-            elif reaction.emoji == "2️⃣":
-                sql = "SELECT champ_physique FROM FICHE WHERE idS=?"
-                c.execute(sql, (cl,))
-                champ_physique = c.fetchone()[0]
-                if champ_physique is None:
-                    await ctx.send(
-                        "Vous n'avez pas de fiche configurée. Vous devez d'abord en créer une.",
-                        delete_after=30,
-                    )
-                    return
-                champ_physique = champ_physique.split(",")
-                part = "physique"
-                phys_uni = [unidecode.unidecode(i.lower()) for i in champ_physique]
+            elif reaction.emoji == "1️⃣":
                 await q.delete()
-                q = await ctx.send("Quel est le champ à ajouter ?")
-                rep = await self.bot.wait_for("message", timeout=300, check=checkRep)
-                if rep.content.lower() == "stop":
-                    await q.delete()
-                    await rep.delete()
-                    await ctx.send("Annulation", delete_after=30)
-                    return
-                new = rep.content.capitalize()
-                if unidecode.unidecode(new.lower()) not in phys_uni:
-                    champ_physique.append(new)
-                else:
-                    await q.delete()
-                    await rep.delete()
-                    await ctx.send("Ce champ existe déjà !", delete_after=30)
-                    return
-                champ_physique = ",".join(champ_physique)
-                sql = "UPDATE FICHE SET champ_physique = ? WHERE idS=?"
-                var = (champ_physique, cl)
+                new = await utils.ajout_partie(ctx, cl, self.bot)
+                sql = "UPDATE FICHE SET champ_autre = ? WHERE idS=?"
+                champ_autre = str(new)
+                var = (champ_autre, cl)
                 c.execute(sql, var)
                 db.commit()
                 c.close()
                 db.close()
-                await rep.delete()
-                await q.delete()
-                await ctx.send(f"Le champ {new} a bien été ajouté !")
+                phrase_autre = utils.dict_form(new)
+                await ctx.send(phrase_autre)
+                part = "autre"
                 await self.presence_membre(ctx, "ajouté", new, 0, part)
                 return
             else:
                 await q.delete()
-                await ctx.send("Annulation", delete_after=30)
-                c.close()
-                db.close()
+                await ctx.send("Annulation")
                 return
-        elif reaction.emoji == "👀":
-            sql = "SELECT champ_general, champ_physique FROM FICHE WHERE idS=?"
-            c.execute(sql, (cl,))
-            champs = c.fetchone()
-            gen_msg = "".join(champs[0]).split(",")
-            gen_msg = ", ".join(gen_msg)
-            phys_msg = "".join(champs[1]).split(",")
-            phys_msg = ", ".join(phys_msg)
-            msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n"
-            await q.delete()
-            await ctx.send(f"Fiche actuelle : \n {msg_full}")
-            c.close()
-            db.close()
-            return
         else:
             await q.delete()
             await ctx.send("Annulation", delete_after=30)
             c.close()
             db.close()
             return
+
+    @commands.has_permissions(administrator=True)
+    @admin_fiche.command(
+        help="Permet de voir la fiche et ses champs", aliases=["check"]
+    )
+    async def see(self, ctx):
+        cl = ctx.guild.id
+        await ctx.message.delete()
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
+        c = db.cursor()
+        sql = "SELECT champ_general, champ_physique, champ_autre FROM FICHE WHERE idS=?"
+        c.execute(sql, (cl,))
+        champs = c.fetchone()
+        gen_msg = "".join(champs[0]).split(",")
+        gen_msg = ", ".join(gen_msg)
+        phys_msg = "".join(champs[1]).split(",")
+        phys_msg = ", ".join(phys_msg)
+        if champs[2] != "0":
+            autre = ast.literal_eval(champs[2])
+            autre_msg = utils.dict_form(autre)
+        else:
+            autre_msg = ""
+        msg_full = f"**Général** : \n {gen_msg} \n\n **Physique** : \n {phys_msg}\n\n {autre_msg}\n"
+        await ctx.send(f"Fiche actuelle : \n {msg_full}")
         c.close()
         db.close()
+        return
+
+    @commands.has_permissions(administrator=True)
+    @admin_fiche.command(help="Permet de rajouter des parties", aliases=["add_part"])
+    async def part(self, ctx):
+        db = sqlite3.connect("src/owlly.db", timeout=3000)
+        c = db.cursor()
+
+        def checkValid(reaction, user):
+            return (
+                ctx.message.author == user
+                and q.id == reaction.message.id
+                and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+            )
+
+        cl = ctx.guild.id
+        await ctx.message.delete()
+        champ_autre = await utils.ajout_partie(ctx, cl, self.bot)
+        phrase_autre = utils.dict_form(champ_autre)
+        q = await ctx.send(
+            f"Vos champs sont donc : {phrase_autre} Validez-vous ses paramètres ?"
+        )
+        await q.add_reaction("✅")
+        await q.add_reaction("❌")
+        reaction, user = await self.bot.wait_for(
+            "reaction_add", timeout=300, check=checkValid
+        )
+        if reaction.emoji == "✅":
+            autre = str(champ_autre)
+            sql = "UPDATE FICHE SET champ_autre=? WHERE idS=?"
+            var = (autre, cl)
+            c.execute(sql, var)
+            db.commit()
+            await ctx.send("Enregistré !")
+            await q.delete()
+            return
 
 
 def setup(bot):

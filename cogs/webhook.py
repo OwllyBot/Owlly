@@ -159,10 +159,10 @@ class Personae(
                 token = token[0]
             if token != "0":
                 regex = re.compile(token, re.DOTALL)
-            if chan in chanRP or catego in chanRP:
+            if str(chan) in chanRP or str(catego) in chanRP:
                 if message.reference:
                     # Reply
-                    await lecture.edit_webhook(message, idS, user)
+                    await lecture.edit_webhook(self.bot, message, idS, user)
                 elif not isinstance(regex, str) and regex.match(message.content):
                     # Delete HRP
                     await lecture.delete_HRP(message, idS)
@@ -171,7 +171,7 @@ class Personae(
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if not discord.DMChannel:
+        if payload.guild_id:
             action = payload.emoji
             idS = payload.guild_id
             channel = self.bot.get_channel(payload.channel_id)
@@ -185,8 +185,8 @@ class Personae(
             if chanRP is not None:
                 chanRP = chanRP[0].split(",")
             catego = channel.category_id
-            if channel in chanRP or catego in chanRP:
-                if action == "❌":
+            if str(channel.id) in chanRP or str(catego) in chanRP:
+                if action.name == "❌":
                     await lecture.delete_persona(idS, user, msg)
 
 
