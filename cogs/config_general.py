@@ -1,6 +1,5 @@
-import sqlite3
-
 import discord
+import sqlite3
 from discord.colour import Color
 from discord.ext import commands
 from discord.ext.commands import CommandError
@@ -295,41 +294,50 @@ class CogAdmins(
         await ctx.message.delete()
 
     @commands.has_permissions(administrator=True)
-    @commands.command(
-        help="Permet d'enregistrer / réenregistrer la liste des rôles données par la commandes member, sans passer par le menu de configuration.",
+    @commands.group(
+        help="Permet de gérer la liste des rôles données par la commande member, sans passer par le menu de configuration.",
         brief="Enregistrement de rôles pour la commande member, sans passer par le menu.",
         usage="@mention/ID des rôles à enregistrer",
-        aliases=["init_role", "assign_init"],
-    )
-    async def role_init(self, ctx, *role: discord.Role):
+        invoke_without_command=False,
+        )
+    async def admin_member(self, ctx):
+        pass
+
+    @admin_member.command(
+        help="Permet d'enregistrer les rôles donnés par la commande member"
+        )
+    async def add(self, ctx, *role: discord.Role):
         await member.role_init(ctx, role, self.bot)
 
-    @commands.has_permissions(administrator=True)
-    @commands.command(
-        help="Permet d'enregistrer / réenregistrer la liste des rôles retirés par la commandes member, sans passer par le menu de configuration.",
+    @admin_member.command(
+        help="Permet d'enregistrer / réenregistrer la liste des rôles retirés par la commande member, sans passer par le menu de configuration.",
         brief="Enregistrement des rôles retirés pour la commande member, sans passer par le menu.",
         usage="@mention/ID des rôles à enregistrer",
-        aliases=["init_rm", "assign_rm"],
-    )
-    async def init_role_rm(self, ctx, *role: discord.Role):
+        )
+    async def rm(self, ctx, *role: discord.Role):
         await member.init_role_rm(ctx, role, self.bot)
 
     @commands.has_permissions(administrator=True)
-    @commands.command(
-        help="Permet d'inscrire des rôles à retirer lorsqu'un membre est validé.",
+    @commands.group(
+        help="Ouvre le menu de configuration pour supprimer ou ajouter des rôles par la commande member.",
+        invoke_without_command=False,
+        )
+    async def menu_member(self, ctx):
+        pass
+
+    @menu_member.command(
+        help="Ouvre le menu de configuration pour supprimer des rôles via la commande member",
         brief="Enregistrement de rôle pour les faire retirer.",
-        aliases=["rm_role", "role_remove", "remover_member"],
-    )
-    async def role_rm(self, ctx):
+        )
+    async def rm(self, ctx):
         await member.inscription_role(self.bot, ctx, "rm")
 
-    @commands.has_permissions(administrator=True)
-    @commands.command(
+    @menu_member.command(
         help="Assignation des rôles par la commande `member`.",
         brief="Enregistrement de rôles pour la commande member.",
         aliases=["role_config", "roliste_config", "assign"],
-    )
-    async def roliste(self, ctx):
+        )
+    async def add(self, ctx):
         await member.inscription_role(self.bot, ctx, "roliste")
 
     @commands.has_permissions(administrator=True)
@@ -337,12 +345,12 @@ class CogAdmins(
         help="Menu de configuration des Channels et catégories de RP",
         brief="Configuration des channels RP.",
         aliases=["chanRP", "config_chanRP"],
-    )
-    async def chanHRP_menu(self, ctx):
+        )
+    async def chanRP_menu(self, ctx):
         emoji = ["1️⃣", "2️⃣", "3️⃣", "❌", "✅"]
         q = await ctx.send(
             "1️⃣| Ajout d'un channel\n2️⃣| Suppression d'un channel\n3️⃣| Reconfiguration"
-        )
+            )
         await q.add_reaction("1️⃣")
         await q.add_reaction("2️⃣")
         await q.add_reaction("3️⃣")
@@ -385,6 +393,7 @@ class CogAdmins(
         brief="Configuration du Sticky",
         aliases=["sticky_config", "config_sticky"],
     )
+    # DOC : Personae commands
     async def sticky_mode(self, ctx):
         def checkValid(reaction, user):
             return (
@@ -544,6 +553,7 @@ class CogAdmins(
         brief="Permet de configurer le maximum de Personae.",
         alias=["config_max", "maxDC", "maxdc_config"],
     )
+    #DOCS : Personae
     @commands.has_permissions(administrator=True)
     async def max_config(self, ctx):
         def checkValid(reaction, user):
@@ -586,6 +596,7 @@ class CogAdmins(
         help="Affiche le menu de configuration des Personae, permettant de modifier les différents paramètres à partir de choix.",
         brief="Affiche le menu d'administration des Personae.",
     )
+    #DOCS : Personae
     @commands.has_permissions(manage_nicknames=True)
     async def admin_rp(self, ctx):
         await ctx.message.delete()
@@ -878,6 +889,7 @@ class CogAdmins(
         description="Les tags sont des patterns préconfigurés qui permettent d'indiquer diverses informations quant à l'utilisateur du Persona.",
         brief="Configuration des tags de Personae.",
     )
+    #DOCS : Personae
     async def tag_persona(self, ctx):
         emoji = ["1️⃣", "2️⃣", "3️⃣", "❌"]
 
@@ -944,6 +956,7 @@ class CogAdmins(
         brief="Activation/désactivation des Personae",
         usage="<0 : Désactivation> <1 : Activation>  ",
     )
+    #DOCS : Personae
     async def active_persona(self, ctx, config):
         if config == "1":
             await webhook.maxDC(ctx, self.bot, "1")

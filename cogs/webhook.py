@@ -1,11 +1,12 @@
+import discord
 import re
 import sqlite3
-import discord
 from discord.ext import commands
 
 from cogs.function_webhook import gestion_webhook as gestion
 from cogs.function_webhook import lecture_webhook as lecture
 from cogs.function_webhook import menu_webhook as menu
+
 
 # REPO PUBLIQUE
 
@@ -19,27 +20,28 @@ class Personae(
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(
-        help="Ouvre le menu de gestion des Personae.", brief="Menu des Personae."
-    )
+    @commands.group(
+        help="Ouvre le menu de gestion des Personae.", brief="Menu des Personae.",
+        invoke_without_command=True
+        )
     async def personae(self, ctx):
         await menu.menu(ctx, self.bot)
         return
 
-    @commands.command(
+    @personae.command(
         help="Ouvre le menu d'édition des Personae.",
         brief="Menu d'édition des Personae",
-    )
-    async def edit_persona(self, ctx):
+        )
+    async def edit(self, ctx):
         await menu.menu_edit(ctx, self.bot)
         return
 
-    @commands.command(
+    @personae.command(
         brief="Edition rapide du nom d'un Personae",
         help="Permet d'éditer rapidement le nom d'un Personae",
         usage='"Nom/token" "Nouveau Nom"',
-    )
-    async def persona_nom(self, ctx, nom, new):
+        )
+    async def nom(self, ctx, nom, new):
         id = gestion.search_Persona(ctx, nom)
         tag = gestion.name_persona(ctx, new, id)
         check = gestion.name_check(ctx, tag)
@@ -56,12 +58,12 @@ class Personae(
         c.close()
         db.close()
 
-    @commands.command(
+    @personae.command(
         brief="Edition token de Persona",
         help="Permet d'éditer le token d'un Persona.",
         usage='"Token/nom"',
-    )
-    async def persona_token(self, ctx, nom):
+        )
+    async def token(self, ctx, nom):
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
 
@@ -79,19 +81,19 @@ class Personae(
         db.close()
         return
 
-    @commands.command(
+    @personae.command(
         brief="Edition de l'image d'un Persona.",
         help="Permet d'éditer l'image d'un Persona.",
         usage='"nom/Token"',
-    )
-    async def persona_image(self, ctx, nom):
+        )
+    async def image(self, ctx, nom):
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
 
         def checkRep(message):
             return (
-                message.author == ctx.message.author
-                and ctx.message.channel == message.channel
+                    message.author == ctx.message.author
+                    and ctx.message.channel == message.channel
             )
 
         idC = gestion.search_Persona(ctx, nom)
@@ -111,12 +113,12 @@ class Personae(
         db.close()
         return
 
-    @commands.command(
+    @personae.command(
         help="Supprime un Persona de la base de donnée.",
         brief="Suppression d'un Persona.",
         usage='"Nom/Token"',
-    )
-    async def persona_delete(self, ctx, persona):
+        )
+    async def delete(self, ctx, persona):
         db = sqlite3.connect("src/owlly.db", timeout=3000)
         c = db.cursor()
         id = gestion.search_Persona(ctx, persona)

@@ -1,9 +1,8 @@
+import discord
 import os.path
+import pyimgur
 import sqlite3
 import unicodedata
-
-import discord
-import pyimgur
 from discord.ext import commands
 from discord.ext.commands import CommandError
 from discord.utils import get
@@ -123,9 +122,9 @@ class memberUtils(
     @commands.command(
         usage="@mention *role",
         brief="Permet de rajouter des rôles à un membres",
-        help="Permet à un administrateur de rajouter des roles rapidements.",
+        help="Permet à un administrateur de rajouter des roles rapidement.",
         aliases=["setrr", "give_role", "set", "role"],
-    )
+        )
     @commands.has_permissions(manage_nicknames=True)
     async def set_role(self, ctx, user: discord.Member, *role: str):
         addRole = []

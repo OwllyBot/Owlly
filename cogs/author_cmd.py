@@ -1,6 +1,5 @@
-import sqlite3
-
 import discord
+import sqlite3
 from discord.ext import commands
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
@@ -9,8 +8,8 @@ intents = discord.Intents(messages=True, guilds=True, reactions=True, members=Tr
 class controlleur(
     commands.Cog,
     name="Éditions",
-    description="Permet aux auteurs des channels de modifiers certains attributs du dit channel. Attention, toutes les commandes doivent être faites dans le channel créées.",
-):
+    description="Permet aux auteurs des channels de modifier certains attributs du dit channel. Attention, toutes les commandes doivent être faites dans le channel à éditer.",
+    ):
     def __init__(self, bot):
         self.bot = bot
 

@@ -1,13 +1,14 @@
 import ast
 import asyncio
+import discord
 import os
 import os.path
-import sqlite3
-import discord
 import pyimgur
+import sqlite3
 import unidecode
 from discord.ext import commands
 from discord.ext.commands import CommandError
+
 from cogs.Administration import fiche_config as utils
 
 CLIENT_ID = os.environ.get("CLIENT_ID")
@@ -491,8 +492,8 @@ class fiches(
         usage="@mention",
         brief="Permet d'éditer une présentation non validé ou en cours.",
         help="Permet à un administrateur de modifier ou supprimer une fiche en cours de validation, ou en cours d'écriture.",
-    )
-    @commands.has_permissions(administrator=True)
+        )
+    @commands.has_permissions(manage_nicknames=True)
     async def admin_edit(self, ctx, member: discord.Member):
         idS = ctx.guild.id
         emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "❌"]
