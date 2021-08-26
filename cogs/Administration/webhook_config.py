@@ -402,8 +402,9 @@ async def tokenHRP(ctx, bot, token):
                     await ctx.send("Suppression du pattern.")
                     break
             if token.lower() != "0":
-                token = token.replace("text", "(.*)/")
-                token = "^/" + token + "$"
+                token = re.escape(token)
+                token = token.replace("text", "(.*)")
+                token = "^" + token + "$"
     sql = "UPDATE SERVEUR SET tokenHRP = ? WHERE idS= ?"
     var = (token, ctx.guild.id)
     c.execute(sql, var)
