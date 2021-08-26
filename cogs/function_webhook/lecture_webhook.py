@@ -69,18 +69,31 @@ async def switch_persona(bot, message: discord.Message, idS, user):
     var = (
         idS,
         user,
-    )
+        )
     c.execute(sql, var)
     perso = [x[0] for x in c.fetchall()]
-    sql = "SELECT sticky from SERVEUR WHERE idS=?"
+    sql = "SELECT sticky,tokenHRP from SERVEUR WHERE idS=?"
     c.execute(sql, (idS,))
-    sticky = c.fetchone()
-    web = False
-    webcontent = message.content
-    if sticky:
-        sticky = sticky[0]
+    serv_sql = c.fetchone()
+    if serv_sql:
+        sticky = serv_sql[0]
+        HRP = serv_sql[1]
     else:
         sticky = "0"
+        HRP = ""
+    web = False
+    webcontent = message.content
+    # Disable character if char active
+    disabled = "\!" + HRP  # Each message start with "!tokenHRP will disable active character
+    regHRP = re.compile(disabled, re.DOTALL)
+    if regHRP.match(message.content) and sticky == 1:  # Disable all sticky char
+        sql = "UPDATE DC SET Active = ? WHERE (idS=? AND idU=?)"
+        var = (0, idS, user)
+        c.executemany(sql, var)
+        db.commit()
+        c.close()
+        db.close()
+        return
     for snippet in perso:
         reg = re.compile(snippet, re.DOTALL)
         if reg.match(message.content):
@@ -89,7 +102,7 @@ async def switch_persona(bot, message: discord.Message, idS, user):
                 idS,
                 user,
                 snippet,
-            )
+                )
             c.execute(sql, var)
             char = c.fetchone()
             if char:
@@ -103,6 +116,10 @@ async def switch_persona(bot, message: discord.Message, idS, user):
                     )
                     var = (1, idS, user, snippet)
                     c.execute(sql, var)
+                    # Disable other active
+                    sql = "UPDATE DC SET Active = ? WHERE (idS = ? AND idU=? AND Active = ?)"
+                    var = (0, idS, user, 1)
+                    c.executemany(sql, var)
                 break
     if not web and sticky == "1":
         sql = "SELECT Nom, Avatar FROM DC WHERE (idS = ? AND idU=? AND Active=?)"
