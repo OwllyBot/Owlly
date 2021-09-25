@@ -12,7 +12,7 @@ from cogs.chan_creator import list_creator as listing
 
 class ChanCreator(
     commands.Cog,
-    name="Créateur",
+    name="Pièces",
     description="Affiche le menu afin de permettre la création, l'édition mais aussi lister les créateurs de tickets.",
 ):
     def __init__(self, bot):

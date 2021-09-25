@@ -1,16 +1,17 @@
-import os
-import sqlite3
 import ast
 import discord
+import os
+import sqlite3
 from discord.ext import commands
 from discord.ext.commands import CommandError
+
 from cogs.Administration import fiche_config as utils
 
 
 class adminfiche(
     commands.Cog,
     name="Administration des fiches",
-    description="Permet de configurer les fiches.",
+    description="Permet d'administration la création des fiches : channels et champs.",
 ):
     def __init__(self, bot):
         self.bot = bot
@@ -127,10 +128,10 @@ class adminfiche(
 
     @commands.has_permissions(administrator=True)
     @admin_fiche.command(
-        help="Permet de configurer le channel dans lequel sera envoyé les présentations des personnages.",
-        brief="Insertion d'un channel pour envoyer les présentations validées.",
-        usage="channel",
-    )
+        help="Permet de configurer les channel dans lequel sera envoyé les présentations des personnages.",
+        brief="Configuration des channels pour envoyer les présentations.",
+        aliases=["channel"],
+        )
     async def chan(self, ctx):
         await ctx.message.delete()
 
@@ -290,11 +291,13 @@ class adminfiche(
             await q.add_reaction("❌")
             reaction, user = await self.bot.wait_for(
                 "reaction_add", timeout=300, check=checkValid
-            )
+                )
             if reaction.emoji == "✅":
                 check = await utils.delete_autre(ctx, self.bot, cl)
             else:
                 check = await utils.delete_part(ctx, cl, self.bot)
+        else:
+            check = await utils.delete_part(ctx, cl, self.bot)
         if check[0] == "Deleted":
             await self.presence_membre(ctx, "supprimé", check[1], 0, 0)
 

@@ -64,7 +64,7 @@ if __name__ == "__main__":
             print(e)
 
 color = discord.Color.blurple()
-ending = "Pour voir l'aide sur une commande, utilisez {help.clean_prefix}command\n De même, pour une catégorie, utilisez {help.clean_prefix}categorie."
+ending = "Pour voir l'aide sur une commande, utilisez {help.clean_prefix}help command\n De même, pour une catégorie, utilisez {help.clean_prefix}help Categorie."
 bot.help_command = PrettyHelp(
     color=color, index_title="Owlly - Aide", ending_note=ending, active_time=300
 )
@@ -209,7 +209,7 @@ async def on_raw_reaction_add(payload):
 
 
 if repo_name == "main":
-    token = os.environ.get("DISCORD_BOT_TOKEN")
+    token = os.getenv("DISCORD_BOT_TOKEN")
 else:
-    token = os.environ.get("DISCORD_BOT_TOKEN_TESTING")
+    token = os.getenv("DISCORD_BOT_TOKEN_TESTING")
 bot.run(token)

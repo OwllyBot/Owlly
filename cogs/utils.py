@@ -1,7 +1,6 @@
+import discord
 import re
 import sqlite3
-
-import discord
 import unidecode as uni
 from discord.ext import commands
 
@@ -74,14 +73,6 @@ class CogUtils(
         prefix = c.fetchone()[0]
         message = await ctx.send(f"Mon préfix est `{prefix}`")
         return commands.when_mentioned_or(prefix)(self.bot, message)
-
-    @commands.command(
-        name="whoami",
-        help="Affiche simplement votre nom...",
-        brief="Affiche votre nom.",
-    )
-    async def whoami(self, ctx):
-        await ctx.send(f"You are {ctx.message.author.name}")
 
     @commands.group(
         invoke_without_command=True,
